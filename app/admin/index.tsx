@@ -106,6 +106,11 @@ export default function AdminHomeScreen() {
     router.push("/admin/reportes");
   };
 
+  const handleImportarPress = () => {
+    haptic.light();
+    router.push("/admin/importar");
+  };
+
   return (
     <View className="flex-1" style={{ backgroundColor: Colors.tecnibus[50] }}>
       <StatusBar
@@ -179,6 +184,7 @@ export default function AdminHomeScreen() {
                 onAnnouncementsPress={handleAnnouncementsPress}
                 onAssignmentsPress={handleAssignmentsPress}
                 onReportesPress={handleReportesPress}
+                onImportarPress={handleImportarPress}
               />
             </Section>
 
