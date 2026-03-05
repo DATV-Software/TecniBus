@@ -1,5 +1,5 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { Colors } from "@/lib/constants/colors";
+import { SubScreenHeader } from "@/features/admin";
 import {
   EstadisticasReporte,
   generarReporteAsistencia,
@@ -10,7 +10,6 @@ import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import {
   AlertCircle,
-  ArrowLeft,
   BarChart2,
   Calendar,
   CheckCircle,
@@ -27,7 +26,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function formatDate(date: Date): string {
   const y = date.getFullYear();
@@ -58,8 +56,6 @@ const PERIODOS = [
 
 export default function ReportesScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const { profile } = useAuth();
 
   const today = formatDate(new Date());
   const [fechaInicio, setFechaInicio] = useState(today);
@@ -122,33 +118,14 @@ export default function ReportesScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}>
-      <StatusBar backgroundColor={Colors.tecnibus[600]} barStyle="light-content" />
+      <StatusBar backgroundColor={Colors.tecnibus[700]} barStyle="light-content" translucent={false} />
 
-      {/* Header */}
-      <View
-        style={{
-          backgroundColor: Colors.tecnibus[600],
-          paddingTop: insets.top + 8,
-          paddingBottom: 16,
-          paddingHorizontal: 16,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <ArrowLeft size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "700" }}>
-            Reportes de Asistencia
-          </Text>
-          <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
-            Exportar PDF filtrado
-          </Text>
-        </View>
-        <BarChart2 size={24} color="rgba(255,255,255,0.7)" />
-      </View>
+      <SubScreenHeader
+        title="REPORTES"
+        subtitle="Exportar PDF de asistencias"
+        icon={BarChart2}
+        onBack={() => router.back()}
+      />
 
       <ScrollView
         contentContainerStyle={{ padding: 16, gap: 16 }}
