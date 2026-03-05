@@ -9,7 +9,6 @@ import {
 } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import {
-  Alert,
   Dimensions,
   FlatList,
   Text,
@@ -24,6 +23,7 @@ import {
   deleteParada,
 } from "@/lib/services/rutas.service";
 import { ParadaFormSheet } from "./ParadaFormSheet";
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
 interface RouteMapEditorProps {
   rutaId: string;
@@ -127,10 +127,7 @@ export function RouteMapEditor({
 
   const confirmDeleteParada = (parada: Parada) => {
     haptic.medium();
-    Alert.alert(
-      "Eliminar Parada",
-      `¿Eliminar "${parada.nombre || "esta parada"}"?`,
-      [
+    showAlert({ title: "Eliminar Parada", message: `¿Eliminar "${parada.nombre || "esta parada"}"?`, type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
@@ -140,8 +137,7 @@ export function RouteMapEditor({
             if (success) onParadaDeleted();
           },
         },
-      ]
-    );
+      ] });
   };
 
   return (
