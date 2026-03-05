@@ -14,7 +14,6 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -28,8 +27,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatedCard, Avatar, Toast } from "../../components";
 import { useAuth } from "../../contexts/AuthContext";
 import { updateProfile } from "../../lib/services/profile.service";
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
 export default function DriverProfileScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const { profile, refreshProfile } = useAuth();
   const insets = useSafeAreaInsets();
@@ -87,10 +88,7 @@ export default function DriverProfileScreen() {
   const handleChangeAvatar = () => {
     if (!profile?.id) return;
 
-    Alert.alert(
-      "Cambiar foto de perfil",
-      "Selecciona una opción",
-      [
+    showAlert({ title: "Cambiar foto de perfil", message: "Selecciona una opción", type: "warning", buttons: [
         {
           text: "Tomar foto",
           onPress: () => uploadAvatarFromSource("camera"),
@@ -103,9 +101,7 @@ export default function DriverProfileScreen() {
           text: "Cancelar",
           style: "cancel",
         },
-      ],
-      { cancelable: true },
-    );
+      ] });
   };
 
   const uploadAvatarFromSource = async (source: "gallery" | "camera") => {
