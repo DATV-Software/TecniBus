@@ -1,4 +1,5 @@
 import SplashScreen from "@/components/SplashScreen";
+import { AlertProvider } from "@/components/ui/AlertBox/AlertProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -125,9 +126,11 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <AlertProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </AlertProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );
