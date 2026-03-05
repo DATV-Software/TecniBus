@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Colors } from "@/lib/constants/colors";
 import { QUICK_MESSAGES_CHOFER } from "@/lib/constants/quickMessages";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   ChatResumen,
   enviarMensaje,
@@ -233,25 +234,40 @@ export default function DriverChatScreen() {
   if (vista === "lista") {
     return (
       <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
-        <StatusBar backgroundColor="#F59E0B" barStyle="dark-content" />
-        <View
+        <StatusBar backgroundColor="#D97706" barStyle="light-content" translucent={false} />
+        <LinearGradient
+          colors={["#D97706", "#F59E0B", "#FCD34D"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.7, y: 1 }}
           style={{
-            backgroundColor: "#F59E0B",
-            paddingTop: insets.top + 8,
-            paddingBottom: 14,
-            paddingHorizontal: 16,
+            paddingTop: Math.max(insets.top + 8, 44),
+            paddingBottom: 20,
+            paddingHorizontal: 20,
+            borderBottomLeftRadius: 24,
+            borderBottomRightRadius: 24,
             flexDirection: "row",
             alignItems: "center",
             gap: 12,
           }}
         >
-          <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-            <ArrowLeft size={24} color="#FFFFFF" />
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ backgroundColor: "rgba(255,255,255,0.2)", padding: 8, borderRadius: 12 }}
+          >
+            <ArrowLeft size={22} color="#FFFFFF" strokeWidth={2.5} />
           </TouchableOpacity>
-          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "700" }}>
-            Chats con Padres
-          </Text>
-        </View>
+          <View style={{ backgroundColor: "rgba(255,255,255,0.2)", padding: 8, borderRadius: 12, marginRight: 2 }}>
+            <MessageCircle size={20} color="#FFFFFF" strokeWidth={2} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: "#FFFFFF", fontSize: 20, fontWeight: "700" }}>
+              CHATS
+            </Text>
+            <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 2 }}>
+              Conversaciones con padres
+            </Text>
+          </View>
+        </LinearGradient>
 
         {cargandoLista ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -291,32 +307,38 @@ export default function DriverChatScreen() {
       style={{ flex: 1, backgroundColor: "#F9FAFB" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <StatusBar backgroundColor="#F59E0B" barStyle="dark-content" />
+      <StatusBar backgroundColor="#D97706" barStyle="light-content" translucent={false} />
 
-      {/* Header */}
-      <View
+      <LinearGradient
+        colors={["#D97706", "#F59E0B", "#FCD34D"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0.7, y: 1 }}
         style={{
-          backgroundColor: "#F59E0B",
-          paddingTop: insets.top + 8,
-          paddingBottom: 14,
-          paddingHorizontal: 16,
+          paddingTop: Math.max(insets.top + 8, 44),
+          paddingBottom: 20,
+          paddingHorizontal: 20,
+          borderBottomLeftRadius: 24,
+          borderBottomRightRadius: 24,
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
         }}
       >
-        <TouchableOpacity onPress={volverALista} hitSlop={8}>
-          <ArrowLeft size={24} color="#FFFFFF" />
+        <TouchableOpacity
+          onPress={volverALista}
+          style={{ backgroundColor: "rgba(255,255,255,0.2)", padding: 8, borderRadius: 12 }}
+        >
+          <ArrowLeft size={22} color="#FFFFFF" strokeWidth={2.5} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: "#FFFFFF", fontSize: 17, fontWeight: "700" }}>
+          <Text style={{ color: "#FFFFFF", fontSize: 20, fontWeight: "700" }}>
             {chatSeleccionado?.nombre_padre ?? "Padre"}
           </Text>
-          <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 12 }}>
+          <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 2 }}>
             {recorridoActivo ? "Recorrido activo" : "Recorrido finalizado"}
           </Text>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Banner solo lectura */}
       {!recorridoActivo && !cargandoChat && (

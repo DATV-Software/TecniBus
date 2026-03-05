@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Colors } from "@/lib/constants/colors";
 import { QUICK_MESSAGES_PADRE } from "@/lib/constants/quickMessages";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   enviarMensaje,
   getMensajes,
@@ -155,32 +156,38 @@ export default function ParentChatScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
-      <StatusBar backgroundColor={Colors.tecnibus[600]} barStyle="light-content" />
+      <StatusBar backgroundColor={Colors.tecnibus[700]} barStyle="light-content" translucent={false} />
 
-      {/* Header */}
-      <View
+      <LinearGradient
+        colors={[Colors.tecnibus[700], Colors.tecnibus[600], Colors.tecnibus[500]]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0.7, y: 1 }}
         style={{
-          backgroundColor: Colors.tecnibus[600],
-          paddingTop: insets.top + 8,
-          paddingBottom: 14,
-          paddingHorizontal: 16,
+          paddingTop: Math.max(insets.top + 8, 44),
+          paddingBottom: 20,
+          paddingHorizontal: 20,
+          borderBottomLeftRadius: 24,
+          borderBottomRightRadius: 24,
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
         }}
       >
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <ArrowLeft size={24} color="#FFFFFF" />
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ backgroundColor: "rgba(255,255,255,0.2)", padding: 8, borderRadius: 12 }}
+        >
+          <ArrowLeft size={22} color="#FFFFFF" strokeWidth={2.5} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: "#FFFFFF", fontSize: 17, fontWeight: "700" }}>
+          <Text style={{ color: "#FFFFFF", fontSize: 20, fontWeight: "700" }}>
             {nombreChofer ?? "Chofer"}
           </Text>
-          <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
+          <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 2 }}>
             {recorridoActivo ? "En camino" : "Recorrido finalizado"}
           </Text>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Banner solo lectura */}
       {!recorridoActivo && !cargando && (
