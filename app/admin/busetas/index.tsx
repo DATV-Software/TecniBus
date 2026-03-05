@@ -12,7 +12,6 @@ import { Bus, Hash, Plus, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   RefreshControl,
   StatusBar,
@@ -21,12 +20,14 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   Buseta,
   deleteBuseta,
   getBusetas,
 } from "@/lib/services/busetas.service";
 
 export default function BusetasListScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -77,18 +78,14 @@ export default function BusetasListScreen() {
 
   const confirmarEliminar = (buseta: Buseta) => {
     haptic.medium();
-    Alert.alert(
-      "Eliminar Buseta",
-      `¿Eliminar la buseta ${buseta.placa}? Esta acción no se puede deshacer.`,
-      [
+    showAlert({ title: "Eliminar Buseta", message: `¿Eliminar la buseta ${buseta.placa}? Esta acción no se puede deshacer.`, type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
           style: "destructive",
           onPress: () => handleEliminar(buseta),
         },
-      ]
-    );
+      ] });
   };
 
   const handleEliminar = async (buseta: Buseta) => {

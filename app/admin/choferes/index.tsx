@@ -14,7 +14,6 @@ import { Mail, Plus, Upload, UserCircle, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   RefreshControl,
   StatusBar,
@@ -24,12 +23,14 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   eliminarUsuario,
   obtenerChoferes,
   type Profile,
 } from "@/lib/services/admin.service";
 
 export default function ListaChoferesScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -73,18 +74,14 @@ export default function ListaChoferesScreen() {
 
   const confirmarEliminar = (chofer: Profile) => {
     haptic.medium();
-    Alert.alert(
-      "Eliminar Conductor",
-      `¿Eliminar a ${chofer.nombre} ${chofer.apellido || ""}? Esta acción no se puede deshacer.`,
-      [
+    showAlert({ title: "Eliminar Conductor", message: `¿Eliminar a ${chofer.nombre} ${chofer.apellido || ""}? Esta acción no se puede deshacer.`, type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
           style: "destructive",
           onPress: () => handleEliminar(chofer.id),
         },
-      ]
-    );
+      ] });
   };
 
   const handleEliminar = async (userId: string) => {

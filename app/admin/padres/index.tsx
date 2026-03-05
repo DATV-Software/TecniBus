@@ -14,7 +14,6 @@ import { Mail, Plus, Upload, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   RefreshControl,
   StatusBar,
@@ -24,12 +23,14 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   eliminarUsuario,
   obtenerPadres,
   type Profile,
 } from "@/lib/services/admin.service";
 
 export default function ListaPadresScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -73,18 +74,14 @@ export default function ListaPadresScreen() {
 
   const confirmarEliminar = (padre: Profile) => {
     haptic.medium();
-    Alert.alert(
-      "Eliminar Representante",
-      `¿Eliminar a ${padre.nombre} ${padre.apellido || ""}? Esta acción no se puede deshacer.`,
-      [
+    showAlert({ title: "Eliminar Representante", message: `¿Eliminar a ${padre.nombre} ${padre.apellido || ""}? Esta acción no se puede deshacer.`, type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
           style: "destructive",
           onPress: () => handleEliminar(padre.id),
         },
-      ]
-    );
+      ] });
   };
 
   const handleEliminar = async (userId: string) => {

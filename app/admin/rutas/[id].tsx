@@ -15,7 +15,6 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StatusBar,
   Text,
@@ -24,6 +23,7 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   Parada,
   deleteRuta,
   getRutaById,
@@ -33,6 +33,7 @@ import {
 type Tab = "info" | "mapa";
 
 export default function EditarRutaScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -58,9 +59,9 @@ export default function EditarRutaScreen() {
     setLoadingData(true);
     const ruta = await getRutaById(id);
     if (!ruta) {
-      Alert.alert("Error", "No se encontró la ruta", [
+      showAlert({ title: "Error", message: "No se encontró la ruta", type: "error", buttons: [
         { text: "OK", onPress: () => router.back() },
-      ]);
+      ] });
       return;
     }
     setNombre(ruta.nombre);
@@ -126,10 +127,7 @@ export default function EditarRutaScreen() {
 
   const handleDeleteRuta = () => {
     haptic.light();
-    Alert.alert(
-      "Confirmar eliminación",
-      "¿Eliminar esta ruta y todas sus paradas? Esta acción no se puede deshacer.",
-      [
+    showAlert({ title: "Confirmar eliminación", message: "¿Eliminar esta ruta y todas sus paradas? Esta acción no se puede deshacer.", type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
@@ -147,8 +145,7 @@ export default function EditarRutaScreen() {
             }
           },
         },
-      ]
-    );
+      ] });
   };
 
   if (loadingData) {

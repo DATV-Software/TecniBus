@@ -24,8 +24,8 @@ import {
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   ActivityIndicator,
-  Alert,
   Modal,
   ScrollView,
   StatusBar,
@@ -67,6 +67,7 @@ const DIAS_SEMANA = [
 ];
 
 export default function AsignacionesScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -149,7 +150,7 @@ export default function AsignacionesScreen() {
       setBusetas(busetasConEstado);
     } catch (error) {
       console.error("Error cargando datos:", error);
-      Alert.alert("Error", "No se pudieron cargar los datos");
+      showAlert({ title: "Error", message: "No se pudieron cargar los datos", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -172,7 +173,7 @@ export default function AsignacionesScreen() {
 
   const handleAbrirModalAsignacion = () => {
     if (!choferSeleccionado) {
-      Alert.alert("Atención", "Selecciona un chofer primero");
+      showAlert({ title: "Atención", message: "Selecciona un chofer primero", type: "warning" });
       return;
     }
     setFormData({
@@ -189,32 +190,29 @@ export default function AsignacionesScreen() {
   const handleCrearAsignacion = async () => {
     try {
       if (!formData.id_ruta) {
-        Alert.alert("Error", "Selecciona una ruta");
+        showAlert({ title: "Error", message: "Selecciona una ruta", type: "error" });
         return;
       }
       haptic.medium();
       const result = await createAsignacion(formData);
       if (result) {
         haptic.success();
-        Alert.alert("Éxito", "Recorrido asignado correctamente");
+        showAlert({ title: "Éxito", message: "Recorrido asignado correctamente", type: "success" });
         setModalVisible(false);
         if (choferSeleccionado) cargarAsignacionesChofer(choferSeleccionado.id);
       } else {
         haptic.error();
-        Alert.alert("Error", "No se pudo crear la asignación");
+        showAlert({ title: "Error", message: "No se pudo crear la asignación", type: "error" });
       }
     } catch (error) {
       console.error("Error creando asignación:", error);
       haptic.error();
-      Alert.alert("Error", "Ocurrió un error al crear la asignación");
+      showAlert({ title: "Error", message: "Ocurrió un error al crear la asignación", type: "error" });
     }
   };
 
   const handleEliminarAsignacion = (id: string) => {
-    Alert.alert(
-      "Confirmar eliminación",
-      "¿Estás seguro de eliminar este recorrido?",
-      [
+    showAlert({ title: "Confirmar eliminación", message: "¿Estás seguro de eliminar este recorrido?", type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
@@ -227,12 +225,11 @@ export default function AsignacionesScreen() {
               if (choferSeleccionado) cargarAsignacionesChofer(choferSeleccionado.id);
             } else {
               haptic.error();
-              Alert.alert("Error", "No se pudo eliminar el recorrido");
+              showAlert({ title: "Error", message: "No se pudo eliminar el recorrido", type: "error" });
             }
           },
         },
-      ]
-    );
+      ] });
   };
 
   const handleAsignarBuseta = async (idChofer: string, idBuseta: string) => {
@@ -246,13 +243,13 @@ export default function AsignacionesScreen() {
       if (error) throw error;
 
       haptic.success();
-      Alert.alert("Éxito", "Buseta asignada correctamente");
+      showAlert({ title: "Éxito", message: "Buseta asignada correctamente", type: "success" });
       setModalBusetaVisible(false);
       cargarDatos();
     } catch (error) {
       console.error("Error asignando buseta:", error);
       haptic.error();
-      Alert.alert("Error", "No se pudo asignar la buseta");
+      showAlert({ title: "Error", message: "No se pudo asignar la buseta", type: "error" });
     }
   };
 
@@ -782,10 +779,7 @@ export default function AsignacionesScreen() {
                         handleAsignarBuseta(choferSeleccionado.id, buseta.id);
                       } else if (buseta.ocupada) {
                         haptic.error();
-                        Alert.alert(
-                          "Buseta ocupada",
-                          `Esta buseta ya está asignada a ${buseta.chofer_nombre}. Primero desasigna al otro chofer.`
-                        );
+                        showAlert({ title: "Buseta ocupada", message: `Esta buseta ya está asignada a ${buseta.chofer_nombre}. Primero desasigna al otro chofer.`, type: "info" });
                       }
                     }}
                     disabled={buseta.ocupada}

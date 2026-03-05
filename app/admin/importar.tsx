@@ -15,7 +15,6 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -26,6 +25,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
 interface EntityConfig {
   label: string;
@@ -57,6 +57,7 @@ const ENTIDADES: Record<EntityType, EntityConfig> = {
 };
 
 export default function ImportarScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -83,28 +84,25 @@ export default function ImportarScreen() {
 
   const handleImportar = async () => {
     if (!csvText.trim()) {
-      Alert.alert("CSV vacío", "Pega el contenido CSV antes de importar.");
+      showAlert({ title: "CSV vacío", message: "Pega el contenido CSV antes de importar.", type: "warning" });
       return;
     }
 
     const parsed = parseCSV(csvText);
 
     if (parsed.error) {
-      Alert.alert("Error al parsear", parsed.error);
+      showAlert({ title: "Error al parsear", message: parsed.error, type: "error" });
       return;
     }
 
     const validacion = validarFilaEntidad(parsed.headers, entidad);
     if (!validacion.valido) {
-      Alert.alert(
-        "Columnas faltantes",
-        `Faltan columnas requeridas: ${validacion.faltantes.join(", ")}`,
-      );
+      showAlert({ title: "Columnas faltantes", message: `Faltan columnas requeridas: ${validacion.faltantes.join(", ")}`, type: "info" });
       return;
     }
 
     if (parsed.rows.length === 0) {
-      Alert.alert("Sin datos", "El CSV no contiene filas de datos.");
+      showAlert({ title: "Sin datos", message: "El CSV no contiene filas de datos.", type: "warning" });
       return;
     }
 
@@ -117,7 +115,7 @@ export default function ImportarScreen() {
     setImportando(false);
 
     if (!result.success) {
-      Alert.alert("Error de importación", result.error ?? "Error desconocido.");
+      showAlert({ title: "Error de importación", message: result.error ?? "Error desconocido.", type: "error" });
       return;
     }
 

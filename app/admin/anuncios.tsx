@@ -11,7 +11,6 @@ import { ArrowLeft, FileText, Megaphone, Send, X } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -23,10 +22,12 @@ import {
   View,
 } from "react-native";
 import { supabase } from "@/lib/services/supabase";
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
 type Audiencia = "todos" | "padres" | "choferes";
 
 export default function AnunciosScreen() {
+  const { showAlert } = useAlert();
   const [titulo, setTitulo] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [audiencia, setAudiencia] = useState<Audiencia>("todos");
@@ -36,19 +37,19 @@ export default function AnunciosScreen() {
 
   const handleEnviar = async () => {
     if (!titulo.trim()) {
-      Alert.alert("Error", "El título es obligatorio");
+      showAlert({ title: "Error", message: "El título es obligatorio", type: "error" });
       return;
     }
     if (!mensaje.trim()) {
-      Alert.alert("Error", "El mensaje es obligatorio");
+      showAlert({ title: "Error", message: "El mensaje es obligatorio", type: "error" });
       return;
     }
     if (titulo.length > 100) {
-      Alert.alert("Error", "El título no puede superar 100 caracteres");
+      showAlert({ title: "Error", message: "El título no puede superar 100 caracteres", type: "error" });
       return;
     }
     if (mensaje.length > 500) {
-      Alert.alert("Error", "El mensaje no puede superar 500 caracteres");
+      showAlert({ title: "Error", message: "El mensaje no puede superar 500 caracteres", type: "error" });
       return;
     }
 
@@ -59,14 +60,10 @@ export default function AnunciosScreen() {
           ? "todos los padres"
           : "todos los choferes";
 
-    Alert.alert(
-      "Confirmar envío",
-      `¿Enviar este anuncio a ${audienciaText}?\n\n"${titulo}"\n\nEsta acción no se puede deshacer.`,
-      [
+    showAlert({ title: "Confirmar envío", message: `¿Enviar este anuncio a ${audienciaText}?\n\n"${titulo}"\n\nEsta acción no se puede deshacer.`, type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         { text: "Enviar", style: "default", onPress: enviarAnuncio },
-      ]
-    );
+      ] });
   };
 
   const enviarAnuncio = async () => {
@@ -80,23 +77,19 @@ export default function AnunciosScreen() {
 
       if (error) {
         console.error("Error enviando anuncio:", error);
-        Alert.alert("Error", "No se pudo enviar el anuncio. Intenta nuevamente.");
+        showAlert({ title: "Error", message: "No se pudo enviar el anuncio. Intenta nuevamente.", type: "error" });
         return;
       }
 
       const enviados = data?.sent || 0;
       const fallidos = data?.failed || 0;
 
-      Alert.alert(
-        "Anuncio enviado",
-        `Se enviaron ${enviados} notificaciones correctamente.${fallidos > 0 ? `\n\n${fallidos} notificaciones fallaron.` : ""}`,
-        [{ text: "OK", onPress: () => { setTitulo(""); setMensaje(""); setAudiencia("todos"); } }]
-      );
+      showAlert({ title: "Anuncio enviado", message: `Se enviaron ${enviados} notificaciones correctamente.${fallidos > 0 ? `\n\n${fallidos} notificaciones fallaron.` : ""}`, type: "success", buttons: [{ text: "OK", onPress: () => { setTitulo(""); setMensaje(""); setAudiencia("todos"); } }] });
 
       haptic.success();
     } catch (error) {
       console.error("Error en enviarAnuncio:", error);
-      Alert.alert("Error", "Ocurrió un error inesperado. Intenta nuevamente.");
+      showAlert({ title: "Error", message: "Ocurrió un error inesperado. Intenta nuevamente.", type: "error" });
       haptic.error();
     } finally {
       setLoading(false);

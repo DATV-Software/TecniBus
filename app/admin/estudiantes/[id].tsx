@@ -14,7 +14,6 @@ import {
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Modal,
   ScrollView,
@@ -26,6 +25,7 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   deleteEstudiante,
   getEstudiantes,
   getPadresParaAsignar,
@@ -49,6 +49,7 @@ type Parada = {
 };
 
 export default function EditarEstudianteScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -82,9 +83,9 @@ export default function EditarEstudianteScreen() {
 
       const est = estudiantesData.find((e) => e.id === id);
       if (!est) {
-        Alert.alert("Error", "No se encontró el estudiante", [
+        showAlert({ title: "Error", message: "No se encontró el estudiante", type: "error", buttons: [
           { text: "OK", onPress: () => router.back() },
-        ]);
+        ] });
         return;
       }
 
@@ -146,10 +147,7 @@ export default function EditarEstudianteScreen() {
 
   const handleDelete = () => {
     haptic.light();
-    Alert.alert(
-      "Confirmar eliminación",
-      "¿Eliminar este estudiante? Esta acción no se puede deshacer.",
-      [
+    showAlert({ title: "Confirmar eliminación", message: "¿Eliminar este estudiante? Esta acción no se puede deshacer.", type: "warning", buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
@@ -167,8 +165,7 @@ export default function EditarEstudianteScreen() {
             }
           },
         },
-      ]
-    );
+      ] });
   };
 
   if (loadingData) {

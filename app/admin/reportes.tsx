@@ -18,8 +18,8 @@ import {
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   ActivityIndicator,
-  Alert,
   ScrollView,
   StatusBar,
   Text,
@@ -55,6 +55,7 @@ const PERIODOS = [
 ];
 
 export default function ReportesScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
 
   const today = formatDate(new Date());
@@ -83,7 +84,7 @@ export default function ReportesScreen() {
 
   const handleGenerar = async () => {
     if (fechaInicio > fechaFin) {
-      Alert.alert("Fechas inválidas", "La fecha de inicio no puede ser mayor a la fecha fin.");
+      showAlert({ title: "Fechas inválidas", message: "La fecha de inicio no puede ser mayor a la fecha fin.", type: "warning" });
       return;
     }
     haptic.light();
@@ -101,7 +102,7 @@ export default function ReportesScreen() {
     setGenerando(false);
 
     if (!result.success) {
-      Alert.alert("Error", result.error ?? "No se pudo generar el reporte.");
+      showAlert({ title: "Error", message: result.error ?? "No se pudo generar el reporte.", type: "error" });
       return;
     }
 
