@@ -1,3 +1,4 @@
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import RouteMap from "@/components/RouteMap";
@@ -30,7 +31,6 @@ import { useRouter } from "expo-router";
 import { CheckCircle2, ChevronDown, GraduationCap, Heart, UserX } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-import { useAlert } from "@/components/ui/AlertBox/useAlert";
   ActivityIndicator,
   ScrollView,
   StatusBar,

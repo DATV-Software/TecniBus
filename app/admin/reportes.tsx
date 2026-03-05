@@ -1,3 +1,4 @@
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import { Colors } from "@/lib/constants/colors";
 import { SubScreenHeader } from "@/features/admin";
 import {
@@ -18,7 +19,6 @@ import {
 } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-import { useAlert } from "@/components/ui/AlertBox/useAlert";
   ActivityIndicator,
   ScrollView,
   StatusBar,

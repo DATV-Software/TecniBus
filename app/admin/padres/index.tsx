@@ -1,3 +1,4 @@
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import { Colors } from "@/lib/constants/colors";
 import {
   CreateUserModal,
@@ -23,7 +24,6 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
-import { useAlert } from "@/components/ui/AlertBox/useAlert";
   eliminarUsuario,
   obtenerPadres,
   type Profile,

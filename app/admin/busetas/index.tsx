@@ -1,3 +1,4 @@
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import { Colors } from "@/lib/constants/colors";
 import {
   BusetaModal,
@@ -20,7 +21,6 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
-import { useAlert } from "@/components/ui/AlertBox/useAlert";
   Buseta,
   deleteBuseta,
   getBusetas,
