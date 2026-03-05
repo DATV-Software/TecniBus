@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { ActionCard } from "@/components/ui/ActionCard";
-import { BarChart2, FileUp, MapPin, Megaphone, Navigation } from "lucide-react-native";
+import { BarChart2, MapPin, Megaphone, Navigation } from "lucide-react-native";
 import { Colors } from "@/lib/constants/colors";
 
 interface AdminQuickActionsProps {
@@ -8,7 +8,6 @@ interface AdminQuickActionsProps {
   onAnnouncementsPress: () => void;
   onAssignmentsPress: () => void;
   onReportesPress: () => void;
-  onImportarPress: () => void;
 }
 
 export function AdminQuickActions({
@@ -16,7 +15,6 @@ export function AdminQuickActions({
   onAnnouncementsPress,
   onAssignmentsPress,
   onReportesPress,
-  onImportarPress,
 }: AdminQuickActionsProps) {
   return (
     <View style={{ paddingHorizontal: 20 }}>
@@ -42,7 +40,7 @@ export function AdminQuickActions({
           />
         </View>
       </View>
-      <View className="flex-row" style={{ gap: 12, marginBottom: 12 }}>
+      <View className="flex-row" style={{ gap: 12 }}>
         <View className="flex-1">
           <ActionCard
             icon={Megaphone}
@@ -66,19 +64,6 @@ export function AdminQuickActions({
             onPress={onReportesPress}
           />
         </View>
-      </View>
-      <View className="flex-row" style={{ gap: 12 }}>
-        <View className="flex-1">
-          <ActionCard
-            icon={FileUp}
-            iconColor={Colors.tecnibus[600]}
-            iconBgColor={Colors.tecnibus[100]}
-            title="Importar"
-            description="Carga masiva de usuarios vía CSV."
-            onPress={onImportarPress}
-          />
-        </View>
-        <View className="flex-1" />
       </View>
     </View>
   );

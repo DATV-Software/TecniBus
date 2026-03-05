@@ -1,6 +1,7 @@
 import { Colors } from "@/lib/constants/colors";
 import {
   EntityCard,
+  ImportCSVModal,
   SearchBar,
   StatsStrip,
   SubScreenHeader,
@@ -12,6 +13,7 @@ import {
   GraduationCap,
   MapPin,
   Plus,
+  Upload,
   User,
   UserX,
 } from "lucide-react-native";
@@ -22,6 +24,7 @@ import {
   RefreshControl,
   StatusBar,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import {
@@ -32,6 +35,7 @@ import {
 export default function EstudiantesListScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [showImport, setShowImport] = useState(false);
 
   const { data: estudiantes = [], isLoading: loading, refetch, isRefetching: refreshing } = useQuery({
     queryKey: ['estudiantes'],
@@ -81,16 +85,57 @@ export default function EstudiantesListScreen() {
         subtitle={`${estudiantes.length} registrados`}
         icon={GraduationCap}
         onBack={() => router.back()}
-        rightAction={{
-          icon: Plus,
-          onPress: () => {
-            haptic.medium();
-            router.push("/admin/estudiantes/crear");
-          },
-        }}
       />
 
       <StatsStrip stats={stats} />
+
+      {/* Action bar */}
+      <View
+        style={{
+          flexDirection: "row",
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          gap: 10,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => { haptic.medium(); router.push("/admin/estudiantes/crear"); }}
+          style={{
+            flex: 1,
+            backgroundColor: Colors.tecnibus[600],
+            borderRadius: 12,
+            paddingVertical: 13,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Plus size={18} color="#fff" strokeWidth={2.5} />
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>
+            Agregar Estudiante
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => { haptic.light(); setShowImport(true); }}
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 12,
+            paddingHorizontal: 14,
+            paddingVertical: 13,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            borderWidth: 1,
+            borderColor: Colors.tecnibus[200],
+          }}
+        >
+          <Upload size={17} color={Colors.tecnibus[600]} />
+          <Text style={{ color: Colors.tecnibus[600], fontWeight: "600", fontSize: 13 }}>
+            CSV
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <SearchBar
         value={search}
@@ -174,6 +219,14 @@ export default function EstudiantesListScreen() {
           }
         />
       )}
+
+      <ImportCSVModal
+        visible={showImport}
+        onClose={() => setShowImport(false)}
+        entityType="estudiantes"
+        onSuccess={() => refetch()}
+        onToast={(message, type) => console.log(type, message)}
+      />
     </View>
   );
 }

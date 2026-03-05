@@ -2,6 +2,7 @@ import { Colors } from "@/lib/constants/colors";
 import {
   CreateUserModal,
   EntityCard,
+  ImportCSVModal,
   SearchBar,
   StatsStrip,
   SubScreenHeader,
@@ -9,7 +10,7 @@ import {
 import { haptic } from "@/lib/utils/haptics";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Bus, Mail, Plus, UserCircle, Users } from "lucide-react-native";
+import { Mail, Plus, Upload, UserCircle, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -18,6 +19,7 @@ import {
   RefreshControl,
   StatusBar,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import Toast from "@/components/Toast";
@@ -33,6 +35,7 @@ export default function ListaChoferesScreen() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [toast, setToast] = useState<{
     visible: boolean;
     message: string;
@@ -116,10 +119,57 @@ export default function ListaChoferesScreen() {
         subtitle={`${choferes.length} registrados`}
         icon={UserCircle}
         onBack={() => router.back()}
-        rightAction={{ icon: Plus, onPress: () => setShowModal(true) }}
       />
 
       <StatsStrip stats={stats} />
+
+      {/* Action bar */}
+      <View
+        style={{
+          flexDirection: "row",
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          gap: 10,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => { haptic.medium(); setShowModal(true); }}
+          style={{
+            flex: 1,
+            backgroundColor: Colors.tecnibus[600],
+            borderRadius: 12,
+            paddingVertical: 13,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Plus size={18} color="#fff" strokeWidth={2.5} />
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>
+            Agregar Conductor
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => { haptic.light(); setShowImport(true); }}
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 12,
+            paddingHorizontal: 14,
+            paddingVertical: 13,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            borderWidth: 1,
+            borderColor: Colors.tecnibus[200],
+          }}
+        >
+          <Upload size={17} color={Colors.tecnibus[600]} />
+          <Text style={{ color: Colors.tecnibus[600], fontWeight: "600", fontSize: 13 }}>
+            CSV
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <SearchBar
         value={search}
@@ -191,6 +241,14 @@ export default function ListaChoferesScreen() {
         visible={showModal}
         onClose={() => setShowModal(false)}
         userType="chofer"
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['choferes'] })}
+        onToast={showToast}
+      />
+
+      <ImportCSVModal
+        visible={showImport}
+        onClose={() => setShowImport(false)}
+        entityType="conductores"
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['choferes'] })}
         onToast={showToast}
       />
