@@ -30,8 +30,8 @@ import { useRouter } from "expo-router";
 import { CheckCircle2, ChevronDown, GraduationCap, Heart, UserX } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
   ActivityIndicator,
-  Alert,
   ScrollView,
   StatusBar,
   Text,
@@ -40,6 +40,7 @@ import {
 } from "react-native";
 
 export default function ParentHomeScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const { profile } = useAuth();
 
@@ -561,19 +562,13 @@ export default function ParentHomeScreen() {
       !estudianteSeleccionado?.id ||
       !estudianteSeleccionado?.parada?.ruta?.id
     ) {
-      Alert.alert(
-        "Error",
-        "No se puede marcar asistencia sin estudiante o ruta asignada",
-      );
+      showAlert({ title: "Error", message: "No se puede marcar asistencia sin estudiante o ruta asignada", type: "error" });
       return;
     }
 
     if (choferEnCamino) {
       haptic.error();
-      Alert.alert(
-        "Ruta en curso",
-        "No puedes cambiar la asistencia una vez que la ruta ha iniciado.",
-      );
+      showAlert({ title: "Ruta en curso", message: "No puedes cambiar la asistencia una vez que la ruta ha iniciado.", type: "info" });
       return;
     }
 
@@ -594,27 +589,18 @@ export default function ParentHomeScreen() {
         haptic.success();
 
         if (marcarComoAusente) {
-          Alert.alert(
-            "Ausencia registrada",
-            "El chofer ha sido notificado que el estudiante no asistirá hoy.",
-          );
+          showAlert({ title: "Ausencia registrada", message: "El chofer ha sido notificado que el estudiante no asistirá hoy.", type: "info" });
         } else {
-          Alert.alert(
-            "Asistencia actualizada",
-            "El estudiante volverá a ser recogido normalmente.",
-          );
+          showAlert({ title: "Asistencia actualizada", message: "El estudiante volverá a ser recogido normalmente.", type: "info" });
         }
       } else {
         haptic.error();
-        Alert.alert(
-          "Error",
-          "No se pudo actualizar la asistencia. Intenta nuevamente.",
-        );
+        showAlert({ title: "Error", message: "No se pudo actualizar la asistencia. Intenta nuevamente.", type: "error" });
       }
     } catch (error) {
       console.error("Error toggling attendance:", error);
       haptic.error();
-      Alert.alert("Error", "Ocurrió un error al actualizar la asistencia");
+      showAlert({ title: "Error", message: "Ocurrió un error al actualizar la asistencia", type: "error" });
     } finally {
       setProcessingAttendance(false);
     }
@@ -643,7 +629,7 @@ export default function ParentHomeScreen() {
 
   const handleChatDriver = () => {
     if (!idAsignacion || !idChofer) {
-      Alert.alert("Chat no disponible", "No hay un recorrido activo.");
+      showAlert({ title: "Chat no disponible", message: "No hay un recorrido activo.", type: "info" });
       return;
     }
     haptic.light();

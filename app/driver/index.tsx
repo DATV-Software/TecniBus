@@ -52,7 +52,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   StatusBar,
   StyleSheet,
@@ -61,8 +60,10 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
 export default function DriverHomeScreen() {
+  const { showAlert } = useAlert();
   const router = useRouter();
   const { profile } = useAuth();
   const insets = useSafeAreaInsets();
@@ -281,7 +282,7 @@ export default function DriverHomeScreen() {
       setRecorridos(data);
       if (data.length > 0 && !recorridoActual) setRecorridoActual(data[0]);
     } catch {
-      Alert.alert("Error", "No se pudieron cargar los recorridos");
+      showAlert({ title: "Error", message: "No se pudieron cargar los recorridos", type: "error" });
     } finally {
       setLoadingRecorridos(false);
     }
@@ -294,7 +295,7 @@ export default function DriverHomeScreen() {
       const data = await getEstudiantesConAsistencia(recorridoActual.id_ruta, profile.id);
       setEstudiantes(data);
     } catch {
-      Alert.alert("Error", "No se pudieron cargar los estudiantes");
+      showAlert({ title: "Error", message: "No se pudieron cargar los estudiantes", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -423,10 +424,10 @@ export default function DriverHomeScreen() {
       haptic.medium();
       const result = await marcarAusente(nextStudent.id, recorridoActual.id_ruta, profile.id);
       if (result) { await cargarEstudiantes(); haptic.success(); }
-      else { haptic.error(); Alert.alert("Error", "No se pudo marcar como ausente"); }
+      else { haptic.error(); showAlert({ title: "Error", message: "No se pudo marcar como ausente", type: "error" }); }
     } catch {
       haptic.error();
-      Alert.alert("Error", "Ocurrio un error");
+      showAlert({ title: "Error", message: "Ocurrio un error", type: "error" });
     } finally {
       setProcessingStudent(null);
     }
@@ -446,11 +447,11 @@ export default function DriverHomeScreen() {
         haptic.success();
       } else {
         haptic.error();
-        Alert.alert("Error", "No se pudo marcar como ausente");
+        showAlert({ title: "Error", message: "No se pudo marcar como ausente", type: "error" });
       }
     } catch {
       haptic.error();
-      Alert.alert("Error", "Ocurrio un error");
+      showAlert({ title: "Error", message: "Ocurrio un error", type: "error" });
     } finally {
       setProcessingStudent(null);
     }
@@ -472,7 +473,7 @@ export default function DriverHomeScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         setOptimizandoRuta(false);
-        Alert.alert("Permisos necesarios", "Necesitas habilitar permisos de ubicación para iniciar el recorrido");
+        showAlert({ title: "Permisos necesarios", message: "Necesitas habilitar permisos de ubicación para iniciar el recorrido", type: "warning" });
         return;
       }
       const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
@@ -503,17 +504,17 @@ export default function DriverHomeScreen() {
           .catch((err) => console.warn("Error inicializando geocercas:", err));
       } else {
         haptic.error();
-        Alert.alert("Error", "No se pudo iniciar el recorrido");
+        showAlert({ title: "Error", message: "No se pudo iniciar el recorrido", type: "error" });
       }
     } catch {
       haptic.error();
-      Alert.alert("Error", "Ocurrió un error al iniciar el recorrido");
+      showAlert({ title: "Error", message: "Ocurrió un error al iniciar el recorrido", type: "error" });
     }
   };
 
   const handleFinalizarRecorrido = async () => {
     if (!recorridoActual) return;
-    Alert.alert("Finalizar Recorrido", "¿Estás seguro de que deseas finalizar el recorrido?", [
+    showAlert({ title: "Finalizar Recorrido", message: "¿Estás seguro de que deseas finalizar el recorrido?", type: "warning", buttons: [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Finalizar", style: "destructive",
@@ -521,10 +522,10 @@ export default function DriverHomeScreen() {
           haptic.heavy();
           const success = await finalizarRecorrido(recorridoActual.id);
           if (success) { setRouteActive(false); haptic.success(); }
-          else { haptic.error(); Alert.alert("Error", "No se pudo finalizar el recorrido"); }
+          else { haptic.error(); showAlert({ title: "Error", message: "No se pudo finalizar el recorrido", type: "error" }); }
         },
       },
-    ]);
+    ] });
   };
 
   const formatHoraEC = (isoString: string) =>
