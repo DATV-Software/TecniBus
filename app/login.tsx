@@ -24,6 +24,7 @@ import Animated, {
 import { haptic } from "@/lib/utils/haptics";
 import { useShadow } from "@/lib/utils/shadows";
 import { Toast } from "../components";
+import { KeyboardSafeView } from "@/components/ui";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen() {
@@ -342,7 +343,7 @@ export default function LoginScreen() {
      UI
   ====================== */
   return (
-    <ScrollView className="flex-1 bg-tecnibus-50">
+    <KeyboardSafeView style={{ backgroundColor: "#eff6ff" }}>
       <StatusBar barStyle="dark-content" backgroundColor="#eff6ff" />
 
       <Toast
@@ -471,6 +472,6 @@ export default function LoginScreen() {
           </View>
         </Animated.View>
       </View>
-    </ScrollView>
+    </KeyboardSafeView>
   );
 }
