@@ -1,12 +1,11 @@
 import { Colors } from "@/lib/constants/colors";
 import { haptic } from "@/lib/utils/haptics";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import { Bus, Hash, Save, Users, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -36,6 +35,7 @@ export function BusetaModal({
   onToast,
 }: BusetaModalProps) {
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const isEdit = !!buseta;
 
   const [placa, setPlaca] = useState("");
@@ -118,15 +118,14 @@ export function BusetaModal({
           justifyContent: "flex-end",
         }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
           <View
             style={{
               backgroundColor: "#ffffff",
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
-              paddingBottom: Math.max(insets.bottom, 20),
+              paddingBottom: keyboardHeight > 0
+                ? keyboardHeight
+                : Math.max(insets.bottom, 20),
             }}
           >
             {/* Handle */}
@@ -252,7 +251,6 @@ export function BusetaModal({
               </TouchableOpacity>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

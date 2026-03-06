@@ -1,12 +1,11 @@
 import { Colors } from "@/lib/constants/colors";
 import { haptic } from "@/lib/utils/haptics";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import { Clock, MapPin, Save, Trash2, Type, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -43,6 +42,7 @@ export function ParadaFormSheet({
   onDelete,
 }: ParadaFormSheetProps) {
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const isEdit = !!initialData?.id;
 
   const [nombre, setNombre] = useState("");
@@ -118,15 +118,14 @@ export function ParadaFormSheet({
           justifyContent: "flex-end",
         }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
           <View
             style={{
               backgroundColor: "#ffffff",
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
-              paddingBottom: Math.max(insets.bottom, 20),
+              paddingBottom: keyboardHeight > 0
+                ? keyboardHeight
+                : Math.max(insets.bottom, 20),
               maxHeight: "90%",
             }}
           >
@@ -345,7 +344,6 @@ export function ParadaFormSheet({
               </View>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

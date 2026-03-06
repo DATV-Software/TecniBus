@@ -15,15 +15,13 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
@@ -132,10 +130,7 @@ export default function ImportarScreen() {
   const cfg = ENTIDADES[entidad];
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <View style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}>
       <StatusBar backgroundColor={Colors.tecnibus[600]} barStyle="light-content" />
 
       {/* Header */}
@@ -164,10 +159,13 @@ export default function ImportarScreen() {
         <Upload size={24} color="rgba(255,255,255,0.7)" />
       </View>
 
-      <ScrollView
-        contentContainerStyle={{ padding: 16, gap: 16 }}
+      <KeyboardAwareScrollView
+        contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={20}
       >
         {/* Selector tipo entidad */}
         <View
@@ -415,8 +413,8 @@ export default function ImportarScreen() {
             Máximo 1000 filas por importación. Para estudiantes, proporciona el UUID del padre obtenido desde la gestión de usuarios.
           </Text>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 

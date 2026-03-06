@@ -11,16 +11,14 @@ import { ArrowLeft, FileText, Megaphone, Send, X } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { supabase } from "@/lib/services/supabase";
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
@@ -115,10 +113,7 @@ export default function AnunciosScreen() {
   ];
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <View style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.tecnibus[700]} translucent={false} />
 
       <SubScreenHeader
@@ -128,10 +123,13 @@ export default function AnunciosScreen() {
         onBack={() => router.back()}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20, gap: 16 }}
+        contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 20 }}
         keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={20}
       >
         {/* Usar Template */}
         <TouchableOpacity
@@ -292,7 +290,7 @@ export default function AnunciosScreen() {
             Las notificaciones se enviarán solo a usuarios con notificaciones habilitadas y dispositivos registrados.
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Modal de Templates */}
       <Modal visible={showTemplates} animationType="slide" transparent onRequestClose={() => setShowTemplates(false)}>
@@ -411,6 +409,6 @@ export default function AnunciosScreen() {
           </View>
         </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
