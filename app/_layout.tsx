@@ -32,67 +32,11 @@ function AppContent() {
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: Platform.OS === "ios" ? "default" : "slide_from_right",
-          animationDuration: 250,
+          animation: "fade",
+          animationDuration: 200,
         }}
       >
         <Stack.Screen name="index" options={{ animation: "none" }} />
-        <Stack.Screen
-          name="login"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="parent/index"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="driver/index"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="admin/index"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="admin/choferes/index"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="admin/padres/index"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="admin/estudiantes/index"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="admin/estudiantes/crear"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="parent/perfil"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="driver/perfil"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="admin/perfil"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="admin/settings"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="parent/settings"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
-        <Stack.Screen
-          name="driver/settings"
-          options={{ animation: "fade", animationDuration: 200 }}
-        />
         <Stack.Screen
           name="parent/chat"
           options={{ animation: "slide_from_right", animationDuration: 250 }}
