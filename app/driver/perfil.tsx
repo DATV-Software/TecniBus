@@ -14,15 +14,13 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatedCard, Avatar, Toast } from "../../components";
 import { useAuth } from "../../contexts/AuthContext";
@@ -125,11 +123,7 @@ export default function DriverProfileScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1"
-      style={{ backgroundColor: "#F8FAFB" }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <View className="flex-1" style={{ backgroundColor: "#F8FAFB" }}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.tecnibus[600]} />
 
       {/* Header con LinearGradient */}
@@ -219,9 +213,13 @@ export default function DriverProfileScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         className="flex-1 px-6 pt-6"
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={20}
       >
         {/* Información Personal */}
         <AnimatedCard delay={0} className="mb-4">
@@ -342,7 +340,7 @@ export default function DriverProfileScreen() {
         )}
 
         <View className="h-4" />
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <Toast
         visible={toast.visible}
@@ -350,6 +348,6 @@ export default function DriverProfileScreen() {
         type={toast.type}
         onHide={() => setToast({ ...toast, visible: false })}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
