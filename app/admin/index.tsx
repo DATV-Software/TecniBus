@@ -58,12 +58,12 @@ export default function AdminHomeScreen() {
 
   const handleLiveView = () => {
     haptic.light();
-    console.log("Live View");
+    router.push("/admin/liveview");
   };
 
   const handleTrackingPress = () => {
     haptic.light();
-    console.log("Tracking");
+    router.push("/admin/liveview");
   };
 
   const handleStudentsPress = () => {
