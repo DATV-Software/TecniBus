@@ -17,13 +17,14 @@ import {
   ActivityIndicator,
   FlatList,
   Modal,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import Toast from "@/components/Toast";
 import {
   deleteEstudiante,
@@ -52,6 +53,7 @@ export default function EditarEstudianteScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const keyboardHeight = useKeyboardHeight(); // still used for modal maxHeight
 
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
@@ -189,10 +191,14 @@ export default function EditarEstudianteScreen() {
         rightAction={{ icon: Trash2, onPress: handleDelete }}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
+        contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={20}
       >
         <View style={{ backgroundColor: "#fff", borderRadius: 16, padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3, elevation: 2 }}>
           <FormField label="Nombre" icon={User} required placeholder="Ej: Juan" value={nombre} onChangeText={setNombre} autoCapitalize="words" />
@@ -262,12 +268,12 @@ export default function EditarEstudianteScreen() {
             </>
           )}
         </TouchableOpacity>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Modal Padre */}
       <Modal visible={showPadresModal} animationType="slide" transparent onRequestClose={() => setShowPadresModal(false)}>
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "80%" }}>
+          <View style={{ backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: keyboardHeight > 0 ? 320 : "80%" }}>
             <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>Seleccionar Padre</Text>

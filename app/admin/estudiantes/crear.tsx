@@ -15,13 +15,14 @@ import {
   ActivityIndicator,
   FlatList,
   Modal,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import Toast from "@/components/Toast";
 import {
   createEstudiante,
@@ -46,6 +47,7 @@ type Parada = {
 
 export default function CrearEstudianteScreen() {
   const router = useRouter();
+  const keyboardHeight = useKeyboardHeight();
 
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
@@ -137,8 +139,12 @@ export default function CrearEstudianteScreen() {
         onBack={() => router.back()}
       />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        enableOnAndroid
+        enableAutomaticScroll
+        extraScrollHeight={20}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -272,12 +278,12 @@ export default function CrearEstudianteScreen() {
             </>
           )}
         </TouchableOpacity>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Modal Padre */}
       <Modal visible={showPadresModal} animationType="slide" transparent onRequestClose={() => setShowPadresModal(false)}>
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "80%" }}>
+          <View style={{ backgroundColor: "#fff", borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: keyboardHeight > 0 ? 320 : "80%" }}>
             <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>Seleccionar Padre</Text>
