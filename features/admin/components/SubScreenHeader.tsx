@@ -25,100 +25,103 @@ export function SubScreenHeader({
   return (
     <LinearGradient
       colors={[
-        Colors.tecnibus[700],
         Colors.tecnibus[600],
         Colors.tecnibus[500],
+        Colors.tecnibus[400],
       ]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0.7, y: 1 }}
       style={{
         paddingTop,
-        paddingBottom: 20,
-        paddingHorizontal: 20,
+        paddingBottom: 40,
+        paddingHorizontal: 24,
         borderBottomLeftRadius: 24,
         borderBottomRightRadius: 24,
       }}
     >
+      {/* Fila 1: back button + título de sección + acción derecha */}
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
+          marginBottom: 20,
         }}
       >
         <TouchableOpacity
           onPress={onBack}
           style={{
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: "rgba(255,255,255,0.2)",
-            padding: 8,
-            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            marginRight: 12,
           }}
         >
-          <ArrowLeft size={22} color="#ffffff" strokeWidth={2.5} />
+          <ArrowLeft size={18} color="#ffffff" strokeWidth={2.5} />
         </TouchableOpacity>
 
-        <View
+        {Icon && (
+          <View
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 19,
+              backgroundColor: "rgba(255,255,255,0.2)",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 12,
+            }}
+          >
+            <Icon size={18} color="#ffffff" strokeWidth={2.5} />
+          </View>
+        )}
+
+        <Text
           style={{
             flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            marginLeft: 12,
+            color: "#ffffff",
+            fontSize: 16,
+            fontWeight: "600",
+            fontFamily: "CalSans",
           }}
         >
-          {Icon && (
-            <View
-              style={{
-                backgroundColor: "rgba(255,255,255,0.2)",
-                padding: 8,
-                borderRadius: 12,
-                marginRight: 10,
-              }}
-            >
-              <Icon size={20} color="#ffffff" strokeWidth={2} />
-            </View>
-          )}
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                color: "#ffffff",
-                fontSize: 20,
-                fontWeight: "700",
-              }}
-            >
-              {title}
-            </Text>
-            {subtitle && (
-              <Text
-                style={{
-                  color: "rgba(255,255,255,0.8)",
-                  fontSize: 13,
-                  marginTop: 2,
-                }}
-              >
-                {subtitle}
-              </Text>
-            )}
-          </View>
-        </View>
+          {title}
+        </Text>
 
         {rightAction ? (
           <TouchableOpacity
             onPress={rightAction.onPress}
             style={{
+              width: 38,
+              height: 38,
+              borderRadius: 19,
               backgroundColor: "rgba(255,255,255,0.2)",
-              padding: 8,
-              borderRadius: 12,
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <rightAction.icon
-              size={22}
-              color="#ffffff"
-              strokeWidth={2.5}
-            />
+            <rightAction.icon size={18} color="#ffffff" strokeWidth={2.5} />
           </TouchableOpacity>
         ) : (
           <View style={{ width: 38 }} />
         )}
       </View>
+
+      {/* Fila 2: subtítulo grande (igual que DashboardHeader) */}
+      {subtitle && (
+        <Text
+          style={{
+            color: "#ffffff",
+            fontSize: 28,
+            fontWeight: "700",
+            fontFamily: "CalSans",
+          }}
+        >
+          {subtitle}
+        </Text>
+      )}
     </LinearGradient>
   );
 }
