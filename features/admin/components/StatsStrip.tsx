@@ -8,58 +8,54 @@ interface StatsStripProps {
 
 export function StatsStrip({ stats }: StatsStripProps) {
   return (
-    <View style={{ height: 48 }}>
+    <View style={{ height: 40 }}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingVertical: 8,
           gap: 8,
+          alignItems: "center",
+          height: 40,
         }}
       >
-      {stats.map((stat, index) => (
-        <View
-          key={index}
-          style={{
-            backgroundColor: Colors.tecnibus[50],
-            borderRadius: 12,
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: Colors.tecnibus[200],
-          }}
-        >
-          {stat.icon && (
-            <stat.icon
-              size={14}
-              color={Colors.tecnibus[600]}
-              strokeWidth={2}
-              style={{ marginRight: 6 }}
-            />
-          )}
-          <Text
+        {stats.map((stat, index) => (
+          <View
+            key={index}
             style={{
-              fontSize: 14,
-              fontWeight: "700",
-              color: Colors.tecnibus[700],
-              marginRight: 4,
+              backgroundColor: Colors.tecnibus[50],
+              borderRadius: 20,
+              paddingHorizontal: 12,
+              paddingVertical: 4,
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: Colors.tecnibus[200],
             }}
           >
-            {stat.value}
-          </Text>
-          <Text
-            style={{
-              fontSize: 12,
-              color: Colors.tecnibus[800],
-            }}
-          >
-            {stat.label}
-          </Text>
-        </View>
-      ))}
+            {stat.icon && (
+              <stat.icon
+                size={12}
+                color={Colors.tecnibus[600]}
+                strokeWidth={2}
+                style={{ marginRight: 4 }}
+              />
+            )}
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: "700",
+                color: Colors.tecnibus[700],
+                marginRight: 3,
+              }}
+            >
+              {stat.value}
+            </Text>
+            <Text style={{ fontSize: 12, color: Colors.tecnibus[600] }}>
+              {stat.label}
+            </Text>
+          </View>
+        ))}
       </ScrollView>
     </View>
   );

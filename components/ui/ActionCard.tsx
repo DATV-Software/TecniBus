@@ -32,6 +32,7 @@ export function ActionCard({
       onPress={onPress}
       activeOpacity={0.65}
       style={{
+        flex: 1,
         backgroundColor: isFilled ? filledBgColor : "#ffffff",
         borderRadius: 16,
         padding: 18,
