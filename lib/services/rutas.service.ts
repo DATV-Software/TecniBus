@@ -17,7 +17,7 @@ export type Ruta = {
   hora_inicio: string | null;
   hora_fin: string | null;
   estado: string | null;
-  tipo: 'ida' | 'vuelta';
+  tipo?: 'ida' | 'vuelta';
   paradas?: Parada[];
 };
 

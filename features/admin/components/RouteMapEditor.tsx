@@ -1,12 +1,14 @@
+import { AddressSearchInput } from "@/components/ui";
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import { Colors } from "@/lib/constants/colors";
-import { haptic } from "@/lib/utils/haptics";
 import {
-  Clock,
-  Edit3,
-  MapPin,
-  Plus,
-  Trash2,
-} from "lucide-react-native";
+  Parada,
+  createParada,
+  deleteParada,
+  updateParada,
+} from "@/lib/services/rutas.service";
+import { haptic } from "@/lib/utils/haptics";
+import { Clock, Edit3, MapPin, Plus, Trash2, X } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import {
   Dimensions,
@@ -15,15 +17,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Marker, MapPressEvent, Region } from "react-native-maps";
-import {
-  Parada,
-  createParada,
-  updateParada,
-  deleteParada,
-} from "@/lib/services/rutas.service";
+import MapView, { MapPressEvent, Marker, MarkerDragStartEndEvent, Region } from "react-native-maps";
 import { ParadaFormSheet } from "./ParadaFormSheet";
-import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
 interface RouteMapEditorProps {
   rutaId: string;
@@ -57,14 +52,15 @@ export function RouteMapEditor({
   onParadaUpdated,
   onParadaDeleted,
 }: RouteMapEditorProps) {
+  const { showAlert } = useAlert();
   const mapRef = useRef<MapView>(null);
   const [addMode, setAddMode] = useState(false);
+  const [showAddressSearch, setShowAddressSearch] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingParada, setEditingParada] = useState<Parada | null>(null);
-  const [newCoords, setNewCoords] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const [newCoords, setNewCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  // Coordenadas pendientes de confirmar (después de buscar dirección o tocar mapa)
+  const [pendingCoords, setPendingCoords] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const initialRegion: Region =
     paradas.length > 0
@@ -81,13 +77,21 @@ export function RouteMapEditor({
       if (!addMode) return;
       haptic.light();
       const { latitude, longitude } = e.nativeEvent.coordinate;
-      setNewCoords({ latitude, longitude });
+      setPendingCoords({ latitude, longitude });
       setEditingParada(null);
-      setShowForm(true);
-      setAddMode(false);
+      setShowAddressSearch(false);
     },
-    [addMode]
+    [addMode],
   );
+
+  const confirmPendingCoords = () => {
+    if (!pendingCoords) return;
+    haptic.medium();
+    setNewCoords(pendingCoords);
+    setPendingCoords(null);
+    setAddMode(false);
+    setShowForm(true);
+  };
 
   const handleMarkerPress = useCallback((parada: Parada) => {
     haptic.light();
@@ -127,7 +131,11 @@ export function RouteMapEditor({
 
   const confirmDeleteParada = (parada: Parada) => {
     haptic.medium();
-    showAlert({ title: "Eliminar Parada", message: `¿Eliminar "${parada.nombre || "esta parada"}"?`, type: "warning", buttons: [
+    showAlert({
+      title: "Eliminar Parada",
+      message: `¿Eliminar "${parada.nombre || "esta parada"}"?`,
+      type: "warning",
+      buttons: [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Eliminar",
@@ -137,115 +145,234 @@ export function RouteMapEditor({
             if (success) onParadaDeleted();
           },
         },
-      ] });
+      ],
+    });
   };
 
   return (
     <View>
-      {/* Map */}
-      <View
-        style={{
-          height: MAP_HEIGHT,
-          borderRadius: 16,
-          overflow: "hidden",
-          marginHorizontal: 20,
-          marginTop: 16,
-          borderWidth: addMode ? 2 : 0,
-          borderColor: addMode ? Colors.tecnibus[600] : "transparent",
-        }}
-      >
-        <MapView
-          ref={mapRef}
-          style={{ flex: 1 }}
-          initialRegion={initialRegion}
-          onPress={handleMapPress}
-          mapType="standard"
+      {/* Map container — position:relative para el buscador flotante */}
+      <View style={{ marginHorizontal: 20, marginTop: 16 }}>
+        <View
+          style={{
+            height: MAP_HEIGHT,
+            borderRadius: 16,
+            overflow: "hidden",
+            borderWidth: addMode ? 2 : 0,
+            borderColor: addMode ? Colors.tecnibus[500] : "transparent",
+          }}
         >
-          {paradas.map((parada, index) => (
-            <Marker
-              key={parada.id}
-              coordinate={{
-                latitude: parada.latitud,
-                longitude: parada.longitud,
-              }}
-              onPress={() => handleMarkerPress(parada)}
-              title={parada.nombre || `Parada ${index + 1}`}
-              description={parada.direccion || undefined}
-              pinColor={getMarkerColor(index, paradas.length)}
-            />
-          ))}
-        </MapView>
+          <MapView
+            ref={mapRef}
+            style={{ flex: 1 }}
+            initialRegion={initialRegion}
+            onPress={handleMapPress}
+            mapType="standard"
+          >
+            {paradas.map((parada, index) => (
+              <Marker
+                key={parada.id}
+                coordinate={{ latitude: parada.latitud, longitude: parada.longitud }}
+                onPress={() => handleMarkerPress(parada)}
+                title={parada.nombre || `Parada ${index + 1}`}
+                description={parada.direccion || undefined}
+                pinColor={getMarkerColor(index, paradas.length)}
+              />
+            ))}
 
-        {/* Add mode overlay */}
-        {addMode && (
+            {/* Marcador pendiente draggable — aparece al buscar o tocar mapa */}
+            {pendingCoords && (
+              <Marker
+                coordinate={pendingCoords}
+                title="Nueva parada"
+                description="Arrastra para ajustar"
+                pinColor="#F59E0B"
+                draggable
+                onDragEnd={(e: MarkerDragStartEndEvent) => {
+                  const { latitude, longitude } = e.nativeEvent.coordinate;
+                  setPendingCoords({ latitude, longitude });
+                }}
+              />
+            )}
+          </MapView>
+
+          {/* Hint toca el mapa — dentro del overflow:hidden, solo visual */}
+          {addMode && !showAddressSearch && !pendingCoords && (
+            <View
+              style={{
+                position: "absolute",
+                bottom: 10,
+                left: 10,
+                right: 10,
+                backgroundColor: "rgba(0,0,0,0.6)",
+                borderRadius: 10,
+                padding: 8,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MapPin size={14} color="#ffffff" strokeWidth={2} />
+              <Text style={{ color: "#ffffff", fontSize: 12, marginLeft: 5 }}>
+                Toca el mapa para ubicar la parada
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Overlay confirmar — FUERA del overflow:hidden para que los taps funcionen */}
+        {pendingCoords && (
+          <View
+            style={{
+              position: "absolute",
+              bottom: 10,
+              left: 0,
+              right: 0,
+              paddingHorizontal: 10,
+              zIndex: 20,
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "#ffffff",
+                borderRadius: 12,
+                padding: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.18,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <MapPin size={14} color="#F59E0B" strokeWidth={2.5} />
+              <Text style={{ flex: 1, fontSize: 12, color: "#374151", fontWeight: "500" }}>
+                Arrastra el marcador para ajustar
+              </Text>
+              <TouchableOpacity
+                onPress={confirmPendingCoords}
+                style={{
+                  backgroundColor: Colors.tecnibus[600],
+                  borderRadius: 8,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                }}
+              >
+                <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>Agregar aquí</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Buscador flotante — aparece al presionar "+" */}
+        {showAddressSearch && (
           <View
             style={{
               position: "absolute",
               top: 10,
               left: 10,
               right: 10,
-              backgroundColor: Colors.tecnibus[600],
-              borderRadius: 10,
-              padding: 10,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
+              zIndex: 100,
+              backgroundColor: "#ffffff",
+              borderRadius: 14,
+              padding: 12,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 10,
+              elevation: 10,
             }}
           >
-            <MapPin size={16} color="#ffffff" strokeWidth={2} />
-            <Text
+            <View
               style={{
-                color: "#ffffff",
-                fontWeight: "600",
-                fontSize: 13,
-                marginLeft: 6,
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 8,
               }}
             >
-              Toca el mapa para ubicar la parada
-            </Text>
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: 13,
+                  fontWeight: "700",
+                  color: "#1F2937",
+                }}
+              >
+                Buscar ubicación de la parada
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAddressSearch(false);
+                  setAddMode(false);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <X size={18} color="#6B7280" strokeWidth={2} />
+              </TouchableOpacity>
+            </View>
+            <AddressSearchInput
+              placeholder="Ej: Av. Américas, frente al parque..."
+              onSelect={(_address, lat, lng) => {
+                setShowAddressSearch(false);
+                setEditingParada(null);
+                setPendingCoords({ latitude: lat, longitude: lng });
+                mapRef.current?.animateToRegion(
+                  { latitude: lat, longitude: lng, latitudeDelta: 0.004, longitudeDelta: 0.004 },
+                  400,
+                );
+              }}
+            />
           </View>
         )}
-      </View>
 
-      {/* FAB Add button */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          paddingHorizontal: 20,
-          marginTop: -20,
-          marginBottom: 8,
-          zIndex: 10,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            haptic.medium();
-            setAddMode(!addMode);
-          }}
+        {/* FAB Add button */}
+        <View
           style={{
-            backgroundColor: addMode ? "#DC2626" : Colors.tecnibus[600],
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 4,
-            elevation: 6,
+            position: "absolute",
+            bottom: -18,
+            right: 0,
+            zIndex: 10,
           }}
         >
-          {addMode ? (
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "700" }}>
-              x
-            </Text>
-          ) : (
-            <Plus size={22} color="#ffffff" strokeWidth={2.5} />
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              haptic.medium();
+              if (showAddressSearch || addMode || pendingCoords) {
+                setShowAddressSearch(false);
+                setAddMode(false);
+                setPendingCoords(null);
+              } else {
+                setShowAddressSearch(true);
+                setAddMode(true);
+              }
+            }}
+            style={{
+              backgroundColor:
+                showAddressSearch || addMode || pendingCoords ? "#DC2626" : Colors.tecnibus[600],
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 6,
+            }}
+          >
+            {showAddressSearch || addMode || pendingCoords ? (
+              <X size={20} color="#ffffff" strokeWidth={2.5} />
+            ) : (
+              <Plus size={22} color="#ffffff" strokeWidth={2.5} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <View style={{ height: 28 }} />
 
       {/* Paradas list */}
       <View style={{ paddingHorizontal: 20 }}>
@@ -271,11 +398,7 @@ export function RouteMapEditor({
               borderColor: Colors.tecnibus[200],
             }}
           >
-            <MapPin
-              size={32}
-              color={Colors.tecnibus[400]}
-              strokeWidth={1.5}
-            />
+            <MapPin size={32} color={Colors.tecnibus[400]} strokeWidth={1.5} />
             <Text
               style={{
                 color: "#6B7280",

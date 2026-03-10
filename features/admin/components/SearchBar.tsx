@@ -1,4 +1,3 @@
-import { Colors } from "@/lib/constants/colors";
 import { Search, X } from "lucide-react-native";
 import { TextInput, TouchableOpacity, View } from "react-native";
 

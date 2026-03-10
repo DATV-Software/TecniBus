@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 interface SubScreenHeaderProps {
   title: string;
   subtitle?: string;
+  /** @deprecated El icono ya no se muestra en el header */
   icon?: LucideIcon;
   onBack: () => void;
   rightAction?: { icon: LucideIcon; onPress: () => void };
@@ -15,7 +16,6 @@ interface SubScreenHeaderProps {
 export function SubScreenHeader({
   title,
   subtitle,
-  icon: Icon,
   onBack,
   rightAction,
 }: SubScreenHeaderProps) {
@@ -61,22 +61,6 @@ export function SubScreenHeader({
         >
           <ArrowLeft size={18} color="#ffffff" strokeWidth={2.5} />
         </TouchableOpacity>
-
-        {Icon && (
-          <View
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 19,
-              backgroundColor: "rgba(255,255,255,0.2)",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 12,
-            }}
-          >
-            <Icon size={18} color="#ffffff" strokeWidth={2.5} />
-          </View>
-        )}
 
         <Text
           style={{

@@ -30,7 +30,7 @@ export function EstudianteActualPanel({
 
   // Timer para contar tiempo en zona
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
     if (dentroDeZona) {
       interval = setInterval(() => {
@@ -41,7 +41,7 @@ export function EstudianteActualPanel({
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval !== undefined) clearInterval(interval);
     };
   }, [dentroDeZona]);
 

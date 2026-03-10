@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Image,
   Linking,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
