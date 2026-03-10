@@ -1,7 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Colors } from "@/lib/constants/colors";
 import { QUICK_MESSAGES_PADRE } from "@/lib/constants/quickMessages";
-import { LinearGradient } from "expo-linear-gradient";
+import { SubScreenHeader } from "@/features/admin";
 import {
   enviarMensaje,
   getMensajes,
@@ -12,7 +12,7 @@ import {
   suscribirseAMensajes,
 } from "@/lib/services/chat.service";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Send } from "lucide-react-native";
+import { Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -47,7 +47,6 @@ export default function ParentChatScreen() {
   const [cargando, setCargando] = useState(true);
   const flatListRef = useRef<FlatList>(null);
 
-  // Inicializar chat
   useEffect(() => {
     if (!idAsignacion || !idChofer || !profile?.id) return;
 
@@ -71,26 +70,19 @@ export default function ParentChatScreen() {
     init();
   }, [idAsignacion, idChofer, profile?.id]);
 
-  // Realtime: suscribirse a nuevos mensajes
   useEffect(() => {
     if (!idChat) return;
-
     const channel = suscribirseAMensajes(idChat, (msg) => {
       setMensajes((prev) => [...prev, msg]);
     });
-
-    return () => {
-      channel.unsubscribe();
-    };
+    return () => { channel.unsubscribe(); };
   }, [idChat]);
 
-  // Marcar mensajes como leídos cuando llegan
   useEffect(() => {
     if (!idChat || !profile?.id || mensajes.length === 0) return;
     marcarLeidos(idChat, profile.id);
   }, [mensajes, idChat, profile?.id]);
 
-  // Auto-scroll al último mensaje
   useEffect(() => {
     if (mensajes.length > 0) {
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -154,40 +146,14 @@ export default function ParentChatScreen() {
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "#F9FAFB" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <StatusBar backgroundColor={Colors.tecnibus[700]} barStyle="light-content" translucent={false} />
 
-      <LinearGradient
-        colors={[Colors.tecnibus[700], Colors.tecnibus[600], Colors.tecnibus[500]]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.7, y: 1 }}
-        style={{
-          paddingTop: Math.max(insets.top + 8, 44),
-          paddingBottom: 20,
-          paddingHorizontal: 20,
-          borderBottomLeftRadius: 24,
-          borderBottomRightRadius: 24,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 12,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{ backgroundColor: "rgba(255,255,255,0.2)", padding: 8, borderRadius: 12 }}
-        >
-          <ArrowLeft size={22} color="#FFFFFF" strokeWidth={2.5} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: "#FFFFFF", fontSize: 20, fontWeight: "700" }}>
-            {nombreChofer ?? "Chofer"}
-          </Text>
-          <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 2 }}>
-            {recorridoActivo ? "En camino" : "Recorrido finalizado"}
-          </Text>
-        </View>
-      </LinearGradient>
+      <SubScreenHeader
+        title={nombreChofer ?? "Chofer"}
+        subtitle={recorridoActivo ? "En camino" : "Recorrido finalizado"}
+        onBack={() => router.back()}
+      />
 
       {/* Banner solo lectura */}
       {!recorridoActivo && !cargando && (
@@ -206,7 +172,6 @@ export default function ParentChatScreen() {
         </View>
       )}
 
-      {/* Lista de mensajes */}
       {cargando ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator size="large" color={Colors.tecnibus[600]} />
@@ -228,7 +193,6 @@ export default function ParentChatScreen() {
         />
       )}
 
-      {/* Área de input */}
       {recorridoActivo && (
         <View
           style={{
@@ -238,7 +202,6 @@ export default function ParentChatScreen() {
             paddingBottom: insets.bottom + 8,
           }}
         >
-          {/* Quick messages */}
           <View
             style={{
               flexDirection: "row",
@@ -267,7 +230,6 @@ export default function ParentChatScreen() {
             ))}
           </View>
 
-          {/* Input row */}
           <View
             style={{
               flexDirection: "row",
@@ -300,8 +262,7 @@ export default function ParentChatScreen() {
               onPress={() => handleEnviar(inputText)}
               disabled={enviando || !inputText.trim()}
               style={{
-                backgroundColor:
-                  enviando || !inputText.trim() ? "#D1D5DB" : Colors.tecnibus[600],
+                backgroundColor: enviando || !inputText.trim() ? "#D1D5DB" : Colors.tecnibus[600],
                 width: 44,
                 height: 44,
                 borderRadius: 22,
