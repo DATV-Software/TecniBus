@@ -26,6 +26,7 @@ import {
   View,
 } from "react-native";
 import { SubScreenHeader } from "@/features/admin";
+import { BottomNavigation } from "@/components/layout/BottomNavigation";
 
 function formatHora(hora: string | null): string {
   if (!hora) return "—";
@@ -340,8 +341,16 @@ export default function LiveViewListScreen() {
             />
           ))}
 
-        <View style={{ height: 20 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      <BottomNavigation
+        activeTab="tracking"
+        middleTab="tracking"
+        onHomePress={() => router.push("/admin")}
+        onMiddlePress={() => {}}
+        onSettingsPress={() => router.push("/admin/settings")}
+      />
     </View>
   );
 }

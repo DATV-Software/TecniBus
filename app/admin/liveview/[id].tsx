@@ -25,6 +25,7 @@ import {
   View,
 } from "react-native";
 import { SubScreenHeader } from "@/features/admin";
+import { BottomNavigation } from "@/components/layout/BottomNavigation";
 
 function formatHora(hora: string | null): string {
   if (!hora) return "—";
@@ -166,13 +167,13 @@ export default function LiveViewDetailScreen() {
         onBack={() => router.back()}
       />
 
-      {/* Info card flotante abajo */}
+      {/* Info card flotante — encima del BottomNavigation (~90px) */}
       <View
         style={{
           position: "absolute",
           left: 20,
           right: 20,
-          bottom: 32,
+          bottom: 108,
           backgroundColor: "rgba(255, 255, 255, 0.97)",
           borderRadius: 20,
           padding: 16,
@@ -342,6 +343,14 @@ export default function LiveViewDetailScreen() {
           </View>
         </View>
       </View>
+
+      <BottomNavigation
+        activeTab="tracking"
+        middleTab="tracking"
+        onHomePress={() => router.push("/admin")}
+        onMiddlePress={() => router.push("/admin/liveview")}
+        onSettingsPress={() => router.push("/admin/settings")}
+      />
     </View>
   );
 }
