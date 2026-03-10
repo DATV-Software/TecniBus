@@ -1,6 +1,7 @@
 import { Colors } from "@/lib/constants/colors";
 import { haptic } from "@/lib/utils/haptics";
 import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
+import { reverseGeocode } from "@/lib/services/places.service";
 import { Clock, MapPin, Save, Trash2, Type, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -53,6 +54,7 @@ export function ParadaFormSheet({
   const [orden, setOrden] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [fetchingDireccion, setFetchingDireccion] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -62,6 +64,15 @@ export function ParadaFormSheet({
       setLongitud(initialData.longitud?.toString() || "");
       setHoraAprox(initialData.hora_aprox || "");
       setOrden(initialData.orden?.toString() || nextOrden.toString());
+
+      // Auto-fetch dirección para paradas nuevas con coordenadas
+      if (!isEdit && initialData.latitud && initialData.longitud && !initialData.direccion) {
+        setFetchingDireccion(true);
+        reverseGeocode(initialData.latitud, initialData.longitud).then((address) => {
+          if (address) setDireccion(address);
+          setFetchingDireccion(false);
+        });
+      }
     } else {
       setNombre("");
       setDireccion("");
@@ -206,35 +217,12 @@ export function ParadaFormSheet({
               <FormField
                 label="Dirección"
                 icon={MapPin}
-                placeholder="Ej: Av. Balboa, frente al parque"
+                placeholder={fetchingDireccion ? "Obteniendo dirección..." : "Ej: Av. Balboa, frente al parque"}
                 value={direccion}
                 onChangeText={setDireccion}
                 autoCapitalize="sentences"
+                editable={!fetchingDireccion}
               />
-
-              {/* Coords (readonly from map) */}
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <View style={{ flex: 1 }}>
-                  <FormField
-                    label="Latitud"
-                    placeholder="0.000000"
-                    value={latitud}
-                    onChangeText={setLatitud}
-                    keyboardType="numeric"
-                    editable={!isEdit}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <FormField
-                    label="Longitud"
-                    placeholder="0.000000"
-                    value={longitud}
-                    onChangeText={setLongitud}
-                    keyboardType="numeric"
-                    editable={!isEdit}
-                  />
-                </View>
-              </View>
 
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <View style={{ flex: 1 }}>

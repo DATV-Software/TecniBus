@@ -7,22 +7,22 @@ import {
 } from "@/lib/services/configuracion.service";
 import { haptic } from "@/lib/utils/haptics";
 import { useRouter } from "expo-router";
-import { MapPin, Save, Settings } from "lucide-react-native";
+import { MapPin, Save } from "lucide-react-native";
+import { AddressSearchInput } from "@/components/ui";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Dimensions,
+  RefreshControl,
   ScrollView,
   StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Marker, MapPressEvent, Region } from "react-native-maps";
+import { useRefresh } from "@/lib/hooks/useRefresh";
+import MapView, { Marker, MapPressEvent, MarkerDragStartEndEvent, Region } from "react-native-maps";
 import Toast from "@/components/Toast";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const MAP_HEIGHT = 400;
 
 export default function ConfiguracionScreen() {
@@ -65,6 +65,8 @@ export default function ConfiguracionScreen() {
       );
     }
   };
+
+  const { refreshing, onRefresh } = useRefresh(loadUbicacion);
 
   const handleMapPress = (e: MapPressEvent) => {
     haptic.light();
@@ -127,13 +129,20 @@ export default function ConfiguracionScreen() {
       <SubScreenHeader
         title="CONFIGURACIÓN"
         subtitle="Ubicación del colegio"
-        icon={Settings}
         onBack={() => router.back()}
       />
 
       <ScrollView
         style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.tecnibus[600]]}
+            tintColor={Colors.tecnibus[600]}
+          />
+        }
       >
         {loading ? (
           <View
@@ -172,109 +181,96 @@ export default function ConfiguracionScreen() {
                 autoCapitalize="words"
               />
 
-              <View style={{ flexDirection: "row", gap: 12 }}>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: 6,
-                    }}
-                  >
-                    Latitud
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor: "#F3F4F6",
-                      borderRadius: 12,
-                      padding: 12,
-                    }}
-                  >
-                    <Text style={{ fontSize: 14, color: "#374151" }}>
-                      {ubicacion.latitud.toFixed(6)}
-                    </Text>
-                  </View>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "600",
-                      color: "#374151",
-                      marginBottom: 6,
-                    }}
-                  >
-                    Longitud
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor: "#F3F4F6",
-                      borderRadius: 12,
-                      padding: 12,
-                    }}
-                  >
-                    <Text style={{ fontSize: 14, color: "#374151" }}>
-                      {ubicacion.longitud.toFixed(6)}
-                    </Text>
-                  </View>
-                </View>
-              </View>
             </View>
 
-            {/* Mapa */}
+            {/* Mapa con buscador flotante */}
             <View
               style={{
-                backgroundColor: "#fff",
                 borderRadius: 16,
-                overflow: "hidden",
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 1 },
                 shadowOpacity: 0.06,
                 shadowRadius: 3,
                 elevation: 2,
                 marginBottom: 16,
+                height: MAP_HEIGHT,
               }}
             >
+              {/* Mapa */}
+              <MapView
+                ref={mapRef}
+                style={{ flex: 1, borderRadius: 16 }}
+                initialRegion={initialRegion}
+                onPress={handleMapPress}
+                mapType="standard"
+              >
+                <Marker
+                  coordinate={{
+                    latitude: ubicacion.latitud,
+                    longitude: ubicacion.longitud,
+                  }}
+                  title={ubicacion.nombre}
+                  description="Arrastra para ajustar"
+                  pinColor={Colors.tecnibus[600]}
+                  draggable
+                  onDragEnd={(e: MarkerDragStartEndEvent) => {
+                    const { latitude, longitude } = e.nativeEvent.coordinate;
+                    setUbicacion((prev) => ({ ...prev, latitud: latitude, longitud: longitude }));
+                  }}
+                />
+              </MapView>
+
+              {/* Buscador flotante sobre el mapa */}
               <View
                 style={{
-                  backgroundColor: Colors.tecnibus[600],
-                  padding: 12,
-                  flexDirection: "row",
-                  alignItems: "center",
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  right: 12,
+                  zIndex: 100,
+                  backgroundColor: "#ffffff",
+                  borderRadius: 12,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 8,
+                  elevation: 8,
                 }}
               >
-                <MapPin size={16} color="#ffffff" strokeWidth={2} />
-                <Text
-                  style={{
-                    color: "#ffffff",
-                    fontWeight: "600",
-                    fontSize: 13,
-                    marginLeft: 6,
+                <AddressSearchInput
+                  placeholder="Buscar dirección del colegio..."
+                  onSelect={(_address, lat, lng) => {
+                    setUbicacion((prev) => ({ ...prev, latitud: lat, longitud: lng }));
+                    mapRef.current?.animateToRegion(
+                      { latitude: lat, longitude: lng, latitudeDelta: 0.008, longitudeDelta: 0.008 },
+                      500
+                    );
                   }}
-                >
-                  Toca el mapa para ubicar el colegio
-                </Text>
+                />
               </View>
 
-              <View style={{ height: MAP_HEIGHT }}>
-                <MapView
-                  ref={mapRef}
-                  style={{ flex: 1 }}
-                  initialRegion={initialRegion}
-                  onPress={handleMapPress}
-                  mapType="standard"
-                >
-                  <Marker
-                    coordinate={{
-                      latitude: ubicacion.latitud,
-                      longitude: ubicacion.longitud,
-                    }}
-                    title={ubicacion.nombre}
-                    description="Ubicación del colegio"
-                    pinColor={Colors.tecnibus[600]}
-                  />
-                </MapView>
+              {/* Hint inferior */}
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 10,
+                  left: 10,
+                  right: 10,
+                  backgroundColor: "rgba(0,0,0,0.55)",
+                  borderRadius: 8,
+                  paddingVertical: 6,
+                  paddingHorizontal: 10,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MapPin size={13} color="#ffffff" strokeWidth={2} />
+                <Text style={{ color: "#ffffff", fontSize: 11, marginLeft: 5, fontWeight: "500" }}>
+                  O toca el mapa para ajustar la posición
+                </Text>
               </View>
             </View>
 
