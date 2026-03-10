@@ -65,11 +65,10 @@ export default function EstudiantesListScreen() {
 
   const stats = useMemo(
     () => [
-      { label: "Total", value: estudiantes.length, icon: GraduationCap },
       { label: "Con Parada", value: conParada, icon: MapPin },
       { label: "Sin Parada", value: sinParada, icon: UserX },
     ],
-    [estudiantes.length, conParada, sinParada]
+    [conParada, sinParada]
   );
 
   return (
@@ -191,29 +190,17 @@ export default function EstudiantesListScreen() {
             />
           )}
           ListEmptyComponent={
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 48,
-              }}
-            >
-              <GraduationCap
-                size={48}
-                color={Colors.tecnibus[300]}
-                strokeWidth={1.5}
-              />
-              <Text
-                style={{
-                  color: "#6B7280",
-                  textAlign: "center",
-                  marginTop: 16,
-                  fontSize: 15,
-                }}
-              >
+            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
+              <View style={{ backgroundColor: Colors.tecnibus[100], padding: 20, borderRadius: 24, marginBottom: 16 }}>
+                <GraduationCap size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
+              </View>
+              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
+                {search ? "Sin resultados" : "Sin estudiantes registrados"}
+              </Text>
+              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
                 {search
-                  ? "No se encontraron estudiantes"
-                  : "No hay estudiantes registrados"}
+                  ? `No se encontró ningún estudiante con "${search}"`
+                  : "Toca el botón de arriba para registrar el primer estudiante"}
               </Text>
             </View>
           }

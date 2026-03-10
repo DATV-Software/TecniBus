@@ -4,13 +4,12 @@ import {
   EntityCard,
   ImportCSVModal,
   SearchBar,
-  StatsStrip,
   SubScreenHeader,
 } from "@/features/admin";
 import { haptic } from "@/lib/utils/haptics";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Mail, Plus, Upload, UserCircle, Users } from "lucide-react-native";
+import { Plus, Upload, UserCircle } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -96,13 +95,6 @@ export default function ListaChoferesScreen() {
     setDeletingId(null);
   };
 
-  const stats = useMemo(
-    () => [
-      { label: "Total", value: choferes.length, icon: Users },
-    ],
-    [choferes]
-  );
-
   return (
     <View style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}>
       <StatusBar
@@ -117,8 +109,6 @@ export default function ListaChoferesScreen() {
         icon={UserCircle}
         onBack={() => router.back()}
       />
-
-      <StatsStrip stats={stats} />
 
       {/* Action bar */}
       <View
@@ -199,35 +189,22 @@ export default function ListaChoferesScreen() {
               icon={UserCircle}
               title={`${item.nombre} ${item.apellido || ""}`}
               subtitle={item.correo}
-              meta={[{ icon: Mail, text: item.correo }]}
               onDelete={() => confirmarEliminar(item)}
               deleting={deletingId === item.id}
             />
           )}
           ListEmptyComponent={
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 48,
-              }}
-            >
-              <UserCircle
-                size={48}
-                color={Colors.tecnibus[300]}
-                strokeWidth={1.5}
-              />
-              <Text
-                style={{
-                  color: "#6B7280",
-                  textAlign: "center",
-                  marginTop: 16,
-                  fontSize: 15,
-                }}
-              >
+            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
+              <View style={{ backgroundColor: Colors.tecnibus[100], padding: 20, borderRadius: 24, marginBottom: 16 }}>
+                <UserCircle size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
+              </View>
+              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
+                {search ? "Sin resultados" : "Sin conductores registrados"}
+              </Text>
+              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
                 {search
-                  ? "No se encontraron conductores"
-                  : "No hay conductores registrados"}
+                  ? `No se encontró ningún conductor con "${search}"`
+                  : "Toca el botón de arriba para agregar el primer conductor"}
               </Text>
             </View>
           }

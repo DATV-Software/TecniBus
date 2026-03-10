@@ -9,7 +9,7 @@ import {
 import { haptic } from "@/lib/utils/haptics";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Bus, Hash, Plus, Users } from "lucide-react-native";
+import { Bus, Plus, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,6 +17,7 @@ import {
   RefreshControl,
   StatusBar,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import Toast from "@/components/Toast";
@@ -51,10 +52,7 @@ export default function BusetasListScreen() {
     }, [refetch])
   );
 
-  const showToast = (
-    message: string,
-    type: "success" | "error" | "warning"
-  ) => {
+  const showToast = (message: string, type: "success" | "error" | "warning") => {
     setToast({ visible: true, message, type });
   };
 
@@ -78,14 +76,15 @@ export default function BusetasListScreen() {
 
   const confirmarEliminar = (buseta: Buseta) => {
     haptic.medium();
-    showAlert({ title: "Eliminar Buseta", message: `¿Eliminar la buseta ${buseta.placa}? Esta acción no se puede deshacer.`, type: "warning", buttons: [
+    showAlert({
+      title: "Eliminar Buseta",
+      message: `¿Eliminar la buseta ${buseta.placa}? Esta acción no se puede deshacer.`,
+      type: "warning",
+      buttons: [
         { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: () => handleEliminar(buseta),
-        },
-      ] });
+        { text: "Eliminar", style: "destructive", onPress: () => handleEliminar(buseta) },
+      ],
+    });
   };
 
   const handleEliminar = async (buseta: Buseta) => {
@@ -113,8 +112,28 @@ export default function BusetasListScreen() {
         subtitle={`${busetas.length} registradas`}
         icon={Bus}
         onBack={() => router.back()}
-        rightAction={{ icon: Plus, onPress: handleCreate }}
       />
+
+      {/* Action bar */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
+        <TouchableOpacity
+          onPress={handleCreate}
+          style={{
+            backgroundColor: Colors.tecnibus[600],
+            borderRadius: 14,
+            paddingVertical: 14,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <Bus size={19} color="#fff" strokeWidth={2.5} />
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>
+            Registrar Buseta
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <SearchBar
         value={search}
@@ -124,13 +143,9 @@ export default function BusetasListScreen() {
       />
 
       {loading ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator size="large" color={Colors.tecnibus[600]} />
-          <Text style={{ color: "#6B7280", marginTop: 16 }}>
-            Cargando busetas...
-          </Text>
+          <Text style={{ color: "#6B7280", marginTop: 16 }}>Cargando busetas...</Text>
         </View>
       ) : (
         <FlatList
@@ -150,38 +165,29 @@ export default function BusetasListScreen() {
             <EntityCard
               icon={Bus}
               title={item.placa}
-              meta={[
-                { icon: Users, text: `Capacidad: ${item.capacidad}` },
-              ]}
+              meta={[{ icon: Users, text: `${item.capacidad} pasajeros` }]}
               onPress={() => handleEdit(item)}
               onDelete={() => confirmarEliminar(item)}
               deleting={deletingId === item.id}
             />
           )}
           ListEmptyComponent={
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 48,
-              }}
-            >
-              <Bus
-                size={48}
-                color={Colors.tecnibus[300]}
-                strokeWidth={1.5}
-              />
-              <Text
-                style={{
-                  color: "#6B7280",
-                  textAlign: "center",
-                  marginTop: 16,
-                  fontSize: 15,
-                }}
-              >
+            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
+              <View style={{
+                backgroundColor: Colors.tecnibus[100],
+                padding: 20,
+                borderRadius: 24,
+                marginBottom: 16,
+              }}>
+                <Bus size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
+              </View>
+              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
+                {search ? "Sin resultados" : "Sin busetas registradas"}
+              </Text>
+              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
                 {search
-                  ? "No se encontraron busetas"
-                  : "No hay busetas registradas"}
+                  ? `No se encontró ninguna buseta con "${search}"`
+                  : "Toca el botón de arriba para registrar la primera buseta"}
               </Text>
             </View>
           }
@@ -190,10 +196,7 @@ export default function BusetasListScreen() {
 
       <BusetaModal
         visible={showModal}
-        onClose={() => {
-          setShowModal(false);
-          setEditBuseta(null);
-        }}
+        onClose={() => { setShowModal(false); setEditBuseta(null); }}
         buseta={editBuseta}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['busetas'] })}
         onToast={showToast}

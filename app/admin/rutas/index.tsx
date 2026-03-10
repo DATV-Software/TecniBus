@@ -8,7 +8,7 @@ import {
 import { haptic } from "@/lib/utils/haptics";
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Clock, MapPin, Plus } from "lucide-react-native";
+import { Clock, MapPin, Plus, Route } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -16,6 +16,7 @@ import {
   RefreshControl,
   StatusBar,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { Ruta, getRutas } from "@/lib/services/rutas.service";
@@ -42,18 +43,16 @@ export default function RutasListScreen() {
   }, [rutas, search]);
 
   const activas = rutas.filter((r) => r.estado === "activa").length;
-  const totalParadas = rutas.reduce(
-    (sum, r) => sum + (r.paradas?.length || 0),
-    0
-  );
+  const inactivas = rutas.length - activas;
+  const totalParadas = rutas.reduce((sum, r) => sum + (r.paradas?.length || 0), 0);
 
   const stats = useMemo(
     () => [
-      { label: "Total", value: rutas.length, icon: MapPin },
-      { label: "Activas", value: activas },
-      { label: "Paradas", value: totalParadas },
+      { label: "Activas", value: activas, icon: Route },
+      { label: "Inactivas", value: inactivas, icon: MapPin },
+      { label: "Paradas", value: totalParadas, icon: MapPin },
     ],
-    [rutas.length, activas, totalParadas]
+    [activas, inactivas, totalParadas]
   );
 
   return (
@@ -69,16 +68,30 @@ export default function RutasListScreen() {
         subtitle={`${rutas.length} rutas`}
         icon={MapPin}
         onBack={() => router.back()}
-        rightAction={{
-          icon: Plus,
-          onPress: () => {
-            haptic.medium();
-            router.push("/admin/rutas/crear");
-          },
-        }}
       />
 
       <StatsStrip stats={stats} />
+
+      {/* Action bar */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 4 }}>
+        <TouchableOpacity
+          onPress={() => { haptic.medium(); router.push("/admin/rutas/crear"); }}
+          style={{
+            backgroundColor: Colors.tecnibus[600],
+            borderRadius: 14,
+            paddingVertical: 14,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <Plus size={19} color="#fff" strokeWidth={2.5} />
+          <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>
+            Crear Ruta
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <SearchBar
         value={search}
@@ -87,13 +100,9 @@ export default function RutasListScreen() {
       />
 
       {loading ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator size="large" color={Colors.tecnibus[600]} />
-          <Text style={{ color: "#6B7280", marginTop: 16 }}>
-            Cargando rutas...
-          </Text>
+          <Text style={{ color: "#6B7280", marginTop: 16 }}>Cargando rutas...</Text>
         </View>
       ) : (
         <FlatList
@@ -121,17 +130,9 @@ export default function RutasListScreen() {
                 }}
                 meta={[
                   ...(item.hora_inicio
-                    ? [
-                        {
-                          icon: Clock,
-                          text: `${item.hora_inicio} - ${item.hora_fin || ""}`,
-                        },
-                      ]
+                    ? [{ icon: Clock, text: `${item.hora_inicio} - ${item.hora_fin || ""}` }]
                     : []),
-                  {
-                    icon: MapPin,
-                    text: `${numParadas} ${numParadas === 1 ? "parada" : "paradas"}`,
-                  },
+                  { icon: MapPin, text: `${numParadas} ${numParadas === 1 ? "parada" : "paradas"}` },
                 ]}
                 onPress={() => {
                   haptic.light();
@@ -141,29 +142,22 @@ export default function RutasListScreen() {
             );
           }}
           ListEmptyComponent={
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 48,
-              }}
-            >
-              <MapPin
-                size={48}
-                color={Colors.tecnibus[300]}
-                strokeWidth={1.5}
-              />
-              <Text
-                style={{
-                  color: "#6B7280",
-                  textAlign: "center",
-                  marginTop: 16,
-                  fontSize: 15,
-                }}
-              >
+            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
+              <View style={{
+                backgroundColor: Colors.tecnibus[100],
+                padding: 20,
+                borderRadius: 24,
+                marginBottom: 16,
+              }}>
+                <MapPin size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
+              </View>
+              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
+                {search ? "Sin resultados" : "Sin rutas registradas"}
+              </Text>
+              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
                 {search
-                  ? "No se encontraron rutas"
-                  : "No hay rutas registradas"}
+                  ? `No se encontró ninguna ruta con "${search}"`
+                  : "Toca el botón de arriba para crear la primera ruta"}
               </Text>
             </View>
           }

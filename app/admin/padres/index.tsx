@@ -5,13 +5,12 @@ import {
   EntityCard,
   ImportCSVModal,
   SearchBar,
-  StatsStrip,
   SubScreenHeader,
 } from "@/features/admin";
 import { haptic } from "@/lib/utils/haptics";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Mail, Plus, Upload, Users } from "lucide-react-native";
+import { Plus, Upload, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -96,11 +95,6 @@ export default function ListaPadresScreen() {
     setDeletingId(null);
   };
 
-  const stats = useMemo(
-    () => [{ label: "Total", value: padres.length, icon: Users }],
-    [padres]
-  );
-
   return (
     <View style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}>
       <StatusBar
@@ -115,8 +109,6 @@ export default function ListaPadresScreen() {
         icon={Users}
         onBack={() => router.back()}
       />
-
-      <StatsStrip stats={stats} />
 
       {/* Action bar */}
       <View
@@ -197,35 +189,22 @@ export default function ListaPadresScreen() {
               icon={Users}
               title={`${item.nombre} ${item.apellido || ""}`}
               subtitle={item.correo}
-              meta={[{ icon: Mail, text: item.correo }]}
               onDelete={() => confirmarEliminar(item)}
               deleting={deletingId === item.id}
             />
           )}
           ListEmptyComponent={
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 48,
-              }}
-            >
-              <Users
-                size={48}
-                color={Colors.tecnibus[300]}
-                strokeWidth={1.5}
-              />
-              <Text
-                style={{
-                  color: "#6B7280",
-                  textAlign: "center",
-                  marginTop: 16,
-                  fontSize: 15,
-                }}
-              >
+            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
+              <View style={{ backgroundColor: Colors.tecnibus[100], padding: 20, borderRadius: 24, marginBottom: 16 }}>
+                <Users size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
+              </View>
+              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
+                {search ? "Sin resultados" : "Sin representantes registrados"}
+              </Text>
+              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
                 {search
-                  ? "No se encontraron representantes"
-                  : "No hay representantes registrados"}
+                  ? `No se encontró ningún representante con "${search}"`
+                  : "Toca el botón de arriba para agregar el primer representante"}
               </Text>
             </View>
           }
