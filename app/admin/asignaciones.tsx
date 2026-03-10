@@ -17,7 +17,6 @@ import {
   CheckCircle2,
   Clock,
   Plus,
-  RefreshCw,
   Trash2,
   UserCircle,
   X,
@@ -27,6 +26,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
+  RefreshControl,
   ScrollView,
   StatusBar,
   Text,
@@ -34,6 +34,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRefresh } from "@/lib/hooks/useRefresh";
 
 type Chofer = {
   id: string;
@@ -155,6 +156,8 @@ export default function AsignacionesScreen() {
       setLoading(false);
     }
   };
+
+  const { refreshing, onRefresh } = useRefresh(cargarDatos);
 
   const cargarAsignacionesChofer = async (idChofer: string) => {
     try {
@@ -279,15 +282,21 @@ export default function AsignacionesScreen() {
       <SubScreenHeader
         title="ASIGNACIONES"
         subtitle="Busetas y recorridos"
-        icon={Calendar}
         onBack={() => router.back()}
-        rightAction={{
-          icon: RefreshCw,
-          onPress: cargarDatos,
-        }}
       />
 
-      <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.tecnibus[600]]}
+            tintColor={Colors.tecnibus[600]}
+          />
+        }
+      >
         {/* Choferes */}
         <View style={{
           backgroundColor: "#fff",

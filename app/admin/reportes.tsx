@@ -1,6 +1,7 @@
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
-import { Colors } from "@/lib/constants/colors";
 import { SubScreenHeader } from "@/features/admin";
+import { Colors } from "@/lib/constants/colors";
+import { useRefresh } from "@/lib/hooks/useRefresh";
 import {
   EstadisticasReporte,
   generarReporteAsistencia,
@@ -20,6 +21,7 @@ import {
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StatusBar,
   Text,
@@ -65,8 +67,12 @@ export default function ReportesScreen() {
   const [estadoFiltro, setEstadoFiltro] = useState<string>("");
   const [rutas, setRutas] = useState<Ruta[]>([]);
   const [generando, setGenerando] = useState(false);
-  const [estadisticas, setEstadisticas] = useState<EstadisticasReporte | null>(null);
+  const [estadisticas, setEstadisticas] = useState<EstadisticasReporte | null>(
+    null,
+  );
   const [urlReporte, setUrlReporte] = useState<string | null>(null);
+
+  const { refreshing, onRefresh } = useRefresh(() => getRutas().then(setRutas));
 
   useEffect(() => {
     getRutas().then(setRutas);
@@ -84,7 +90,11 @@ export default function ReportesScreen() {
 
   const handleGenerar = async () => {
     if (fechaInicio > fechaFin) {
-      showAlert({ title: "Fechas inválidas", message: "La fecha de inicio no puede ser mayor a la fecha fin.", type: "warning" });
+      showAlert({
+        title: "Fechas inválidas",
+        message: "La fecha de inicio no puede ser mayor a la fecha fin.",
+        type: "warning",
+      });
       return;
     }
     haptic.light();
@@ -102,7 +112,11 @@ export default function ReportesScreen() {
     setGenerando(false);
 
     if (!result.success) {
-      showAlert({ title: "Error", message: result.error ?? "No se pudo generar el reporte.", type: "error" });
+      showAlert({
+        title: "Error",
+        message: result.error ?? "No se pudo generar el reporte.",
+        type: "error",
+      });
       return;
     }
 
@@ -119,18 +133,29 @@ export default function ReportesScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.tecnibus[50] }}>
-      <StatusBar backgroundColor={Colors.tecnibus[700]} barStyle="light-content" translucent={false} />
+      <StatusBar
+        backgroundColor={Colors.tecnibus[700]}
+        barStyle="light-content"
+        translucent={false}
+      />
 
       <SubScreenHeader
         title="REPORTES"
-        subtitle="Exportar PDF de asistencias"
-        icon={BarChart2}
+        subtitle="Exportar asistencias"
         onBack={() => router.back()}
       />
 
       <ScrollView
         contentContainerStyle={{ padding: 16, gap: 16 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.tecnibus[600]]}
+            tintColor={Colors.tecnibus[600]}
+          />
+        }
       >
         {/* Acceso rápido a períodos */}
         <View
@@ -158,7 +183,13 @@ export default function ReportesScreen() {
                   paddingVertical: 7,
                 }}
               >
-                <Text style={{ color: Colors.tecnibus[700], fontSize: 13, fontWeight: "500" }}>
+                <Text
+                  style={{
+                    color: Colors.tecnibus[700],
+                    fontSize: 13,
+                    fontWeight: "500",
+                  }}
+                >
                   {p.label}
                 </Text>
               </TouchableOpacity>
@@ -197,7 +228,9 @@ export default function ReportesScreen() {
                   paddingVertical: 12,
                 }}
               >
-                <Text style={{ color: "#1F2937", fontSize: 15, fontWeight: "500" }}>
+                <Text
+                  style={{ color: "#1F2937", fontSize: 15, fontWeight: "500" }}
+                >
                   {labelDate(fechaInicio)}
                 </Text>
               </View>
@@ -216,7 +249,9 @@ export default function ReportesScreen() {
                   paddingVertical: 12,
                 }}
               >
-                <Text style={{ color: "#1F2937", fontSize: 15, fontWeight: "500" }}>
+                <Text
+                  style={{ color: "#1F2937", fontSize: 15, fontWeight: "500" }}
+                >
                   {labelDate(fechaFin)}
                 </Text>
               </View>
@@ -247,9 +282,11 @@ export default function ReportesScreen() {
             <TouchableOpacity
               onPress={() => setRutaId("")}
               style={{
-                backgroundColor: rutaId === "" ? Colors.tecnibus[600] : Colors.tecnibus[50],
+                backgroundColor:
+                  rutaId === "" ? Colors.tecnibus[600] : Colors.tecnibus[50],
                 borderWidth: 1,
-                borderColor: rutaId === "" ? Colors.tecnibus[600] : Colors.tecnibus[200],
+                borderColor:
+                  rutaId === "" ? Colors.tecnibus[600] : Colors.tecnibus[200],
                 borderRadius: 20,
                 paddingHorizontal: 14,
                 paddingVertical: 7,
@@ -270,9 +307,15 @@ export default function ReportesScreen() {
                 key={r.id}
                 onPress={() => setRutaId(r.id)}
                 style={{
-                  backgroundColor: rutaId === r.id ? Colors.tecnibus[600] : Colors.tecnibus[50],
+                  backgroundColor:
+                    rutaId === r.id
+                      ? Colors.tecnibus[600]
+                      : Colors.tecnibus[50],
                   borderWidth: 1,
-                  borderColor: rutaId === r.id ? Colors.tecnibus[600] : Colors.tecnibus[200],
+                  borderColor:
+                    rutaId === r.id
+                      ? Colors.tecnibus[600]
+                      : Colors.tecnibus[200],
                   borderRadius: 20,
                   paddingHorizontal: 14,
                   paddingVertical: 7,
@@ -310,9 +353,15 @@ export default function ReportesScreen() {
                 key={e.value}
                 onPress={() => setEstadoFiltro(e.value)}
                 style={{
-                  backgroundColor: estadoFiltro === e.value ? Colors.tecnibus[600] : Colors.tecnibus[50],
+                  backgroundColor:
+                    estadoFiltro === e.value
+                      ? Colors.tecnibus[600]
+                      : Colors.tecnibus[50],
                   borderWidth: 1,
-                  borderColor: estadoFiltro === e.value ? Colors.tecnibus[600] : Colors.tecnibus[200],
+                  borderColor:
+                    estadoFiltro === e.value
+                      ? Colors.tecnibus[600]
+                      : Colors.tecnibus[200],
                   borderRadius: 20,
                   paddingHorizontal: 14,
                   paddingVertical: 7,
@@ -320,7 +369,10 @@ export default function ReportesScreen() {
               >
                 <Text
                   style={{
-                    color: estadoFiltro === e.value ? "#FFFFFF" : Colors.tecnibus[700],
+                    color:
+                      estadoFiltro === e.value
+                        ? "#FFFFFF"
+                        : Colors.tecnibus[700],
                     fontSize: 13,
                     fontWeight: "500",
                   }}
@@ -366,19 +418,39 @@ export default function ReportesScreen() {
               gap: 12,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            >
               <CheckCircle size={18} color="#10B981" />
-              <Text style={{ fontSize: 15, fontWeight: "700", color: "#1F2937" }}>
+              <Text
+                style={{ fontSize: 15, fontWeight: "700", color: "#1F2937" }}
+              >
                 Reporte generado
               </Text>
             </View>
 
             {/* Stats grid */}
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <StatBox label="Total" value={estadisticas.total} color="#6B7280" />
-              <StatBox label="Presentes" value={estadisticas.presentes} color="#10B981" />
-              <StatBox label="Ausentes" value={estadisticas.ausentes} color="#EF4444" />
-              <StatBox label="Pendientes" value={estadisticas.pendientes} color="#F59E0B" />
+              <StatBox
+                label="Total"
+                value={estadisticas.total}
+                color="#6B7280"
+              />
+              <StatBox
+                label="Presentes"
+                value={estadisticas.presentes}
+                color="#10B981"
+              />
+              <StatBox
+                label="Ausentes"
+                value={estadisticas.ausentes}
+                color="#EF4444"
+              />
+              <StatBox
+                label="Pendientes"
+                value={estadisticas.pendientes}
+                color="#F59E0B"
+              />
             </View>
 
             <View
@@ -392,7 +464,13 @@ export default function ReportesScreen() {
               <Text style={{ color: Colors.tecnibus[800], fontSize: 13 }}>
                 Porcentaje de asistencia
               </Text>
-              <Text style={{ color: Colors.tecnibus[700], fontSize: 28, fontWeight: "800" }}>
+              <Text
+                style={{
+                  color: Colors.tecnibus[700],
+                  fontSize: 28,
+                  fontWeight: "800",
+                }}
+              >
                 {estadisticas.porcentaje}%
               </Text>
             </View>
@@ -412,7 +490,9 @@ export default function ReportesScreen() {
                 }}
               >
                 <Download size={20} color="#FFFFFF" />
-                <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
+                <Text
+                  style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}
+                >
                   Abrir / Descargar PDF
                 </Text>
               </TouchableOpacity>
@@ -430,8 +510,11 @@ export default function ReportesScreen() {
           }}
         >
           <AlertCircle size={14} color="#9CA3AF" style={{ marginTop: 2 }} />
-          <Text style={{ flex: 1, color: "#9CA3AF", fontSize: 12, lineHeight: 18 }}>
-            El PDF se genera en el servidor y está disponible por 10 minutos. Descárgalo antes de que expire el enlace.
+          <Text
+            style={{ flex: 1, color: "#9CA3AF", fontSize: 12, lineHeight: 18 }}
+          >
+            El PDF se genera en el servidor y está disponible por 10 minutos.
+            Descárgalo antes de que expire el enlace.
           </Text>
         </View>
       </ScrollView>
@@ -460,7 +543,9 @@ function StatBox({
       }}
     >
       <Text style={{ fontSize: 20, fontWeight: "800", color }}>{value}</Text>
-      <Text style={{ fontSize: 10, color: "#6B7280", textAlign: "center" }}>{label}</Text>
+      <Text style={{ fontSize: 10, color: "#6B7280", textAlign: "center" }}>
+        {label}
+      </Text>
     </View>
   );
 }
