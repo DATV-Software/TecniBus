@@ -955,7 +955,7 @@ export default function ParentHomeScreen() {
         activeTab="home"
         activeColor={Colors.tecnibus[600]}
         onHomePress={() => {}}
-        onMiddlePress={handleTracking}
+        onMiddlePress={handleChatDriver}
         onSettingsPress={handleSettings}
       />
     </View>
