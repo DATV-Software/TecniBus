@@ -124,7 +124,7 @@ export function useGeofencing({
         parada_nombre: parada.nombre || parada.direccion,
         parada_latitud: parada.latitud,
         parada_longitud: parada.longitud,
-        orden_parada: parada.orden ?? 0,
+        orden_parada: 0,
         estado: 'en_zona',
       };
 

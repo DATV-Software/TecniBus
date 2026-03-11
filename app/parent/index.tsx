@@ -330,8 +330,6 @@ export default function ParentHomeScreen() {
       latitud,
       longitud,
       direccion: estudianteSeleccionado.parada.direccion ?? null,
-      hora_aprox: null,
-      orden: estudianteSeleccionado.parada.orden || 0,
       id_ruta: estudianteSeleccionado.parada.ruta?.id || '',
     };
 

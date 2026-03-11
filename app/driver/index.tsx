@@ -135,7 +135,7 @@ export default function DriverHomeScreen() {
   const nextStudent = useMemo(() => {
     const pending = estudiantes
       .filter((e) => e.estado !== "ausente" && e.estado !== "completado")
-      .sort((a, b) => (a.parada?.orden ?? 99) - (b.parada?.orden ?? 99));
+      .sort((a, b) => (a.apellido ?? "").localeCompare(b.apellido ?? ""));
     return pending[0] || null;
   }, [estudiantes]);
 
