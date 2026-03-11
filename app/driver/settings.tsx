@@ -105,8 +105,8 @@ export default function DriverSettingsScreen() {
 
       <BottomNavigation
         activeTab="settings"
-        onHomePress={() => router.back()}
-        onMiddlePress={() => {}}
+        onHomePress={() => router.replace("/driver")}
+        onMiddlePress={() => router.push("/driver/chat")}
         onSettingsPress={() => {}}
       />
     </View>

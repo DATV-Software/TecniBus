@@ -105,8 +105,8 @@ export default function ParentSettingsScreen() {
 
       <BottomNavigation
         activeTab="settings"
-        onHomePress={() => router.back()}
-        onMiddlePress={() => {}}
+        onHomePress={() => router.replace("/parent")}
+        onMiddlePress={() => router.push("/parent/chat")}
         onSettingsPress={() => {}}
       />
     </View>
