@@ -7,8 +7,6 @@ export type Parada = {
   direccion: string | null;
   latitud: number;
   longitud: number;
-  hora_aprox: string | null;
-  orden: number | null;
 };
 
 export type Ruta = {
@@ -37,8 +35,6 @@ export type CreateParadaDto = {
   direccion: string;
   latitud: number;
   longitud: number;
-  hora_aprox: string | null;
-  orden?: number; // Opcional - usado solo para visualización, no afecta la optimización
 };
 
 export type UpdateParadaDto = Partial<Omit<CreateParadaDto, 'id_ruta'>>;
@@ -62,9 +58,7 @@ export async function getRutas(): Promise<Ruta[]> {
           nombre,
           direccion,
           latitud,
-          longitud,
-          hora_aprox,
-          orden
+          longitud
         )
       `)
       .order('nombre', { ascending: true });
@@ -245,9 +239,9 @@ export async function getParadasByRuta(id_ruta: string): Promise<Parada[]> {
   try {
     const { data, error } = await supabase
       .from('paradas')
-      .select('id, id_ruta, nombre, direccion, latitud, longitud, hora_aprox, orden')
+      .select('id, id_ruta, nombre, direccion, latitud, longitud')
       .eq('id_ruta', id_ruta)
-      .order('orden', { ascending: true });
+      .order('nombre', { ascending: true });
 
     if (error) {
       console.error('❌ Error obteniendo paradas:', error);
@@ -274,10 +268,8 @@ export async function createParada(dto: CreateParadaDto): Promise<Parada | null>
         direccion: dto.direccion.trim(),
         latitud: dto.latitud,
         longitud: dto.longitud,
-        hora_aprox: dto.hora_aprox,
-        orden: dto.orden,
       })
-      .select('id, id_ruta, nombre, direccion, latitud, longitud, hora_aprox, orden')
+      .select('id, id_ruta, nombre, direccion, latitud, longitud')
       .single();
 
     if (error) {
@@ -307,8 +299,6 @@ export async function updateParada(
     if (dto.direccion !== undefined) updateData.direccion = dto.direccion.trim();
     if (dto.latitud !== undefined) updateData.latitud = dto.latitud;
     if (dto.longitud !== undefined) updateData.longitud = dto.longitud;
-    if (dto.hora_aprox !== undefined) updateData.hora_aprox = dto.hora_aprox;
-    if (dto.orden !== undefined) updateData.orden = dto.orden;
 
     const { error } = await supabase
       .from('paradas')

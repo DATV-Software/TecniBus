@@ -341,7 +341,6 @@ export async function getParadasDisponibles(): Promise<Array<{
   id: string;
   nombre: string | null;
   direccion: string | null;
-  orden: number | null;
   ruta: {
     id: string;
     nombre: string;
@@ -354,13 +353,12 @@ export async function getParadasDisponibles(): Promise<Array<{
         id,
         nombre,
         direccion,
-        orden,
         rutas(
           id,
           nombre
         )
       `)
-      .order('orden', { ascending: true });
+      .order('nombre', { ascending: true });
 
     if (error) {
       console.error('❌ Error obteniendo paradas:', error);
@@ -371,7 +369,6 @@ export async function getParadasDisponibles(): Promise<Array<{
       id: parada.id,
       nombre: parada.nombre,
       direccion: parada.direccion,
-      orden: parada.orden,
       ruta: parada.rutas ? {
         id: parada.rutas.id,
         nombre: parada.rutas.nombre,

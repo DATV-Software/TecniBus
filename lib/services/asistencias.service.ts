@@ -49,7 +49,6 @@ export type EstudianteConAsistencia = {
   parada: {
     id: string;
     nombre: string | null;
-    orden: number | null;
   } | null;
   estado: EstadoAsistencia;
 };
@@ -354,7 +353,7 @@ export async function getEstudiantesConAsistencia(
         nombre,
         apellido,
         id_parada,
-        paradas(id, nombre, orden)
+        paradas(id, nombre)
       `)
       .in('id_parada', paradasIds)
       .order('apellido', { ascending: true });
@@ -384,7 +383,6 @@ export async function getEstudiantesConAsistencia(
           ? {
               id: est.paradas.id,
               nombre: est.paradas.nombre,
-              orden: est.paradas.orden,
             }
           : null,
         estado: asistencia?.estado || 'presente', // Default: presente

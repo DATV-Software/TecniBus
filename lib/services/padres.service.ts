@@ -61,7 +61,6 @@ export async function getMyEstudiantes(): Promise<EstudianteDelPadre[]> {
               ? parseFloat(est.parada_longitud)
               : est.parada_longitud,
             direccion: est.parada_direccion,
-            orden: est.parada_orden,
             ruta: est.ruta_id
               ? {
                   id: est.ruta_id,
