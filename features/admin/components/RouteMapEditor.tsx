@@ -8,7 +8,7 @@ import {
   updateParada,
 } from "@/lib/services/rutas.service";
 import { haptic } from "@/lib/utils/haptics";
-import { Clock, Edit3, MapPin, Plus, Trash2, X } from "lucide-react-native";
+import { Edit3, MapPin, Plus, Trash2, X } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import {
   Dimensions,
@@ -39,9 +39,7 @@ const DEFAULT_REGION: Region = {
   longitudeDelta: 0.05,
 };
 
-function getMarkerColor(index: number, total: number): string {
-  if (index === 0) return "#16A34A";
-  if (index === total - 1) return "#DC2626";
+function getMarkerColor(_index: number, _total: number): string {
   return Colors.tecnibus[600];
 }
 
@@ -105,8 +103,6 @@ export function RouteMapEditor({
     direccion: string;
     latitud: number;
     longitud: number;
-    hora_aprox: string | null;
-    orden?: number;
   }): Promise<boolean> => {
     if (editingParada) {
       const success = await updateParada(editingParada.id, data);
@@ -455,26 +451,14 @@ export function RouteMapEditor({
                   >
                     {item.nombre || "Sin nombre"}
                   </Text>
-                  {item.hora_aprox && (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginTop: 2,
-                      }}
+                  {item.direccion ? (
+                    <Text
+                      style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}
+                      numberOfLines={1}
                     >
-                      <Clock size={11} color="#9CA3AF" strokeWidth={2} />
-                      <Text
-                        style={{
-                          fontSize: 11,
-                          color: "#9CA3AF",
-                          marginLeft: 4,
-                        }}
-                      >
-                        {item.hora_aprox}
-                      </Text>
-                    </View>
-                  )}
+                      {item.direccion}
+                    </Text>
+                  ) : null}
                 </View>
 
                 <TouchableOpacity
@@ -520,7 +504,6 @@ export function RouteMapEditor({
             : undefined)
         }
         rutaId={rutaId}
-        nextOrden={paradas.length + 1}
         onSave={handleSave}
         onDelete={editingParada ? handleDelete : undefined}
       />

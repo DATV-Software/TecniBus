@@ -2,7 +2,7 @@ import { Colors } from "@/lib/constants/colors";
 import { haptic } from "@/lib/utils/haptics";
 import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 import { reverseGeocode } from "@/lib/services/places.service";
-import { Clock, MapPin, Save, Trash2, Type, X } from "lucide-react-native";
+import { MapPin, Save, Trash2, Type, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,14 +21,11 @@ interface ParadaFormSheetProps {
   onClose: () => void;
   initialData?: Partial<Parada>;
   rutaId: string;
-  nextOrden?: number;
   onSave: (data: {
     nombre: string;
     direccion: string;
     latitud: number;
     longitud: number;
-    hora_aprox: string | null;
-    orden: number;
   }) => Promise<boolean>;
   onDelete?: () => Promise<boolean>;
 }
@@ -38,7 +35,6 @@ export function ParadaFormSheet({
   onClose,
   initialData,
   rutaId,
-  nextOrden = 1,
   onSave,
   onDelete,
 }: ParadaFormSheetProps) {
@@ -50,8 +46,6 @@ export function ParadaFormSheet({
   const [direccion, setDireccion] = useState("");
   const [latitud, setLatitud] = useState("");
   const [longitud, setLongitud] = useState("");
-  const [horaAprox, setHoraAprox] = useState("");
-  const [orden, setOrden] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [fetchingDireccion, setFetchingDireccion] = useState(false);
@@ -62,8 +56,6 @@ export function ParadaFormSheet({
       setDireccion(initialData.direccion || "");
       setLatitud(initialData.latitud?.toString() || "");
       setLongitud(initialData.longitud?.toString() || "");
-      setHoraAprox(initialData.hora_aprox || "");
-      setOrden(initialData.orden?.toString() || nextOrden.toString());
 
       // Auto-fetch dirección para paradas nuevas con coordenadas
       if (!isEdit && initialData.latitud && initialData.longitud && !initialData.direccion) {
@@ -78,10 +70,8 @@ export function ParadaFormSheet({
       setDireccion("");
       setLatitud("");
       setLongitud("");
-      setHoraAprox("");
-      setOrden(nextOrden.toString());
     }
-  }, [initialData, visible, nextOrden]);
+  }, [initialData, visible]);
 
   const handleSave = async () => {
     if (!nombre.trim()) return;
@@ -98,8 +88,6 @@ export function ParadaFormSheet({
       direccion: direccion.trim(),
       latitud: lat,
       longitud: lng,
-      hora_aprox: horaAprox.trim() || null,
-      orden: parseInt(orden) || nextOrden,
     });
 
     setSaving(false);
@@ -223,29 +211,6 @@ export function ParadaFormSheet({
                 autoCapitalize="sentences"
                 editable={!fetchingDireccion}
               />
-
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <View style={{ flex: 1 }}>
-                  <FormField
-                    label="Hora aprox."
-                    icon={Clock}
-                    placeholder="07:00"
-                    value={horaAprox}
-                    onChangeText={setHoraAprox}
-                    maxLength={5}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <FormField
-                    label="Orden"
-                    placeholder="1"
-                    value={orden}
-                    onChangeText={setOrden}
-                    keyboardType="numeric"
-                    maxLength={2}
-                  />
-                </View>
-              </View>
 
               {/* Actions */}
               <View
