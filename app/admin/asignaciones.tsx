@@ -35,6 +35,7 @@ import {
   View,
 } from "react-native";
 import { useRefresh } from "@/lib/hooks/useRefresh";
+import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 
 type Chofer = {
   id: string;
@@ -158,6 +159,7 @@ export default function AsignacionesScreen() {
   };
 
   const { refreshing, onRefresh } = useRefresh(cargarDatos);
+  const keyboardHeight = useKeyboardHeight();
 
   const cargarAsignacionesChofer = async (idChofer: string) => {
     try {
@@ -544,7 +546,7 @@ export default function AsignacionesScreen() {
       {/* Modal Crear Asignación */}
       <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <View style={{ backgroundColor: "#ffffff", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: "80%" }}>
+          <View style={{ backgroundColor: "#ffffff", borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 24, paddingHorizontal: 24, paddingBottom: keyboardHeight > 0 ? keyboardHeight + 16 : 24, maxHeight: "90%" }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>Nuevo Recorrido</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={{ backgroundColor: "#F3F4F6", padding: 8, borderRadius: 10 }}>
@@ -749,7 +751,7 @@ export default function AsignacionesScreen() {
         onRequestClose={() => { setModalBusetaVisible(false); setBusetaFilter(""); }}
       >
         <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <View style={{ backgroundColor: "#ffffff", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: "80%" }}>
+          <View style={{ backgroundColor: "#ffffff", borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 24, paddingHorizontal: 24, paddingBottom: keyboardHeight > 0 ? keyboardHeight + 16 : 24, maxHeight: "90%" }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <Text style={{ fontSize: 18, fontWeight: "700", color: "#1F2937" }}>Seleccionar Buseta</Text>
               <TouchableOpacity

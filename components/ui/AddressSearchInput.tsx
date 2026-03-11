@@ -79,7 +79,14 @@ export function AddressSearchInput({
   return (
     <View style={{ marginBottom: 0 }}>
       {!!label && (
-        <Text style={{ fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 }}>
+        <Text
+          style={{
+            fontSize: 13,
+            fontWeight: "600",
+            color: "#374151",
+            marginBottom: 6,
+          }}
+        >
           {label}
         </Text>
       )}
@@ -109,7 +116,9 @@ export function AddressSearchInput({
           autoCorrect={false}
           returnKeyType="search"
         />
-        {loading && <ActivityIndicator size="small" color={Colors.tecnibus[500]} />}
+        {loading && (
+          <ActivityIndicator size="small" color={Colors.tecnibus[500]} />
+        )}
         {!loading && query.length > 0 && (
           <TouchableOpacity
             onPress={handleClear}
@@ -134,7 +143,7 @@ export function AddressSearchInput({
             shadowOpacity: 0.1,
             shadowRadius: 8,
             elevation: 6,
-            maxHeight: 220,
+            maxHeight: 140,
             overflow: "hidden",
           }}
         >
@@ -156,10 +165,19 @@ export function AddressSearchInput({
                   gap: 10,
                 }}
               >
-                <MapPin size={16} color={Colors.tecnibus[500]} strokeWidth={2} style={{ marginTop: 2 }} />
+                <MapPin
+                  size={16}
+                  color={Colors.tecnibus[500]}
+                  strokeWidth={2}
+                  style={{ marginTop: 2 }}
+                />
                 <View style={{ flex: 1 }}>
                   <Text
-                    style={{ fontSize: 13, fontWeight: "600", color: "#1F2937" }}
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "600",
+                      color: "#1F2937",
+                    }}
                     numberOfLines={1}
                   >
                     {item.mainText}

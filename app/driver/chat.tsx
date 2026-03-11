@@ -1,7 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { SubScreenHeader } from "@/features/admin";
 import { Colors } from "@/lib/constants/colors";
 import { QUICK_MESSAGES_CHOFER } from "@/lib/constants/quickMessages";
-import { SubScreenHeader } from "@/features/admin";
 import {
   ChatResumen,
   enviarMensaje,
@@ -38,7 +38,9 @@ export default function DriverChatScreen() {
   const [vista, setVista] = useState<Vista>("lista");
   const [chats, setChats] = useState<ChatResumen[]>([]);
   const [cargandoLista, setCargandoLista] = useState(true);
-  const [chatSeleccionado, setChatSeleccionado] = useState<ChatResumen | null>(null);
+  const [chatSeleccionado, setChatSeleccionado] = useState<ChatResumen | null>(
+    null,
+  );
 
   const [idChat, setIdChat] = useState<string | null>(null);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
@@ -79,7 +81,9 @@ export default function DriverChatScreen() {
     const channel = suscribirseAMensajes(idChat, (msg) => {
       setMensajes((prev) => [...prev, msg]);
     });
-    return () => { channel.unsubscribe(); };
+    return () => {
+      channel.unsubscribe();
+    };
   }, [idChat]);
 
   useEffect(() => {
@@ -89,14 +93,26 @@ export default function DriverChatScreen() {
 
   useEffect(() => {
     if (mensajes.length > 0) {
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+      setTimeout(
+        () => flatListRef.current?.scrollToEnd({ animated: true }),
+        100,
+      );
     }
   }, [mensajes]);
 
-  const handleEnviar = async (texto: string, tipo: "quick" | "custom" = "custom") => {
+  const handleEnviar = async (
+    texto: string,
+    tipo: "quick" | "custom" = "custom",
+  ) => {
     if (!idChat || !profile?.id || !texto.trim() || !recorridoActivo) return;
     setEnviando(true);
-    const ok = await enviarMensaje(idChat, profile.id, "chofer", texto.trim(), tipo);
+    const ok = await enviarMensaje(
+      idChat,
+      profile.id,
+      "chofer",
+      texto.trim(),
+      tipo,
+    );
     if (ok) setInputText("");
     setEnviando(false);
   };
@@ -187,11 +203,16 @@ export default function DriverChatScreen() {
           {item.nombre_padre}
         </Text>
         {item.ultimo_mensaje ? (
-          <Text style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }} numberOfLines={1}>
+          <Text
+            style={{ fontSize: 13, color: "#6B7280", marginTop: 2 }}
+            numberOfLines={1}
+          >
             {item.ultimo_mensaje}
           </Text>
         ) : (
-          <Text style={{ fontSize: 13, color: "#9CA3AF", marginTop: 2 }}>Sin mensajes</Text>
+          <Text style={{ fontSize: 13, color: "#9CA3AF", marginTop: 2 }}>
+            Sin mensajes
+          </Text>
         )}
       </View>
       {item.no_leidos > 0 && (
@@ -218,16 +239,22 @@ export default function DriverChatScreen() {
   if (vista === "lista") {
     return (
       <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
-        <StatusBar backgroundColor={Colors.tecnibus[700]} barStyle="light-content" translucent={false} />
+        <StatusBar
+          backgroundColor={Colors.tecnibus[700]}
+          barStyle="light-content"
+          translucent={false}
+        />
 
         <SubScreenHeader
           title="CHATS"
-          subtitle="Conversaciones con padres"
+          subtitle="Chats con padres"
           onBack={() => router.back()}
         />
 
         {cargandoLista ? (
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
             <ActivityIndicator size="large" color={Colors.tecnibus[600]} />
           </View>
         ) : (
@@ -236,9 +263,23 @@ export default function DriverChatScreen() {
             keyExtractor={(item) => item.id_chat}
             renderItem={renderChatItem}
             ListEmptyComponent={
-              <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 80 }}>
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingTop: 80,
+                }}
+              >
                 <MessageCircle size={48} color="#D1D5DB" />
-                <Text style={{ color: "#9CA3AF", fontSize: 16, marginTop: 16, textAlign: "center" }}>
+                <Text
+                  style={{
+                    color: "#9CA3AF",
+                    fontSize: 16,
+                    marginTop: 16,
+                    textAlign: "center",
+                  }}
+                >
                   No hay conversaciones activas
                 </Text>
               </View>
@@ -255,7 +296,11 @@ export default function DriverChatScreen() {
       style={{ flex: 1, backgroundColor: "#F9FAFB" }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <StatusBar backgroundColor={Colors.tecnibus[700]} barStyle="light-content" translucent={false} />
+      <StatusBar
+        backgroundColor={Colors.tecnibus[700]}
+        barStyle="light-content"
+        translucent={false}
+      />
 
       <SubScreenHeader
         title={chatSeleccionado?.nombre_padre ?? "Padre"}
@@ -280,7 +325,9 @@ export default function DriverChatScreen() {
       )}
 
       {cargandoChat ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator size="large" color={Colors.tecnibus[600]} />
         </View>
       ) : (
@@ -291,8 +338,17 @@ export default function DriverChatScreen() {
           renderItem={renderMensaje}
           contentContainerStyle={{ paddingVertical: 16, flexGrow: 1 }}
           ListEmptyComponent={
-            <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 60 }}>
-              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>No hay mensajes aún.</Text>
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingTop: 60,
+              }}
+            >
+              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                No hay mensajes aún.
+              </Text>
             </View>
           }
         />
@@ -367,7 +423,8 @@ export default function DriverChatScreen() {
               onPress={() => handleEnviar(inputText)}
               disabled={enviando || !inputText.trim()}
               style={{
-                backgroundColor: enviando || !inputText.trim() ? "#D1D5DB" : "#F59E0B",
+                backgroundColor:
+                  enviando || !inputText.trim() ? "#D1D5DB" : "#F59E0B",
                 width: 44,
                 height: 44,
                 borderRadius: 22,

@@ -2,11 +2,14 @@ import * as LocalAuthentication from "expo-local-authentication";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { Fingerprint, Lock, Mail } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Keyboard,
   Linking,
+  Platform,
+  ScrollView,
   StatusBar,
   Text,
   TextInput,
@@ -23,13 +26,14 @@ import Animated, {
 import { haptic } from "@/lib/utils/haptics";
 import { useShadow } from "@/lib/utils/shadows";
 import { Toast } from "../components";
-import { KeyboardSafeView } from "@/components/ui";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, signOut, user, profile, loading: authLoading } = useAuth();
   const shadow = useShadow("lg");
+
+  const scrollRef = useRef<ScrollView>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,6 +84,23 @@ export default function LoginScreen() {
 
     // Verificar soporte biométrico y credenciales guardadas
     checkBiometricSupport();
+
+    // Scroll unificado al abrir teclado — un solo punto fijo para mostrar ambos inputs
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showSub = Keyboard.addListener(showEvent, () => {
+      scrollRef.current?.scrollTo({ y: 140, animated: true });
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
   }, []);
 
   /* =====================
@@ -342,7 +363,7 @@ export default function LoginScreen() {
      UI
   ====================== */
   return (
-    <KeyboardSafeView style={{ backgroundColor: "#eff6ff" }}>
+    <View style={{ flex: 1, backgroundColor: "#eff6ff" }}>
       <StatusBar barStyle="dark-content" backgroundColor="#eff6ff" />
 
       <Toast
@@ -352,125 +373,133 @@ export default function LoginScreen() {
         onHide={() => setToastVisible(false)}
       />
 
-      <View className="flex-1 px-6 pt-40 pb-8">
-        {/* Header */}
-        <Animated.View style={logoStyle} className="items-center mb-8">
-          <TouchableOpacity
-            onPress={handleLogoPress}
-            activeOpacity={0.8}
-            className="items-center w-full"
-          >
-            <View className="bg-white-500">
-              <Image
-                source={require("../assets/images/adaptive-icon.png")}
-                className="w-80 h-80 -mb-14 -mt-24"
-                resizeMode="contain"
-              />
-            </View>
-            <Text className="text-4xl font-calsans text-tecnibus-400 text-center">
-              TecniBus
-            </Text>
-            <Text className="font-calsans text-gray-600 mt-5 text-center">
-              Sistema de Gestión de Transporte Escolar
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Form */}
-        <Animated.View style={formStyle}>
-          <View className="bg-white rounded-3xl p-6 mb-7" style={shadow}>
-            {/* Email */}
-            <View className="mb-4">
-              <Text className="text-sm font-calsans text-gray-700 mb-2">
-                Correo electrónico
-              </Text>
-              <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
-                <Mail size={20} color="#6b7280" />
-                <TextInput
-                  className="flex-1 ml-3 text-base text-gray-800"
-                  placeholder="ejemplo@correo.com"
-                  placeholderTextColor="#9ca3af"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  editable={!isLoading}
-                />
-              </View>
-            </View>
-
-            {/* Password */}
-            <View className="mb-4">
-              <Text className="text-sm font-calsans text-gray-700 mb-2">
-                Contraseña
-              </Text>
-              <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
-                <Lock size={20} color="#6b7280" />
-                <TextInput
-                  className="flex-1 ml-3 text-base text-gray-800"
-                  placeholder="••••••••"
-                  placeholderTextColor="#9ca3af"
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                  editable={!isLoading}
-                  onSubmitEditing={handleLogin}
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* Button */}
-          <TouchableOpacity
-            className={`py-4 rounded-xl ${
-              isLoading ? "bg-gray-300" : "bg-tecnibus-500"
-            }`}
-            onPress={handleLogin}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <View className="flex-row items-center justify-center">
-                <ActivityIndicator size="small" color="#ffffff" />
-                <Text className="text-white text-lg font-calsans ml-2">
-                  Iniciando sesión...
-                </Text>
-              </View>
-            ) : (
-              <Text className="text-white text-center text-lg font-calsans">
-                Iniciar Sesión
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Botón de Autenticación Biométrica */}
-          {isBiometricSupported && hasSavedCredentials && !isLoading && (
+      <ScrollView
+        ref={scrollRef}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 320 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-1 px-6 pt-40 pb-8">
+          {/* Header */}
+          <Animated.View style={logoStyle} className="items-center mb-8">
             <TouchableOpacity
-              className="py-4 rounded-xl bg-gray-100 border-2 border-tecnibus-200 mt-3 flex-row items-center justify-center"
-              onPress={handleBiometricAuth}
+              onPress={handleLogoPress}
               activeOpacity={0.8}
+              className="items-center w-full"
             >
-              <Fingerprint size={24} color="#3DA7D7" strokeWidth={2.5} />
-              <Text className="text-tecnibus-500 text-lg font-calsans ml-2">
-                Iniciar con Biometría
+              <View className="bg-white-500">
+                <Image
+                  source={require("../assets/images/adaptive-icon.png")}
+                  className="w-80 h-80 -mb-14 -mt-24"
+                  resizeMode="contain"
+                />
+              </View>
+              <Text className="text-4xl font-calsans text-tecnibus-400 text-center">
+                TecniBus
+              </Text>
+              <Text className="font-calsans text-gray-600 mt-5 text-center">
+                Sistema de Gestión de Transporte Escolar
               </Text>
             </TouchableOpacity>
-          )}
+          </Animated.View>
 
-          {/* Mensajes informativos */}
-          <View className="mt-6 space-y-2">
-            <Text className="text-center text-gray-600 text-sm mt-3 font-calsans">
-              ¿No tienes cuenta?{" "}
-              <Text
-                onPress={() => Linking.openURL("https://youtube.com")}
-                className="text-tecnibus-500 underline"
+          {/* Form */}
+          <Animated.View style={formStyle}>
+            <View className="bg-white rounded-3xl p-6 mb-7" style={shadow}>
+              {/* Email */}
+              <View className="mb-4">
+                <Text className="text-sm font-calsans text-gray-700 mb-2">
+                  Correo electrónico
+                </Text>
+                <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
+                  <Mail size={20} color="#6b7280" />
+                  <TextInput
+                    className="flex-1 ml-3 text-base text-gray-800"
+                    placeholder="ejemplo@correo.com"
+                    placeholderTextColor="#9ca3af"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    editable={!isLoading}
+                  />
+                </View>
+              </View>
+
+              {/* Password */}
+              <View className="mb-4">
+                <Text className="text-sm font-calsans text-gray-700 mb-2">
+                  Contraseña
+                </Text>
+                <View className="flex-row items-center bg-gray-50 rounded-xl px-4 py-3 border border-gray-200">
+                  <Lock size={20} color="#6b7280" />
+                  <TextInput
+                    className="flex-1 ml-3 text-base text-gray-800"
+                    placeholder="••••••••"
+                    placeholderTextColor="#9ca3af"
+                    secureTextEntry
+                    value={password}
+                    onChangeText={setPassword}
+                    editable={!isLoading}
+                    onSubmitEditing={handleLogin}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Button */}
+            <TouchableOpacity
+              className={`py-4 rounded-xl ${
+                isLoading ? "bg-gray-300" : "bg-tecnibus-500"
+              }`}
+              onPress={handleLogin}
+              disabled={isLoading}
+              activeOpacity={0.8}
+            >
+              {isLoading ? (
+                <View className="flex-row items-center justify-center">
+                  <ActivityIndicator size="small" color="#ffffff" />
+                  <Text className="text-white text-lg font-calsans ml-2">
+                    Iniciando sesión...
+                  </Text>
+                </View>
+              ) : (
+                <Text className="text-white text-center text-lg font-calsans">
+                  Iniciar Sesión
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Botón de Autenticación Biométrica */}
+            {isBiometricSupported && hasSavedCredentials && !isLoading && (
+              <TouchableOpacity
+                className="py-4 rounded-xl bg-gray-100 border-2 border-tecnibus-200 mt-3 flex-row items-center justify-center"
+                onPress={handleBiometricAuth}
+                activeOpacity={0.8}
               >
-                Contacta a tu institución
+                <Fingerprint size={24} color="#3DA7D7" strokeWidth={2.5} />
+                <Text className="text-tecnibus-500 text-lg font-calsans ml-2">
+                  Iniciar con Biometría
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Mensajes informativos */}
+            <View className="mt-6 space-y-2">
+              <Text className="text-center text-gray-600 text-sm mt-3 font-calsans">
+                ¿No tienes cuenta?{" "}
+                <Text
+                  onPress={() => Linking.openURL("https://youtube.com")}
+                  className="text-tecnibus-500 underline"
+                >
+                  Contacta a tu institución
+                </Text>
               </Text>
-            </Text>
-          </View>
-        </Animated.View>
-      </View>
-    </KeyboardSafeView>
+            </View>
+          </Animated.View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
