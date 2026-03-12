@@ -22,7 +22,6 @@ async function notificarPadre(
         nombre_estudiante: nombreEstudiante,
       },
     });
-    console.log(`✅ Notificación enviada: ${tipo} - ${idEstudiante}`);
   } catch (error) {
     // No lanzamos error para no bloquear el flujo principal
     console.error('⚠️ Error enviando notificación al padre:', error);
@@ -40,6 +39,19 @@ export type Asistencia = {
   modificado_por: string | null;
   created_at: string;
   updated_at: string | null;
+};
+
+type EstudianteRow = {
+  id: string;
+  nombre: string;
+  apellido: string;
+  id_parada: string | null;
+  paradas: { id: string; nombre: string | null } | null;
+};
+
+type AsistenciaRow = {
+  id_estudiante: string;
+  estado: EstadoAsistencia;
 };
 
 export type EstudianteConAsistencia = {
@@ -115,7 +127,6 @@ export async function toggleAsistencia(
       if (error) throw error;
     }
 
-    console.log(`✅ Asistencia actualizada: ${nuevoEstado} - ${idEstudiante}`);
 
     // Notificar al chofer de la ruta (no bloquear si falla)
     try {
@@ -127,7 +138,6 @@ export async function toggleAsistencia(
           destinatario: 'chofer',
         },
       });
-      console.log(`✅ Chofer notificado sobre cambio de asistencia`);
     } catch (error) {
       console.error('⚠️ Error notificando al chofer:', error);
     }
@@ -187,7 +197,6 @@ export async function marcarAusente(
       if (error) throw error;
     }
 
-    console.log(`✅ Estudiante marcado ausente: ${idEstudiante}`);
 
     // Notificar al padre (no bloquear si falla)
     await notificarPadre(idEstudiante, 'ausente');
@@ -250,7 +259,6 @@ export async function marcarSubida(
       if (error) throw error;
     }
 
-    console.log(`✅ Estudiante marcó subida: ${idEstudiante}`);
 
     // Notificar al padre
     await notificarPadre(idEstudiante, 'subio', nombreEstudiante);
@@ -311,7 +319,6 @@ export async function marcarBajada(
       if (error) throw error;
     }
 
-    console.log(`✅ Estudiante marcó bajada: ${idEstudiante}`);
 
     // Notificar al padre
     await notificarPadre(idEstudiante, 'bajo', nombreEstudiante);
@@ -332,7 +339,6 @@ export async function getEstudiantesConAsistencia(
   idChofer: string
 ): Promise<EstudianteConAsistencia[]> {
   try {
-    console.log(`🔍 Buscando estudiantes para ruta: ${idRuta}`);
 
     // 1. Obtener paradas de la ruta
     const { data: paradasRuta, error: errorParadas } = await supabase
@@ -363,7 +369,7 @@ export async function getEstudiantesConAsistencia(
 
     // 3. Obtener asistencias del día
     const hoy = new Date().toISOString().split('T')[0];
-    const estudiantesIds = estudiantes.map((e: any) => e.id);
+    const estudiantesIds = (estudiantes as unknown as EstudianteRow[]).map((e) => e.id);
 
     const { data: asistencias } = await supabase
       .from('asistencias')
@@ -372,8 +378,8 @@ export async function getEstudiantesConAsistencia(
       .eq('fecha', hoy);
 
     // 4. Combinar datos (default: presente)
-    const resultado: EstudianteConAsistencia[] = estudiantes.map((est: any) => {
-      const asistencia = asistencias?.find((a: any) => a.id_estudiante === est.id);
+    const resultado: EstudianteConAsistencia[] = (estudiantes as unknown as EstudianteRow[]).map((est) => {
+      const asistencia = (asistencias as AsistenciaRow[] | null)?.find((a) => a.id_estudiante === est.id);
 
       return {
         id: est.id,
@@ -389,7 +395,6 @@ export async function getEstudiantesConAsistencia(
       };
     });
 
-    console.log(`✅ ${resultado.length} estudiantes cargados`);
     return resultado;
   } catch (error) {
     console.error('❌ Error en getEstudiantesConAsistencia:', error);
@@ -416,5 +421,26 @@ export async function getEstadoAsistencia(
     return data?.estado || 'presente';
   } catch (error) {
     return 'presente'; // Default
+  }
+}
+
+/**
+ * Obtiene el registro completo de asistencia del día para un estudiante.
+ * Usado por la pantalla del padre para conocer estado, notas y hora de cambio.
+ */
+export async function getEstadoAsistenciaDelDia(
+  idEstudiante: string
+): Promise<{ estado: EstadoAsistencia; notas: string | null; updated_at: string | null } | null> {
+  try {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data } = await supabase
+      .from('asistencias')
+      .select('estado, notas, updated_at')
+      .eq('id_estudiante', idEstudiante)
+      .eq('fecha', hoy)
+      .single();
+    return data || null;
+  } catch {
+    return null;
   }
 }
