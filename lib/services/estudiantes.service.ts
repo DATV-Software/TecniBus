@@ -23,6 +23,37 @@ export type Estudiante = {
   };
 };
 
+type EstudianteRow = {
+  id: string;
+  nombre: string;
+  apellido: string;
+  id_padre: string | null;
+  id_parada: string | null;
+  created_at: string;
+  padres?: {
+    profiles?: {
+      id: string;
+      nombre: string;
+      apellido: string;
+    } | null;
+  } | null;
+  paradas?: {
+    id: string;
+    nombre: string | null;
+    rutas?: {
+      id: string;
+      nombre: string;
+    } | null;
+  } | null;
+};
+
+type ParadaRow = {
+  id: string;
+  nombre: string | null;
+  direccion: string | null;
+  rutas?: { id: string; nombre: string } | null;
+};
+
 export type CreateEstudianteDto = {
   nombre: string;
   apellido: string;
@@ -72,7 +103,7 @@ export async function getEstudiantes(): Promise<Estudiante[]> {
     }
 
     // Mapear datos para tipos correctos
-    const estudiantes = (data || []).map((est: any) => ({
+    const estudiantes = ((data || []) as unknown as EstudianteRow[]).map((est) => ({
       id: est.id,
       nombre: est.nombre,
       apellido: est.apellido,
@@ -94,7 +125,6 @@ export async function getEstudiantes(): Promise<Estudiante[]> {
       } : undefined,
     }));
 
-    console.log(`✅ ${estudiantes.length} estudiantes obtenidos`);
     return estudiantes;
   } catch (error) {
     console.error('❌ Error en getEstudiantes:', error);
@@ -140,7 +170,7 @@ export async function searchEstudiantes(query: string): Promise<Estudiante[]> {
       throw error;
     }
 
-    return (data || []).map((est: any) => ({
+    return ((data || []) as unknown as EstudianteRow[]).map((est) => ({
       id: est.id,
       nombre: est.nombre,
       apellido: est.apellido,
@@ -210,7 +240,6 @@ export async function createEstudiante(dto: CreateEstudianteDto): Promise<Estudi
       throw error;
     }
 
-    console.log('✅ Estudiante creado:', data);
     return data as unknown as Estudiante;
   } catch (error) {
     console.error('❌ Error en createEstudiante:', error);
@@ -243,7 +272,6 @@ export async function updateEstudiante(
       throw error;
     }
 
-    console.log('✅ Estudiante actualizado:', id);
     return true;
   } catch (error) {
     console.error('❌ Error en updateEstudiante:', error);
@@ -266,7 +294,6 @@ export async function deleteEstudiante(id: string): Promise<boolean> {
       throw error;
     }
 
-    console.log('✅ Estudiante eliminado:', id);
     return true;
   } catch (error) {
     console.error('❌ Error en deleteEstudiante:', error);
@@ -365,7 +392,7 @@ export async function getParadasDisponibles(): Promise<Array<{
       throw error;
     }
 
-    return (data || []).map((parada: any) => ({
+    return ((data || []) as unknown as ParadaRow[]).map((parada) => ({
       id: parada.id,
       nombre: parada.nombre,
       direccion: parada.direccion,

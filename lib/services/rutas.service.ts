@@ -55,6 +55,7 @@ export async function getRutas(): Promise<Ruta[]> {
         tipo,
         paradas(
           id,
+          id_ruta,
           nombre,
           direccion,
           latitud,
@@ -68,7 +69,6 @@ export async function getRutas(): Promise<Ruta[]> {
       throw error;
     }
 
-    console.log(`✅ ${data?.length || 0} rutas obtenidas`);
     return data || [];
   } catch (error) {
     console.error('❌ Error en getRutas:', error);
@@ -133,7 +133,6 @@ export async function createRuta(dto: CreateRutaDto): Promise<Ruta | null> {
       throw error;
     }
 
-    console.log('✅ Ruta creada:', data);
     return data;
   } catch (error) {
     console.error('❌ Error en createRuta:', error);
@@ -166,7 +165,6 @@ export async function updateRuta(
       throw error;
     }
 
-    console.log('✅ Ruta actualizada:', id);
     return true;
   } catch (error) {
     console.error('❌ Error en updateRuta:', error);
@@ -224,7 +222,6 @@ export async function deleteRuta(id: string): Promise<{ success: boolean; error?
       throw error;
     }
 
-    console.log('✅ Ruta eliminada:', id);
     return { success: true };
   } catch (error) {
     console.error('❌ Error en deleteRuta:', error);
@@ -277,7 +274,6 @@ export async function createParada(dto: CreateParadaDto): Promise<Parada | null>
       throw error;
     }
 
-    console.log('✅ Parada creada:', data);
     return data;
   } catch (error) {
     console.error('❌ Error en createParada:', error);
@@ -310,7 +306,6 @@ export async function updateParada(
       throw error;
     }
 
-    console.log('✅ Parada actualizada:', id);
     return true;
   } catch (error) {
     console.error('❌ Error en updateParada:', error);
@@ -333,7 +328,6 @@ export async function deleteParada(id: string): Promise<boolean> {
       throw error;
     }
 
-    console.log('✅ Parada eliminada:', id);
     return true;
   } catch (error) {
     console.error('❌ Error en deleteParada:', error);
@@ -394,13 +388,6 @@ export async function calcularRutaOptimizada(
       return null;
     }
 
-    console.log('🗺️ Calculando ruta optimizada:', {
-      ubicacionChofer,
-      numParadas: paradas.length,
-      tipoRuta,
-      ubicacionColegio,
-    });
-
     // Convertir paradas a coordenadas
     const stops = paradas.map(p => ({ lat: p.latitud, lng: p.longitud }));
 
@@ -420,13 +407,6 @@ export async function calcularRutaOptimizada(
       waypointsIntermedios = stops.slice(0, -1); // Todas menos la última
       destino = stops[stops.length - 1]; // Última parada
     }
-
-    console.log('📍 Configuración ruta:', {
-      tipo: tipoRuta,
-      origen: `${origen.lat.toFixed(4)}, ${origen.lng.toFixed(4)}`,
-      waypoints: waypointsIntermedios.length,
-      destino: `${destino.lat.toFixed(4)}, ${destino.lng.toFixed(4)}`,
-    });
 
     // Llamar a Google Directions API con optimize:true
     const result = await getOptimizedRouteForDriver(
@@ -448,14 +428,6 @@ export async function calcularRutaOptimizada(
 
     // Reordenar paradas según waypoint_order de Google
     const paradasOptimizadas = result.waypointOrder.map(index => paradas[index]);
-
-    console.log('✅ Ruta optimizada calculada:', {
-      paradasOriginales: paradas.length,
-      paradasOptimizadas: paradasOptimizadas.length,
-      distancia: result.distance,
-      duracion: result.duration,
-      polylinePoints: result.decodedCoordinates.length,
-    });
 
     return {
       paradasOptimizadas,

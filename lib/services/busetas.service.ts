@@ -28,7 +28,6 @@ export async function getBusetas(): Promise<Buseta[]> {
       throw error;
     }
 
-    console.log(`✅ ${data?.length || 0} busetas obtenidas`);
     return data || [];
   } catch (error) {
     console.error('❌ Error en getBusetas:', error);
@@ -78,7 +77,6 @@ export async function createBuseta(dto: CreateBusetaDto): Promise<Buseta | null>
       throw error;
     }
 
-    console.log('✅ Buseta creada:', data);
     return data;
   } catch (error) {
     console.error('❌ Error en createBuseta:', error);
@@ -109,7 +107,6 @@ export async function updateBuseta(
       throw error;
     }
 
-    console.log('✅ Buseta actualizada:', id);
     return true;
   } catch (error) {
     console.error('❌ Error en updateBuseta:', error);
@@ -153,7 +150,6 @@ export async function deleteBuseta(id: string): Promise<{ success: boolean; erro
       throw error;
     }
 
-    console.log('✅ Buseta eliminada:', id);
     return { success: true };
   } catch (error) {
     console.error('❌ Error en deleteBuseta:', error);

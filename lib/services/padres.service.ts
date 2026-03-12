@@ -1,5 +1,18 @@
 import { supabase } from './supabase';
 
+type EstudianteRpcRow = {
+  id: string;
+  nombre: string;
+  apellido: string;
+  id_parada: string | null;
+  parada_nombre: string | null;
+  parada_latitud: number | string | null;
+  parada_longitud: number | string | null;
+  parada_direccion: string | null;
+  ruta_id: string | null;
+  ruta_nombre: string | null;
+};
+
 export type EstudianteDelPadre = {
   id: string;
   nombre: string;
@@ -44,7 +57,7 @@ export async function getMyEstudiantes(): Promise<EstudianteDelPadre[]> {
     }
 
     // Mapear a formato esperado
-    return (data || []).map((est: any) => ({
+    return (data || []).map((est: EstudianteRpcRow) => ({
       id: est.id,
       nombre: est.nombre,
       apellido: est.apellido,

@@ -34,14 +34,6 @@ export async function guardarUbicacion(
   heading?: number
 ): Promise<boolean> {
   try {
-    console.log('💾 Intentando guardar ubicación:', {
-      idAsignacion,
-      idChofer,
-      lat: latitud.toFixed(6),
-      lng: longitud.toFixed(6),
-      velocidad: velocidad ? `${velocidad.toFixed(1)} km/h` : 'null',
-    });
-
     // Usar RPC con SECURITY DEFINER para bypassear RLS
     const { data, error } = await supabase.rpc('guardar_ubicacion_chofer', {
       p_id_asignacion: idAsignacion,
@@ -63,7 +55,6 @@ export async function guardarUbicacion(
       return false;
     }
 
-    console.log('✅ Ubicación guardada exitosamente, ID:', data);
     return true;
   } catch (error) {
     console.error('❌ Error en guardarUbicacion:', error);
@@ -114,7 +105,6 @@ export function suscribirseAUbicaciones(
         filter: `id_asignacion=eq.${idAsignacion}`,
       },
       (payload) => {
-        console.log('📍 Nueva ubicación recibida:', payload);
         const newRow = payload.new as any;
         callback({
           latitud: newRow.latitud,
@@ -126,13 +116,10 @@ export function suscribirseAUbicaciones(
         });
       }
     )
-    .subscribe((status) => {
-      console.log('📡 Estado suscripción ubicaciones:', status);
-    });
+    .subscribe();
 
   // Retornar función de cleanup
   return () => {
-    console.log('🔕 Desuscribiendo de ubicaciones');
     supabase.removeChannel(channel);
   };
 }
