@@ -47,11 +47,21 @@ export async function getRecorridosHoy(idChofer: string): Promise<RecorridoChofe
       throw error;
     }
 
-    return (data || []).map((r) => ({
+    type RecorridoRpcRow = {
+      id: string;
+      id_ruta: string;
+      nombre_ruta: string;
+      tipo_ruta: string | null;
+      hora_inicio: string;
+      hora_fin: string;
+      descripcion: string | null;
+      estado_ruta: string | null;
+    };
+    return ((data || []) as RecorridoRpcRow[]).map((r) => ({
       id: r.id,
       id_ruta: r.id_ruta,
       nombre_ruta: r.nombre_ruta,
-      tipo_ruta: r.tipo_ruta || 'ida',
+      tipo_ruta: (r.tipo_ruta as 'ida' | 'vuelta') || 'ida',
       hora_inicio: r.hora_inicio,
       hora_fin: r.hora_fin,
       descripcion: r.descripcion || '',
@@ -232,5 +242,109 @@ export async function getAsignacionesRuta(idRuta: string): Promise<AsignacionRut
   } catch (error) {
     console.error('❌ Error en getAsignacionesRuta:', error);
     return [];
+  }
+}
+
+export type ChoferAsignacion = {
+  id: string;
+  nombre: string;
+  apellido: string;
+  id_buseta: string | null;
+  buseta_placa?: string;
+};
+
+export type BusetaAsignacion = {
+  id: string;
+  placa: string;
+  ocupada: boolean;
+  chofer_nombre?: string;
+};
+
+export type RutaAsignacion = {
+  id: string;
+  nombre: string;
+  estado: string | null;
+};
+
+type ChoferAsignacionRow = {
+  id: string;
+  id_buseta: string | null;
+  profiles: { nombre: string; apellido: string };
+  busetas?: { placa: string } | null;
+};
+
+/**
+ * Obtiene choferes, rutas activas y busetas con su estado de ocupación.
+ * Combina las tres queries necesarias para la pantalla de asignaciones.
+ */
+/**
+ * Obtiene el ID y nombre del chofer asignado a una ruta.
+ * Combina las dos RPCs necesarias en una sola llamada paralela.
+ */
+export async function getChoferDeRuta(
+  idRuta: string
+): Promise<{ id: string; nombre: string } | null> {
+  try {
+    const [{ data: id }, { data: nombre }] = await Promise.all([
+      supabase.rpc('get_chofer_de_ruta', { p_id_ruta: idRuta }),
+      supabase.rpc('get_nombre_chofer_de_ruta', { p_id_ruta: idRuta }),
+    ]);
+    if (!id) return null;
+    return { id, nombre: nombre || '' };
+  } catch (error) {
+    console.error('❌ Error en getChoferDeRuta:', error);
+    return null;
+  }
+}
+
+export async function getDatosAsignaciones(): Promise<{
+  choferes: ChoferAsignacion[];
+  rutas: RutaAsignacion[];
+  busetas: BusetaAsignacion[];
+}> {
+  try {
+    const [choferesResult, rutasResult, busetasResult] = await Promise.all([
+      supabase
+        .from('choferes')
+        .select('id, id_buseta, profiles!inner(nombre, apellido), busetas(placa)'),
+      supabase
+        .from('rutas')
+        .select('id, nombre, estado')
+        .eq('estado', 'activa')
+        .order('nombre'),
+      supabase
+        .from('busetas')
+        .select('id, placa')
+        .order('placa'),
+    ]);
+
+    if (choferesResult.error) throw choferesResult.error;
+    if (rutasResult.error) throw rutasResult.error;
+    if (busetasResult.error) throw busetasResult.error;
+
+    const choferes: ChoferAsignacion[] = ((choferesResult.data || []) as unknown as ChoferAsignacionRow[]).map((c) => ({
+      id: c.id,
+      nombre: c.profiles.nombre,
+      apellido: c.profiles.apellido,
+      id_buseta: c.id_buseta,
+      buseta_placa: c.busetas?.placa || undefined,
+    }));
+
+    const busetas: BusetaAsignacion[] = (busetasResult.data || []).map((b) => {
+      const choferConBuseta = choferes.find((c) => c.id_buseta === b.id);
+      return {
+        id: b.id,
+        placa: b.placa,
+        ocupada: !!choferConBuseta,
+        chofer_nombre: choferConBuseta
+          ? `${choferConBuseta.nombre} ${choferConBuseta.apellido}`
+          : undefined,
+      };
+    });
+
+    return { choferes, rutas: rutasResult.data || [], busetas };
+  } catch (error) {
+    console.error('❌ Error en getDatosAsignaciones:', error);
+    return { choferes: [], rutas: [], busetas: [] };
   }
 }
