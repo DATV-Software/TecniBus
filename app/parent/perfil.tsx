@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react-native";
 import { useState } from "react";
+import { useToast } from "@/lib/hooks/useToast";
 import {
   ActivityIndicator,
   StatusBar,
@@ -33,13 +34,9 @@ export default function ParentProfileScreen() {
   const { profile, refreshProfile } = useAuth();
   const insets = useSafeAreaInsets();
   const paddingTop = Math.max(insets.top + 8, 48);
+  const { toast, showToast, hideToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [toast, setToast] = useState({
-    visible: false,
-    message: "",
-    type: "success" as "success" | "error",
-  });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -47,10 +44,6 @@ export default function ParentProfileScreen() {
     apellido: profile?.apellido || "",
     telefono: profile?.telefono || "",
   });
-
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ visible: true, message, type });
-  };
 
   const handleSave = async () => {
     if (isSaving) return;
@@ -346,7 +339,7 @@ export default function ParentProfileScreen() {
         visible={toast.visible}
         message={toast.message}
         type={toast.type}
-        onHide={() => setToast({ ...toast, visible: false })}
+        onHide={hideToast}
       />
     </View>
   );

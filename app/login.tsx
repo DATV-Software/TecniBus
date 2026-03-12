@@ -172,9 +172,6 @@ export default function LoginScreen() {
   // Solo mostramos feedback visual aquí
   useEffect(() => {
     if (user && profile && !authLoading) {
-      console.log(
-        "✅ Usuario autenticado, AuthGuard redirigirá automáticamente",
-      );
       // AuthGuard manejará el redirect, nosotros solo mostramos el estado
       setShowRedirecting(true);
     }
@@ -279,8 +276,6 @@ export default function LoginScreen() {
         showToast(`${getAuthErrorMessage(error)}`, "error");
         haptic.error();
       } else {
-        // Login exitoso
-        console.log("✅ Login exitoso - esperando carga de perfil...");
         showToast("Inicio de sesión exitoso", "success");
         haptic.success();
 
@@ -293,17 +288,10 @@ export default function LoginScreen() {
             );
             await SecureStore.setItemAsync("userPassword", password);
             setHasSavedCredentials(true);
-            console.log("✅ Credenciales guardadas para biometría");
           } catch (error) {
             console.error("❌ Error guardando credenciales:", error);
           }
         }
-
-        // Delay de 800ms para que se vea el toast verde
-        setTimeout(() => {
-          // El useEffect de arriba manejará la redirección cuando profile esté listo
-          console.log("⏳ Verificando perfil del usuario...");
-        }, 800);
       }
     } catch (error) {
       console.error("❌ Error inesperado:", error);
@@ -326,7 +314,6 @@ export default function LoginScreen() {
       setPassword("");
       showToast("Sesión limpiada completamente", "success");
       haptic.success();
-      console.log("🗑️ Sesión y credenciales eliminadas");
     } catch (error) {
       console.error("Error limpiando sesión:", error);
       showToast("Error al limpiar sesión", "error");
