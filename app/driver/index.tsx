@@ -4,40 +4,34 @@ import RouteMap from "@/components/RouteMap";
 import { useAuth } from "@/contexts/AuthContext";
 import { RecorridoSelector } from "@/features/driver";
 import { Colors } from "@/lib/constants/colors";
+import { useDriverEstudiantes } from "@/lib/hooks/useDriverEstudiantes";
+import { useDriverETAs } from "@/lib/hooks/useDriverETAs";
+import { useDriverRecorrido } from "@/lib/hooks/useDriverRecorrido";
+import { useGeofencePushNotifications } from "@/lib/hooks/useGeofencePushNotifications";
 import { useGeofencing } from "@/lib/hooks/useGeofencing";
 import type { UbicacionLocal } from "@/lib/hooks/useGPSTracking";
 import { useGPSTracking } from "@/lib/hooks/useGPSTracking";
-import {
-  getRecorridosHoy,
-  type RecorridoChofer,
-} from "@/lib/services/asignaciones.service";
-import {
-  getEstudiantesConAsistencia,
-  marcarAusente,
-  type EstudianteConAsistencia,
-} from "@/lib/services/asistencias.service";
+import { marcarAusente } from "@/lib/services/asistencias.service";
 import { getUbicacionColegio } from "@/lib/services/configuracion.service";
 import {
   calcularDistancia,
-  calcularETAsRuta,
   inicializarEstadosGeocercas,
   marcarEstudianteCompletado,
 } from "@/lib/services/geocercas.service";
-import { sendPushToParents } from "@/lib/services/notifications.service";
 import {
   finalizarRecorrido,
-  getEstadoRecorrido,
   guardarPolylineRuta,
   iniciarRecorrido,
 } from "@/lib/services/recorridos.service";
 import {
   calcularRutaOptimizada,
-  getParadasByRuta,
   type Parada,
 } from "@/lib/services/rutas.service";
-import { supabase } from "@/lib/services/supabase";
+import { sendPushToParents } from "@/lib/services/notifications.service";
 import type { UbicacionActual } from "@/lib/services/ubicaciones.service";
 import { haptic } from "@/lib/utils/haptics";
+import { formatHoraEC } from "@/lib/utils/datetime";
+import { calcularPolylineRestante } from "@/lib/utils/polyline";
 import * as Location from "expo-location";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -49,7 +43,7 @@ import {
   Play,
   UserX,
 } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -70,19 +64,35 @@ export default function DriverHomeScreen() {
   // Altura del header medida via onLayout para posicionar pills correctamente
   const [headerHeight, setHeaderHeight] = useState(160);
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  const [routeActive, setRouteActive] = useState(false);
-  const [recorridos, setRecorridos] = useState<RecorridoChofer[]>([]);
-  const [recorridoActual, setRecorridoActual] = useState<RecorridoChofer | null>(null);
-  const [estudiantes, setEstudiantes] = useState<EstudianteConAsistencia[]>([]);
+  // ── Recorrido + Paradas + Estado (hook) ────────────────────────────────────
+  const {
+    recorridos,
+    recorridoActual,
+    setRecorridoActual,
+    loadingRecorridos,
+    paradas,
+    setParadas,
+    polylineCoordinates,
+    setPolylineCoordinates,
+    routeActive,
+    setRouteActive,
+    horaInicioRecorrido,
+    rutaCompletada,
+    setRutaCompletada,
+    horaLlegadaColegio,
+    setHoraLlegadaColegio,
+  } = useDriverRecorrido(profile?.id);
+
+  // ── Estudiantes + Realtime (hook) ──────────────────────────────────────────
+  const { estudiantes, setEstudiantes, loading, cargarEstudiantes } = useDriverEstudiantes(
+    recorridoActual,
+    profile?.id,
+    routeActive,
+  );
+
+  // ── State local ────────────────────────────────────────────────────────────
   const [processingStudent, setProcessingStudent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingRecorridos, setLoadingRecorridos] = useState(true);
   const [showRecorridoSelector, setShowRecorridoSelector] = useState(false);
-  const [paradas, setParadas] = useState<Parada[]>([]);
-  const [polylineCoordinates, setPolylineCoordinates] = useState<
-    { latitude: number; longitude: number }[]
-  >([]);
   const [ubicacionBus, setUbicacionBus] = useState<UbicacionActual | null>(null);
   const [optimizandoRuta, setOptimizandoRuta] = useState(false);
   const [ubicacionColegio, setUbicacionColegio] = useState<{
@@ -90,9 +100,6 @@ export default function DriverHomeScreen() {
     longitud: number;
     nombre: string;
   } | null>(null);
-  const [horaInicioRecorrido, setHoraInicioRecorrido] = useState<string | null>(null);
-  const [rutaCompletada, setRutaCompletada] = useState(false);
-  const [horaLlegadaColegio, setHoraLlegadaColegio] = useState<string | null>(null);
 
   // ── GPS ────────────────────────────────────────────────────────────────────
   const { error: errorGPS, tracking, ubicacionActual } = useGPSTracking({
@@ -118,8 +125,10 @@ export default function DriverHomeScreen() {
     paradas,
   });
 
-  const lastPushStudentRef = useRef<string | null>(null);
   const colegioGeofenceActivadoRef = useRef(false);
+
+  // ── Geofence push notifications (hook) ─────────────────────────────────────
+  useGeofencePushNotifications(dentroDeZona, estudianteGeocerca, recorridoActual);
 
   // ── Derived stats ──────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -191,62 +200,15 @@ export default function DriverHomeScreen() {
     return cercana ? { parada: cercana, distanciaMetros: menor } : null;
   }, [ubicacionChofer, paradasVisibles, estudiantes, routeActive]);
 
-  const [etasPorParada, setEtasPorParada] = useState<Record<string, number>>({});
-  const [etaFinRuta, setEtaFinRuta] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!ubicacionChofer || !routeActive) {
-      setEtasPorParada({});
-      setEtaFinRuta(null);
-      return;
-    }
-    const paradasPendientes = paradasVisibles
-      .filter((p) =>
-        estudiantes.some(
-          (e) =>
-            e.parada?.id === p.id &&
-            e.estado !== "ausente" &&
-            e.estado !== "completado",
-        ),
-      );
-
-    if (paradasPendientes.length === 0 && !ubicacionColegio) {
-      setEtasPorParada({});
-      setEtaFinRuta(null);
-      return;
-    }
-
-    const cacheKey = `chofer-${paradasPendientes.map((p) => p.id).join(",")}`;
-    calcularETAsRuta(
-      ubicacionChofer.latitude,
-      ubicacionChofer.longitude,
-      paradasPendientes,
-      ubicacionColegio ? { latitud: ubicacionColegio.latitud, longitud: ubicacionColegio.longitud } : null,
-      cacheKey,
-    ).then(({ porParada, destinoFinal }) => {
-      setEtasPorParada(porParada);
-      setEtaFinRuta(destinoFinal);
-      if (recorridoActual?.id) {
-        supabase
-          .from("estados_recorrido")
-          .update({ eta_paradas: { ...porParada, colegio: destinoFinal } })
-          .eq("id_asignacion", recorridoActual.id)
-          .then(({ error }) => {
-            if (error) console.error("❌ Error publicando ETAs en DB:", error.message);
-          });
-      }
-    });
-  }, [
-    ubicacionChofer?.latitude,
-    ubicacionChofer?.longitude,
+  // ── ETAs por parada (hook) ─────────────────────────────────────────────────
+  const { etasPorParada, etaFinRuta } = useDriverETAs({
+    ubicacionChofer,
     routeActive,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    paradasVisibles.map((p) => p.id).join(","),
-    estudiantes.map((e) => e.estado).join(","),
-    ubicacionColegio?.latitud,
-    ubicacionColegio?.longitud,
-    recorridoActual?.id,
-  ]);
+    paradasVisibles,
+    estudiantes,
+    ubicacionColegio,
+    idAsignacion: recorridoActual?.id,
+  });
 
   useEffect(() => {
     if (!routeActive) colegioGeofenceActivadoRef.current = false;
@@ -258,15 +220,7 @@ export default function DriverHomeScreen() {
 
   const polylineRestante = useMemo(() => {
     if (!polylineCoordinates.length || !ubicacionChofer) return polylineCoordinates;
-    let minDist = Infinity;
-    let closestIdx = 0;
-    for (let i = 0; i < polylineCoordinates.length; i++) {
-      const dlat = ubicacionChofer.latitude - polylineCoordinates[i].latitude;
-      const dlng = ubicacionChofer.longitude - polylineCoordinates[i].longitude;
-      const dist = dlat * dlat + dlng * dlng;
-      if (dist < minDist) { minDist = dist; closestIdx = i; }
-    }
-    return polylineCoordinates.slice(closestIdx);
+    return calcularPolylineRestante(polylineCoordinates, ubicacionChofer);
   }, [polylineCoordinates, ubicacionChofer?.latitude, ubicacionChofer?.longitude]);
 
   // ── Effects ────────────────────────────────────────────────────────────────
@@ -274,118 +228,6 @@ export default function DriverHomeScreen() {
     getUbicacionColegio().then(setUbicacionColegio).catch(console.error);
   }, []);
 
-  const cargarRecorridos = useCallback(async () => {
-    if (!profile?.id) return;
-    try {
-      setLoadingRecorridos(true);
-      const data = await getRecorridosHoy(profile.id);
-      setRecorridos(data);
-      if (data.length > 0 && !recorridoActual) setRecorridoActual(data[0]);
-    } catch {
-      showAlert({ title: "Error", message: "No se pudieron cargar los recorridos", type: "error" });
-    } finally {
-      setLoadingRecorridos(false);
-    }
-  }, [profile?.id]);
-
-  const cargarEstudiantes = useCallback(async () => {
-    if (!profile?.id || !recorridoActual) return;
-    try {
-      setLoading(true);
-      const data = await getEstudiantesConAsistencia(recorridoActual.id_ruta, profile.id);
-      setEstudiantes(data);
-    } catch {
-      showAlert({ title: "Error", message: "No se pudieron cargar los estudiantes", type: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }, [profile?.id, recorridoActual]);
-
-  const cargarParadas = useCallback(async () => {
-    if (!recorridoActual) return;
-    try {
-      const data = await getParadasByRuta(recorridoActual.id_ruta);
-      setParadas(data);
-    } catch (error) {
-      console.error("Error cargando paradas:", error);
-    }
-  }, [recorridoActual]);
-
-  const cargarEstadoRecorrido = useCallback(async () => {
-    if (!recorridoActual) return;
-    try {
-      const estado = await getEstadoRecorrido(recorridoActual.id);
-      setRouteActive(estado?.activo || false);
-      setHoraInicioRecorrido(estado?.hora_inicio || null);
-    } catch (error) {
-      console.error("Error cargando estado del recorrido:", error);
-    }
-  }, [recorridoActual]);
-
-  useEffect(() => { cargarRecorridos(); }, [cargarRecorridos]);
-
-  useEffect(() => {
-    if (recorridoActual) {
-      cargarEstudiantes();
-      cargarEstadoRecorrido();
-      cargarParadas();
-    }
-  }, [recorridoActual, cargarEstudiantes, cargarEstadoRecorrido, cargarParadas]);
-
-  // Realtime subscriptions
-  useEffect(() => {
-    if (!recorridoActual) return;
-    const channel = supabase
-      .channel("asistencias-changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "asistencias" }, () => cargarEstudiantes())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [recorridoActual, cargarEstudiantes]);
-
-  useEffect(() => {
-    if (!routeActive || !recorridoActual) return;
-    const interval = setInterval(() => cargarEstudiantes(), 15000);
-    return () => clearInterval(interval);
-  }, [routeActive, recorridoActual, cargarEstudiantes]);
-
-  useEffect(() => {
-    if (!recorridoActual) return;
-    const channel = supabase
-      .channel("estados-recorrido-changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "estados_recorrido", filter: `id_asignacion=eq.${recorridoActual.id}` }, () => cargarEstadoRecorrido())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [recorridoActual, cargarEstadoRecorrido]);
-
-  // Push notifications
-  useEffect(() => {
-    if (!dentroDeZona || !estudianteGeocerca || !recorridoActual) return;
-    if (lastPushStudentRef.current === estudianteGeocerca.id_estudiante) return;
-    lastPushStudentRef.current = estudianteGeocerca.id_estudiante;
-    sendPushToParents(
-      recorridoActual.id,
-      "🚌 La buseta esta cerca",
-      `La buseta se acerca a la parada de ${estudianteGeocerca.nombreCompleto}. Prepárense para abordaje.`,
-      { tipo: "geocerca_entrada", id_estudiante: estudianteGeocerca.id_estudiante },
-    ).catch((err) => console.warn("Error enviando push de geocerca entrada:", err));
-  }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id]);
-
-  const prevDentroDeZonaRef = useRef(false);
-  const prevEstudianteGeocercaRef = useRef<typeof estudianteGeocerca>(null);
-  useEffect(() => {
-    const estabaDentro = prevDentroDeZonaRef.current;
-    const prevEst = prevEstudianteGeocercaRef.current;
-    if (estabaDentro && !dentroDeZona && prevEst && recorridoActual) {
-      sendPushToParents(
-        recorridoActual.id,
-        "✅ Recogido correctamente",
-        `${prevEst.nombreCompleto} fue recogido por la buseta y ya va camino al colegio.`,
-        { tipo: "geocerca_salida", id_estudiante: prevEst.id_estudiante },
-      ).catch((err) => console.warn("Error enviando push de geocerca salida:", err));
-    }
-    prevDentroDeZonaRef.current = dentroDeZona;
-    prevEstudianteGeocercaRef.current = estudianteGeocerca;
-  }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id]);
 
   // Auto-finalizar al llegar al colegio
   useEffect(() => {
@@ -443,7 +285,6 @@ export default function DriverHomeScreen() {
         await marcarEstudianteCompletado(recorridoActual.id, estudianteGeocerca.id_estudiante, profile.id, "ausente");
         await marcarCompletadoManual();
         await cargarEstudiantes();
-        lastPushStudentRef.current = null;
         haptic.success();
       } else {
         haptic.error();
@@ -527,11 +368,6 @@ export default function DriverHomeScreen() {
       },
     ] });
   };
-
-  const formatHoraEC = (isoString: string) =>
-    new Date(isoString).toLocaleTimeString("es-EC", {
-      hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "America/Guayaquil",
-    });
 
   // ── Derived for bottom card ────────────────────────────────────────────────
   const estaEnGeocerca = !!(routeActive && dentroDeZona && estudianteGeocerca);
