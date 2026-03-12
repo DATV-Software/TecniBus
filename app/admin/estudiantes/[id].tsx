@@ -45,7 +45,6 @@ type Parada = {
   id: string;
   nombre: string | null;
   direccion: string | null;
-  orden: number | null;
   ruta: { id: string; nombre: string } | null;
 };
 

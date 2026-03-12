@@ -7,6 +7,8 @@ import {
   SubScreenHeader,
 } from "@/features/admin";
 import { haptic } from "@/lib/utils/haptics";
+import { useToast } from "@/lib/hooks/useToast";
+import { QUERY_KEYS } from "@/lib/constants/queryKeys";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Plus, Upload, UserCircle } from "lucide-react-native";
@@ -21,6 +23,7 @@ import {
   View,
 } from "react-native";
 import Toast from "@/components/Toast";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import {
   eliminarUsuario,
@@ -32,18 +35,14 @@ export default function ListaChoferesScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { toast, showToast, hideToast } = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [toast, setToast] = useState<{
-    visible: boolean;
-    message: string;
-    type: "success" | "error" | "warning" | "info";
-  }>({ visible: false, message: "", type: "success" });
 
   const { data: choferes = [], isLoading: loading, refetch, isRefetching: refreshing } = useQuery({
-    queryKey: ['choferes'],
+    queryKey: QUERY_KEYS.choferes,
     queryFn: obtenerChoferes,
   });
 
@@ -52,13 +51,6 @@ export default function ListaChoferesScreen() {
       refetch();
     }, [refetch])
   );
-
-  const showToast = (
-    message: string,
-    type: "success" | "error" | "warning"
-  ) => {
-    setToast({ visible: true, message, type });
-  };
 
   const filtered = useMemo(() => {
     if (!search.trim()) return choferes;
@@ -87,7 +79,7 @@ export default function ListaChoferesScreen() {
     setDeletingId(userId);
     const result = await eliminarUsuario(userId);
     if (result.success) {
-      queryClient.invalidateQueries({ queryKey: ['choferes'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.choferes });
       showToast("Conductor eliminado correctamente", "success");
     } else {
       showToast(result.error || "Error al eliminar", "error");
@@ -194,19 +186,13 @@ export default function ListaChoferesScreen() {
             />
           )}
           ListEmptyComponent={
-            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
-              <View style={{ backgroundColor: Colors.tecnibus[100], padding: 20, borderRadius: 24, marginBottom: 16 }}>
-                <UserCircle size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
-              </View>
-              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
-                {search ? "Sin resultados" : "Sin conductores registrados"}
-              </Text>
-              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
-                {search
-                  ? `No se encontró ningún conductor con "${search}"`
-                  : "Toca el botón de arriba para agregar el primer conductor"}
-              </Text>
-            </View>
+            <EmptyState
+              icon={UserCircle}
+              title="Sin conductores registrados"
+              subtitle="Toca el botón de arriba para agregar el primer conductor"
+              isSearching={!!search}
+              searchSubtitle={`No se encontró ningún conductor con "${search}"`}
+            />
           }
         />
       )}
@@ -215,7 +201,7 @@ export default function ListaChoferesScreen() {
         visible={showModal}
         onClose={() => setShowModal(false)}
         userType="chofer"
-        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['choferes'] })}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.choferes })}
         onToast={showToast}
       />
 
@@ -223,7 +209,7 @@ export default function ListaChoferesScreen() {
         visible={showImport}
         onClose={() => setShowImport(false)}
         entityType="conductores"
-        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['choferes'] })}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.choferes })}
         onToast={showToast}
       />
 
@@ -231,7 +217,7 @@ export default function ListaChoferesScreen() {
         visible={toast.visible}
         message={toast.message}
         type={toast.type}
-        onHide={() => setToast((prev) => ({ ...prev, visible: false }))}
+        onHide={hideToast}
       />
     </View>
   );

@@ -6,6 +6,8 @@ import {
   SubScreenHeader,
 } from "@/features/admin";
 import { haptic } from "@/lib/utils/haptics";
+import { QUERY_KEYS } from "@/lib/constants/queryKeys";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin, Plus, Route } from "lucide-react-native";
@@ -26,7 +28,7 @@ export default function RutasListScreen() {
   const [search, setSearch] = useState("");
 
   const { data: rutas = [], isLoading: loading, refetch, isRefetching: refreshing } = useQuery({
-    queryKey: ['rutas'],
+    queryKey: QUERY_KEYS.rutas,
     queryFn: getRutas,
   });
 
@@ -142,24 +144,13 @@ export default function RutasListScreen() {
             );
           }}
           ListEmptyComponent={
-            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
-              <View style={{
-                backgroundColor: Colors.tecnibus[100],
-                padding: 20,
-                borderRadius: 24,
-                marginBottom: 16,
-              }}>
-                <MapPin size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
-              </View>
-              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
-                {search ? "Sin resultados" : "Sin rutas registradas"}
-              </Text>
-              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
-                {search
-                  ? `No se encontró ninguna ruta con "${search}"`
-                  : "Toca el botón de arriba para crear la primera ruta"}
-              </Text>
-            </View>
+            <EmptyState
+              icon={MapPin}
+              title="Sin rutas registradas"
+              subtitle="Toca el botón de arriba para crear la primera ruta"
+              isSearching={!!search}
+              searchSubtitle={`No se encontró ninguna ruta con "${search}"`}
+            />
           }
         />
       )}

@@ -5,6 +5,7 @@ import {
   getDashboardStats,
 } from "@/lib/services/stats.service";
 import { haptic } from "@/lib/utils/haptics";
+import { QUERY_KEYS } from "@/lib/constants/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -41,7 +42,7 @@ export default function AdminHomeScreen() {
   };
 
   const { data: stats = DEFAULT_STATS, isLoading: loading, refetch, isRefetching } = useQuery({
-    queryKey: ['dashboard-stats'],
+    queryKey: QUERY_KEYS.dashboardStats,
     queryFn: getDashboardStats,
   });
 
@@ -54,11 +55,6 @@ export default function AdminHomeScreen() {
   const handleSettings = () => {
     haptic.light();
     router.push("/admin/settings");
-  };
-
-  const handleLiveView = () => {
-    haptic.light();
-    router.push("/admin/liveview");
   };
 
   const handleTrackingPress = () => {
@@ -165,7 +161,7 @@ export default function AdminHomeScreen() {
                 activeCount={stats.activeBuses}
                 totalCount={stats.totalBuses}
                 label="En ruta actualmente"
-                onLiveViewPress={handleLiveView}
+                onLiveViewPress={handleTrackingPress}
               />
             </View>
 

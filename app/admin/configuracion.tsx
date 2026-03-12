@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import { useRefresh } from "@/lib/hooks/useRefresh";
+import { useToast } from "@/lib/hooks/useToast";
 import MapView, { Marker, MapPressEvent, MarkerDragStartEndEvent, Region } from "react-native-maps";
 import Toast from "@/components/Toast";
 
@@ -29,6 +30,7 @@ export default function ConfiguracionScreen() {
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
 
+  const { toast, showToast, hideToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [ubicacion, setUbicacion] = useState<UbicacionColegio>({
@@ -36,11 +38,6 @@ export default function ConfiguracionScreen() {
     longitud: -79.0,
     nombre: "Colegio TecniBus",
   });
-  const [toast, setToast] = useState<{
-    visible: boolean;
-    message: string;
-    type: "success" | "error" | "warning" | "info";
-  }>({ visible: false, message: "", type: "success" });
 
   useEffect(() => {
     loadUbicacion();
@@ -80,11 +77,7 @@ export default function ConfiguracionScreen() {
 
   const handleSave = async () => {
     if (!ubicacion.nombre.trim()) {
-      setToast({
-        visible: true,
-        message: "Ingresa el nombre del colegio",
-        type: "warning",
-      });
+      showToast("Ingresa el nombre del colegio", "warning");
       return;
     }
 
@@ -96,18 +89,10 @@ export default function ConfiguracionScreen() {
     setSaving(false);
 
     if (success) {
-      setToast({
-        visible: true,
-        message: "Configuración guardada correctamente",
-        type: "success",
-      });
+      showToast("Configuración guardada correctamente", "success");
       setTimeout(() => router.back(), 1500);
     } else {
-      setToast({
-        visible: true,
-        message: "Error al guardar la configuración",
-        type: "error",
-      });
+      showToast("Error al guardar la configuración", "error");
     }
   };
 
@@ -342,7 +327,7 @@ export default function ConfiguracionScreen() {
         visible={toast.visible}
         message={toast.message}
         type={toast.type}
-        onDismiss={() => setToast({ ...toast, visible: false })}
+        onHide={hideToast}
       />
     </View>
   );

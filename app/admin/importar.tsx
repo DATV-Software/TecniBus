@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   StatusBar,
   Text,
   TextInput,

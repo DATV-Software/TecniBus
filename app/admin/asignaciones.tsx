@@ -5,7 +5,11 @@ import {
   createAsignacion,
   deleteAsignacion,
   getAsignacionesChofer,
+  getDatosAsignaciones,
   type AsignacionRuta,
+  type ChoferAsignacion,
+  type BusetaAsignacion,
+  type RutaAsignacion,
   type CreateAsignacionDto,
 } from "@/lib/services/asignaciones.service";
 import { supabase } from "@/lib/services/supabase";
@@ -37,26 +41,9 @@ import {
 import { useRefresh } from "@/lib/hooks/useRefresh";
 import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 
-type Chofer = {
-  id: string;
-  nombre: string;
-  apellido: string;
-  id_buseta: string | null;
-  buseta_placa?: string;
-};
-
-type Ruta = {
-  id: string;
-  nombre: string;
-  estado: string | null;
-};
-
-type Buseta = {
-  id: string;
-  placa: string;
-  ocupada: boolean;
-  chofer_nombre?: string;
-};
+type Chofer = ChoferAsignacion;
+type Ruta = RutaAsignacion;
+type Buseta = BusetaAsignacion;
 
 const DIAS_SEMANA = [
   "lunes",
@@ -99,57 +86,10 @@ export default function AsignacionesScreen() {
   const cargarDatos = async () => {
     try {
       setLoading(true);
-
-      const { data: choferesData, error: errorChoferes } = await supabase
-        .from("choferes")
-        .select(`
-          id,
-          id_buseta,
-          profiles!inner(nombre, apellido),
-          busetas(placa)
-        `);
-
-      if (errorChoferes) throw errorChoferes;
-
-      const choferesFormateados: Chofer[] = (choferesData || []).map((c: any) => ({
-        id: c.id,
-        nombre: c.profiles.nombre,
-        apellido: c.profiles.apellido,
-        id_buseta: c.id_buseta,
-        buseta_placa: c.busetas?.placa || null,
-      }));
-
-      setChoferes(choferesFormateados);
-
-      const { data: rutasData, error: errorRutas } = await supabase
-        .from("rutas")
-        .select("id, nombre, estado")
-        .eq("estado", "activa")
-        .order("nombre");
-
-      if (errorRutas) throw errorRutas;
-      setRutas(rutasData || []);
-
-      const { data: busetasData, error: errorBusetas } = await supabase
-        .from("busetas")
-        .select("id, placa")
-        .order("placa");
-
-      if (errorBusetas) throw errorBusetas;
-
-      const busetasConEstado: Buseta[] = (busetasData || []).map((buseta) => {
-        const choferConBuseta = choferesFormateados.find((c) => c.id_buseta === buseta.id);
-        return {
-          id: buseta.id,
-          placa: buseta.placa,
-          ocupada: !!choferConBuseta,
-          chofer_nombre: choferConBuseta
-            ? `${choferConBuseta.nombre} ${choferConBuseta.apellido}`
-            : undefined,
-        };
-      });
-
-      setBusetas(busetasConEstado);
+      const { choferes, rutas, busetas } = await getDatosAsignaciones();
+      setChoferes(choferes);
+      setRutas(rutas);
+      setBusetas(busetas);
     } catch (error) {
       console.error("Error cargando datos:", error);
       showAlert({ title: "Error", message: "No se pudieron cargar los datos", type: "error" });

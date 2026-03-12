@@ -7,6 +7,9 @@ import {
   SubScreenHeader,
 } from "@/features/admin";
 import { haptic } from "@/lib/utils/haptics";
+import { useToast } from "@/lib/hooks/useToast";
+import { QUERY_KEYS } from "@/lib/constants/queryKeys";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import {
@@ -27,6 +30,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Toast from "@/components/Toast";
 import {
   Estudiante,
   getEstudiantes,
@@ -34,11 +38,12 @@ import {
 
 export default function EstudiantesListScreen() {
   const router = useRouter();
+  const { toast, showToast, hideToast } = useToast();
   const [search, setSearch] = useState("");
   const [showImport, setShowImport] = useState(false);
 
   const { data: estudiantes = [], isLoading: loading, refetch, isRefetching: refreshing } = useQuery({
-    queryKey: ['estudiantes'],
+    queryKey: QUERY_KEYS.estudiantes,
     queryFn: getEstudiantes,
   });
 
@@ -190,19 +195,13 @@ export default function EstudiantesListScreen() {
             />
           )}
           ListEmptyComponent={
-            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 60 }}>
-              <View style={{ backgroundColor: Colors.tecnibus[100], padding: 20, borderRadius: 24, marginBottom: 16 }}>
-                <GraduationCap size={40} color={Colors.tecnibus[400]} strokeWidth={1.5} />
-              </View>
-              <Text style={{ color: "#1F2937", fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
-                {search ? "Sin resultados" : "Sin estudiantes registrados"}
-              </Text>
-              <Text style={{ color: "#6B7280", textAlign: "center", fontSize: 13, lineHeight: 20 }}>
-                {search
-                  ? `No se encontró ningún estudiante con "${search}"`
-                  : "Toca el botón de arriba para registrar el primer estudiante"}
-              </Text>
-            </View>
+            <EmptyState
+              icon={GraduationCap}
+              title="Sin estudiantes registrados"
+              subtitle="Toca el botón de arriba para registrar el primer estudiante"
+              isSearching={!!search}
+              searchSubtitle={`No se encontró ningún estudiante con "${search}"`}
+            />
           }
         />
       )}
@@ -212,7 +211,14 @@ export default function EstudiantesListScreen() {
         onClose={() => setShowImport(false)}
         entityType="estudiantes"
         onSuccess={() => refetch()}
-        onToast={(message, type) => console.log(type, message)}
+        onToast={showToast}
+      />
+
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
       />
     </View>
   );
