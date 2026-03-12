@@ -20,14 +20,11 @@ export function useNotificationNavigation() {
     // Solo procesar si hay usuario autenticado
     if (!user || !profile) return;
 
-    console.log('📱 useNotificationNavigation: Configurando listeners');
-
     let responseListener: any = null;
 
     try {
       // Listener: cuando la app está abierta y el usuario toca una notificación
       responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log('🔔 Notificación tocada (app abierta):', response);
         handleNotificationNavigation(response.notification.request.content.data);
       });
 
@@ -36,7 +33,6 @@ export function useNotificationNavigation() {
         Notifications.getLastNotificationResponseAsync()
           .then((response) => {
             if (response) {
-              console.log('🔔 Notificación que abrió la app (cold start):', response);
               hasProcessedInitialNotification.current = true;
               // Pequeño delay para asegurar que el router esté listo
               setTimeout(() => {
@@ -53,7 +49,6 @@ export function useNotificationNavigation() {
     }
 
     return () => {
-      console.log('📱 useNotificationNavigation: Limpiando listeners');
       if (responseListener) {
         try {
           responseListener.remove();
@@ -65,8 +60,6 @@ export function useNotificationNavigation() {
   }, [user, profile, loading]);
 
   const handleNotificationNavigation = (data: any) => {
-    console.log('🧭 Navegando desde notificación:', data);
-
     const tipo = data?.tipo;
 
     // Mapeo de tipos de notificación a rutas

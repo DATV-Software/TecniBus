@@ -133,11 +133,6 @@ export function useGeofencing({
 
       // Primera vez que entramos a esta parada → registrar en DB
       if (!yaEnZona) {
-        console.log('🔔 ENTRADA A GEOCERCA:', {
-          estudiante: geoEst.nombreCompleto,
-          parada: geoEst.parada_nombre,
-          distancia: Math.round(distancia),
-        });
         estudianteEnZonaRef.current = idEst;
         marcarEntradaGeocerca(idAsignacion, idEst, idChofer).catch((err) =>
           console.warn('Error marcando entrada geocerca:', err),
@@ -147,10 +142,6 @@ export function useGeofencing({
       // Fuera del radio
       if (yaEnZona) {
         // Salida: el bus se alejó del estudiante que estaba en zona
-        console.log('🚶 SALIDA DE GEOCERCA:', {
-          estudiante: `${estudiante.nombre} ${estudiante.apellido}`,
-          distancia: Math.round(distancia),
-        });
         estudianteEnZonaRef.current = null;
         estudiantesProcesadosRef.current.add(idEst); // No volver a entrar en este recorrido
         setDentroDeZona(false);
@@ -188,7 +179,6 @@ export function useGeofencing({
    * Limpia el estado local para permitir avanzar al siguiente.
    */
   const marcarCompletadoManual = async () => {
-    console.log('✅ Geocerca: estudiante marcado manualmente, limpiando estado');
     if (estudianteEnZonaRef.current) {
       estudiantesProcesadosRef.current.add(estudianteEnZonaRef.current);
     }
