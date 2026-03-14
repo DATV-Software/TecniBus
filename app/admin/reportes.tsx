@@ -13,7 +13,8 @@ import * as WebBrowser from "expo-web-browser";
 import {
   AlertCircle,
   BarChart2,
-  Calendar,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle,
   Download,
   Filter,
@@ -38,6 +39,15 @@ function formatDate(date: Date): string {
 
 function labelDate(dateStr: string): string {
   const [y, m, d] = dateStr.split("-");
+  const months = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  ];
+  return `${parseInt(d)} de ${months[parseInt(m) - 1]} ${y}`;
+}
+
+function labelDayShort(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-");
   return `${d}/${m}/${y}`;
 }
 
@@ -49,27 +59,17 @@ const ESTADOS_FILTRO = [
   { label: "Pendiente", value: "pendiente" },
 ];
 
-const PERIODOS = [
-  { label: "Hoy", dias: 0 },
-  { label: "7 días", dias: 7 },
-  { label: "15 días", dias: 15 },
-  { label: "30 días", dias: 30 },
-];
-
 export default function ReportesScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
 
   const today = formatDate(new Date());
-  const [fechaInicio, setFechaInicio] = useState(today);
-  const [fechaFin, setFechaFin] = useState(today);
+  const [fechaDia, setFechaDia] = useState(today);
   const [rutaId, setRutaId] = useState<string>("");
   const [estadoFiltro, setEstadoFiltro] = useState<string>("");
   const [rutas, setRutas] = useState<Ruta[]>([]);
   const [generando, setGenerando] = useState(false);
-  const [estadisticas, setEstadisticas] = useState<EstadisticasReporte | null>(
-    null,
-  );
+  const [estadisticas, setEstadisticas] = useState<EstadisticasReporte | null>(null);
   const [urlReporte, setUrlReporte] = useState<string | null>(null);
 
   const { refreshing, onRefresh } = useRefresh(() => getRutas().then(setRutas));
@@ -78,33 +78,32 @@ export default function ReportesScreen() {
     getRutas().then(setRutas);
   }, []);
 
-  const aplicarPeriodo = (dias: number) => {
-    const fin = new Date();
-    const ini = new Date();
-    if (dias > 0) ini.setDate(ini.getDate() - dias);
-    setFechaInicio(formatDate(ini));
-    setFechaFin(formatDate(fin));
+  const cambiarDia = (delta: number) => {
+    const d = new Date(fechaDia + "T12:00:00");
+    d.setDate(d.getDate() + delta);
+    const nueva = formatDate(d);
+    if (nueva > today) return;
+    setFechaDia(nueva);
     setEstadisticas(null);
     setUrlReporte(null);
   };
 
+  const isToday = fechaDia === today;
+  const isYesterday = (() => {
+    const ayer = new Date();
+    ayer.setDate(ayer.getDate() - 1);
+    return fechaDia === formatDate(ayer);
+  })();
+
   const handleGenerar = async () => {
-    if (fechaInicio > fechaFin) {
-      showAlert({
-        title: "Fechas inválidas",
-        message: "La fecha de inicio no puede ser mayor a la fecha fin.",
-        type: "warning",
-      });
-      return;
-    }
     haptic.light();
     setGenerando(true);
     setEstadisticas(null);
     setUrlReporte(null);
 
     const result = await generarReporteAsistencia({
-      fecha_inicio: fechaInicio,
-      fecha_fin: fechaFin,
+      fecha_inicio: fechaDia,
+      fecha_fin: fechaDia,
       id_ruta: rutaId || undefined,
       estado: estadoFiltro || undefined,
     });
@@ -157,7 +156,7 @@ export default function ReportesScreen() {
           />
         }
       >
-        {/* Acceso rápido a períodos */}
+        {/* Selector de día */}
         <View
           style={{
             backgroundColor: "#FFFFFF",
@@ -167,100 +166,138 @@ export default function ReportesScreen() {
           }}
         >
           <Text style={{ fontSize: 14, fontWeight: "600", color: "#374151" }}>
-            Período rápido
+            Seleccionar día
           </Text>
-          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-            {PERIODOS.map((p) => (
-              <TouchableOpacity
-                key={p.label}
-                onPress={() => aplicarPeriodo(p.dias)}
-                style={{
-                  backgroundColor: Colors.tecnibus[100],
-                  borderWidth: 1,
-                  borderColor: Colors.tecnibus[300],
-                  borderRadius: 20,
-                  paddingHorizontal: 14,
-                  paddingVertical: 7,
-                }}
-              >
+
+          {/* Navegación de días */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              backgroundColor: Colors.tecnibus[50],
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: Colors.tecnibus[200],
+              paddingVertical: 4,
+              paddingHorizontal: 4,
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => cambiarDia(-1)}
+              style={{
+                padding: 10,
+                borderRadius: 10,
+                backgroundColor: Colors.tecnibus[100],
+              }}
+              activeOpacity={0.7}
+            >
+              <ChevronLeft size={20} color={Colors.tecnibus[700]} strokeWidth={2.5} />
+            </TouchableOpacity>
+
+            <View style={{ alignItems: "center", flex: 1 }}>
+              {(isToday || isYesterday) && (
                 <Text
                   style={{
-                    color: Colors.tecnibus[700],
-                    fontSize: 13,
-                    fontWeight: "500",
+                    fontSize: 10,
+                    fontWeight: "700",
+                    color: Colors.tecnibus[500],
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    marginBottom: 2,
                   }}
                 >
-                  {p.label}
+                  {isToday ? "Hoy" : "Ayer"}
                 </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Filtros de fecha */}
-        <View
-          style={{
-            backgroundColor: "#FFFFFF",
-            borderRadius: 12,
-            padding: 16,
-            gap: 14,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Calendar size={16} color={Colors.tecnibus[600]} />
-            <Text style={{ fontSize: 14, fontWeight: "600", color: "#374151" }}>
-              Rango de fechas
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 11, color: "#6B7280", marginBottom: 6 }}>
-                DESDE
-              </Text>
-              <View
+              )}
+              <Text
                 style={{
-                  backgroundColor: Colors.tecnibus[50],
-                  borderWidth: 1,
-                  borderColor: Colors.tecnibus[200],
-                  borderRadius: 10,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
+                  fontSize: 16,
+                  fontWeight: "800",
+                  color: "#1F2937",
+                  textAlign: "center",
                 }}
               >
-                <Text
-                  style={{ color: "#1F2937", fontSize: 15, fontWeight: "500" }}
-                >
-                  {labelDate(fechaInicio)}
-                </Text>
-              </View>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 11, color: "#6B7280", marginBottom: 6 }}>
-                HASTA
+                {labelDate(fechaDia)}
               </Text>
-              <View
-                style={{
-                  backgroundColor: Colors.tecnibus[50],
-                  borderWidth: 1,
-                  borderColor: Colors.tecnibus[200],
-                  borderRadius: 10,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                }}
-              >
-                <Text
-                  style={{ color: "#1F2937", fontSize: 15, fontWeight: "500" }}
-                >
-                  {labelDate(fechaFin)}
-                </Text>
-              </View>
+              <Text style={{ fontSize: 11, color: "#9CA3AF", marginTop: 1 }}>
+                {labelDayShort(fechaDia)}
+              </Text>
             </View>
+
+            <TouchableOpacity
+              onPress={() => cambiarDia(1)}
+              disabled={isToday}
+              style={{
+                padding: 10,
+                borderRadius: 10,
+                backgroundColor: isToday ? "#F3F4F6" : Colors.tecnibus[100],
+                opacity: isToday ? 0.4 : 1,
+              }}
+              activeOpacity={0.7}
+            >
+              <ChevronRight size={20} color={Colors.tecnibus[700]} strokeWidth={2.5} />
+            </TouchableOpacity>
           </View>
 
-          <Text style={{ fontSize: 11, color: "#9CA3AF" }}>
-            Usa los botones de período rápido para cambiar el rango.
-          </Text>
+          {/* Acceso rápido */}
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <TouchableOpacity
+              onPress={() => {
+                setFechaDia(today);
+                setEstadisticas(null);
+                setUrlReporte(null);
+              }}
+              style={{
+                flex: 1,
+                backgroundColor: isToday ? Colors.tecnibus[600] : Colors.tecnibus[100],
+                borderWidth: 1,
+                borderColor: isToday ? Colors.tecnibus[600] : Colors.tecnibus[300],
+                borderRadius: 10,
+                paddingVertical: 8,
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: isToday ? "#FFFFFF" : Colors.tecnibus[700],
+                  fontSize: 13,
+                  fontWeight: "600",
+                }}
+              >
+                Hoy
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                const ayer = new Date();
+                ayer.setDate(ayer.getDate() - 1);
+                setFechaDia(formatDate(ayer));
+                setEstadisticas(null);
+                setUrlReporte(null);
+              }}
+              style={{
+                flex: 1,
+                backgroundColor: isYesterday ? Colors.tecnibus[600] : Colors.tecnibus[100],
+                borderWidth: 1,
+                borderColor: isYesterday ? Colors.tecnibus[600] : Colors.tecnibus[300],
+                borderRadius: 10,
+                paddingVertical: 8,
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: isYesterday ? "#FFFFFF" : Colors.tecnibus[700],
+                  fontSize: 13,
+                  fontWeight: "600",
+                }}
+              >
+                Ayer
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Filtro por ruta */}
@@ -308,14 +345,10 @@ export default function ReportesScreen() {
                 onPress={() => setRutaId(r.id)}
                 style={{
                   backgroundColor:
-                    rutaId === r.id
-                      ? Colors.tecnibus[600]
-                      : Colors.tecnibus[50],
+                    rutaId === r.id ? Colors.tecnibus[600] : Colors.tecnibus[50],
                   borderWidth: 1,
                   borderColor:
-                    rutaId === r.id
-                      ? Colors.tecnibus[600]
-                      : Colors.tecnibus[200],
+                    rutaId === r.id ? Colors.tecnibus[600] : Colors.tecnibus[200],
                   borderRadius: 20,
                   paddingHorizontal: 14,
                   paddingVertical: 7,
@@ -370,9 +403,7 @@ export default function ReportesScreen() {
                 <Text
                   style={{
                     color:
-                      estadoFiltro === e.value
-                        ? "#FFFFFF"
-                        : Colors.tecnibus[700],
+                      estadoFiltro === e.value ? "#FFFFFF" : Colors.tecnibus[700],
                     fontSize: 13,
                     fontWeight: "500",
                   }}
@@ -425,32 +456,16 @@ export default function ReportesScreen() {
               <Text
                 style={{ fontSize: 15, fontWeight: "700", color: "#1F2937" }}
               >
-                Reporte generado
+                Reporte del {labelDayShort(fechaDia)}
               </Text>
             </View>
 
             {/* Stats grid */}
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <StatBox
-                label="Total"
-                value={estadisticas.total}
-                color="#6B7280"
-              />
-              <StatBox
-                label="Presentes"
-                value={estadisticas.presentes}
-                color="#10B981"
-              />
-              <StatBox
-                label="Ausentes"
-                value={estadisticas.ausentes}
-                color="#EF4444"
-              />
-              <StatBox
-                label="Pendientes"
-                value={estadisticas.pendientes}
-                color="#F59E0B"
-              />
+              <StatBox label="Total" value={estadisticas.total} color="#6B7280" />
+              <StatBox label="Presentes" value={estadisticas.presentes} color="#10B981" />
+              <StatBox label="Ausentes" value={estadisticas.ausentes} color="#EF4444" />
+              <StatBox label="Pendientes" value={estadisticas.pendientes} color="#F59E0B" />
             </View>
 
             <View
