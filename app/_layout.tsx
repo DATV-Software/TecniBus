@@ -39,11 +39,11 @@ function AppContent() {
         <Stack.Screen name="index" options={{ animation: "none" }} />
         <Stack.Screen
           name="parent/chat"
-          options={{ animation: "slide_from_right", animationDuration: 250 }}
+          options={{ animation: "fade", animationDuration: 200 }}
         />
         <Stack.Screen
           name="driver/chat"
-          options={{ animation: "slide_from_right", animationDuration: 250 }}
+          options={{ animation: "fade", animationDuration: 200 }}
         />
       </Stack>
     </AuthGuard>

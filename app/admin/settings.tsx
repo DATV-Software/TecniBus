@@ -157,8 +157,8 @@ export default function AdminSettingsScreen() {
       <BottomNavigation
         activeTab="settings"
         middleTab="tracking"
-        onHomePress={() => router.back()}
-        onMiddlePress={() => {}}
+        onHomePress={() => router.push("/admin")}
+        onMiddlePress={() => router.push("/admin/liveview")}
         onSettingsPress={() => {}}
       />
     </View>

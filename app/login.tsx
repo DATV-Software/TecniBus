@@ -366,6 +366,7 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 320 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        scrollEnabled={false}
       >
         <View className="flex-1 px-6 pt-40 pb-8">
           {/* Header */}
