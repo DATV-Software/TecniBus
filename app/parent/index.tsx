@@ -270,7 +270,12 @@ export default function ParentHomeScreen() {
     haptic.light();
     router.push({
       pathname: "/parent/chat",
-      params: { idAsignacion, idChofer, nombreChofer: nombreChofer ?? "Chofer" },
+      params: {
+        idAsignacion,
+        idChofer,
+        nombreChofer: nombreChofer ?? "Chofer",
+        routeActiva: choferEnCamino ? "1" : "0",
+      },
     });
   };
 

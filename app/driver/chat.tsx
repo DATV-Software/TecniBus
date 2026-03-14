@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SubScreenHeader } from "@/features/admin";
 import { Colors } from "@/lib/constants/colors";
 import { QUICK_MESSAGES_CHOFER } from "@/lib/constants/quickMessages";
+import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import {
   ChatResumen,
   enviarMensaje,
@@ -141,7 +142,7 @@ export default function DriverChatScreen() {
         <View
           style={{
             maxWidth: "75%",
-            backgroundColor: esMio ? "#F59E0B" : "#F3F4F6",
+            backgroundColor: esMio ? Colors.tecnibus[600] : "#F3F4F6",
             borderRadius: 16,
             borderBottomRightRadius: esMio ? 4 : 16,
             borderBottomLeftRadius: esMio ? 16 : 4,
@@ -262,6 +263,7 @@ export default function DriverChatScreen() {
             data={chats}
             keyExtractor={(item) => item.id_chat}
             renderItem={renderChatItem}
+            contentContainerStyle={{ paddingBottom: 90 }}
             ListEmptyComponent={
               <View
                 style={{
@@ -286,161 +288,179 @@ export default function DriverChatScreen() {
             }
           />
         )}
+
+        <BottomNavigation
+          activeTab="chat"
+          activeColor={Colors.tecnibus[600]}
+          onHomePress={() => router.back()}
+          onMiddlePress={() => {}}
+          onSettingsPress={() => router.push("/driver/settings")}
+        />
       </View>
     );
   }
 
   // ── Vista conversación ──
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#F9FAFB" }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <StatusBar
-        backgroundColor={Colors.tecnibus[700]}
-        barStyle="light-content"
-        translucent={false}
-      />
-
-      <SubScreenHeader
-        title={chatSeleccionado?.nombre_padre ?? "Padre"}
-        subtitle={recorridoActivo ? "Recorrido activo" : "Recorrido finalizado"}
-        onBack={volverALista}
-      />
-
-      {!recorridoActivo && !cargandoChat && (
-        <View
-          style={{
-            backgroundColor: "#FEF3C7",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: "#FDE68A",
-          }}
-        >
-          <Text style={{ color: "#92400E", fontSize: 13, textAlign: "center" }}>
-            Ruta finalizada — solo lectura
-          </Text>
-        </View>
-      )}
-
-      {cargandoChat ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <ActivityIndicator size="large" color={Colors.tecnibus[600]} />
-        </View>
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={mensajes}
-          keyExtractor={(item) => item.id}
-          renderItem={renderMensaje}
-          contentContainerStyle={{ paddingVertical: 16, flexGrow: 1 }}
-          ListEmptyComponent={
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
-                paddingTop: 60,
-              }}
-            >
-              <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
-                No hay mensajes aún.
-              </Text>
-            </View>
-          }
+    <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: "#F9FAFB" }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <StatusBar
+          backgroundColor={Colors.tecnibus[700]}
+          barStyle="light-content"
+          translucent={false}
         />
-      )}
 
-      {recorridoActivo && (
-        <View
-          style={{
-            backgroundColor: "#FFFFFF",
-            borderTopWidth: 1,
-            borderTopColor: "#E5E7EB",
-            paddingBottom: insets.bottom + 8,
-          }}
-        >
+        <SubScreenHeader
+          title={chatSeleccionado?.nombre_padre ?? "Padre"}
+          subtitle={recorridoActivo ? "Recorrido activo" : "Recorrido finalizado"}
+          onBack={volverALista}
+        />
+
+        {!recorridoActivo && !cargandoChat && (
           <View
             style={{
-              flexDirection: "row",
-              paddingHorizontal: 12,
-              paddingTop: 10,
-              gap: 8,
-              flexWrap: "wrap",
+              backgroundColor: "#FEF3C7",
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              borderBottomWidth: 1,
+              borderBottomColor: "#FDE68A",
             }}
           >
-            {QUICK_MESSAGES_CHOFER.map((msg) => (
-              <TouchableOpacity
-                key={msg}
-                onPress={() => handleEnviar(msg, "quick")}
-                disabled={enviando}
+            <Text style={{ color: "#92400E", fontSize: 13, textAlign: "center" }}>
+              Ruta finalizada — solo lectura
+            </Text>
+          </View>
+        )}
+
+        {cargandoChat ? (
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
+            <ActivityIndicator size="large" color={Colors.tecnibus[600]} />
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={mensajes}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMensaje}
+            contentContainerStyle={{ paddingVertical: 16, paddingBottom: 90, flexGrow: 1 }}
+            ListEmptyComponent={
+              <View
                 style={{
-                  backgroundColor: "#FEF3C7",
-                  borderWidth: 1,
-                  borderColor: "#FDE68A",
-                  borderRadius: 16,
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingTop: 60,
                 }}
               >
-                <Text style={{ color: "#92400E", fontSize: 12 }}>{msg}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                <Text style={{ color: "#9CA3AF", fontSize: 14 }}>
+                  No hay mensajes aún.
+                </Text>
+              </View>
+            }
+          />
+        )}
 
+        {recorridoActivo && (
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 12,
-              paddingTop: 8,
-              gap: 8,
+              backgroundColor: "#FFFFFF",
+              borderTopWidth: 1,
+              borderTopColor: "#E5E7EB",
+              paddingBottom: insets.bottom + 90,
             }}
           >
-            <TextInput
+            <View
               style={{
-                flex: 1,
-                backgroundColor: "#F3F4F6",
-                borderRadius: 24,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                fontSize: 15,
-                color: "#1F2937",
-                maxHeight: 100,
-              }}
-              placeholder="Escribe un mensaje..."
-              placeholderTextColor="#9CA3AF"
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-              returnKeyType="send"
-              onSubmitEditing={() => handleEnviar(inputText)}
-            />
-            <TouchableOpacity
-              onPress={() => handleEnviar(inputText)}
-              disabled={enviando || !inputText.trim()}
-              style={{
-                backgroundColor:
-                  enviando || !inputText.trim() ? "#D1D5DB" : "#F59E0B",
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                alignItems: "center",
-                justifyContent: "center",
+                flexDirection: "row",
+                paddingHorizontal: 12,
+                paddingTop: 10,
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
-              {enviando ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Send size={20} color="#FFFFFF" />
-              )}
-            </TouchableOpacity>
+              {QUICK_MESSAGES_CHOFER.map((msg) => (
+                <TouchableOpacity
+                  key={msg}
+                  onPress={() => handleEnviar(msg, "quick")}
+                  disabled={enviando}
+                  style={{
+                    backgroundColor: Colors.tecnibus[100],
+                    borderWidth: 1,
+                    borderColor: Colors.tecnibus[300],
+                    borderRadius: 16,
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                  }}
+                >
+                  <Text style={{ color: Colors.tecnibus[700], fontSize: 12 }}>{msg}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 12,
+                paddingTop: 8,
+                gap: 8,
+              }}
+            >
+              <TextInput
+                style={{
+                  flex: 1,
+                  backgroundColor: "#F3F4F6",
+                  borderRadius: 24,
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  fontSize: 15,
+                  color: "#1F2937",
+                  maxHeight: 100,
+                }}
+                placeholder="Escribe un mensaje..."
+                placeholderTextColor="#9CA3AF"
+                value={inputText}
+                onChangeText={setInputText}
+                multiline
+                returnKeyType="send"
+                onSubmitEditing={() => handleEnviar(inputText)}
+              />
+              <TouchableOpacity
+                onPress={() => handleEnviar(inputText)}
+                disabled={enviando || !inputText.trim()}
+                style={{
+                  backgroundColor:
+                    enviando || !inputText.trim() ? "#D1D5DB" : Colors.tecnibus[600],
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {enviando ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Send size={20} color="#FFFFFF" />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      )}
-    </KeyboardAvoidingView>
+        )}
+      </KeyboardAvoidingView>
+
+      <BottomNavigation
+        activeTab="chat"
+        activeColor={Colors.tecnibus[600]}
+        onHomePress={() => router.back()}
+        onMiddlePress={() => {}}
+        onSettingsPress={() => router.push("/driver/settings")}
+      />
+    </View>
   );
 }
