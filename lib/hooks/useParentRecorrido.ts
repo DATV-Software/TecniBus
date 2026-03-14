@@ -49,7 +49,7 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
 
       setChoferEnCamino(activo);
       setIdAsignacion(estado?.id_asignacion || null);
-      setHoraInicioRecorrido(estado?.hora_inicio || null);
+      setHoraInicioRecorrido(activo ? (estado?.hora_inicio || null) : null);
 
       if (activo && estado?.id_asignacion) {
         const polyline = await getPolylineAsignacion(estado.id_asignacion);

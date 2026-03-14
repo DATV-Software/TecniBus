@@ -3,10 +3,14 @@ import {
   getRecorridosHoy,
   type RecorridoChofer,
 } from "@/lib/services/asignaciones.service";
-import { getEstadoRecorrido } from "@/lib/services/recorridos.service";
+import {
+  getEstadoRecorrido,
+  getPolylineAsignacion,
+} from "@/lib/services/recorridos.service";
 import { getParadasByRuta, type Parada } from "@/lib/services/rutas.service";
 import { supabase } from "@/lib/services/supabase";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AppState } from "react-native";
 
 export function useDriverRecorrido(profileId: string | undefined) {
   const { showAlert } = useAlert();
@@ -23,13 +27,19 @@ export function useDriverRecorrido(profileId: string | undefined) {
   const [rutaCompletada, setRutaCompletada] = useState(false);
   const [horaLlegadaColegio, setHoraLlegadaColegio] = useState<string | null>(null);
 
+  // Refs para acceder a valores actuales en callbacks sin recrearlos
+  const recorridoActualRef = useRef(recorridoActual);
+  const routeActiveRef = useRef(routeActive);
+  useEffect(() => { recorridoActualRef.current = recorridoActual; }, [recorridoActual]);
+  useEffect(() => { routeActiveRef.current = routeActive; }, [routeActive]);
+
   const cargarRecorridos = useCallback(async () => {
     if (!profileId) return;
     try {
       setLoadingRecorridos(true);
       const data = await getRecorridosHoy(profileId);
       setRecorridos(data);
-      if (data.length > 0 && !recorridoActual) setRecorridoActual(data[0]);
+      if (data.length > 0 && !recorridoActualRef.current) setRecorridoActual(data[0]);
     } catch {
       showAlert({ title: "Error", message: "No se pudieron cargar los recorridos", type: "error" });
     } finally {
@@ -51,8 +61,17 @@ export function useDriverRecorrido(profileId: string | undefined) {
     if (!recorridoActual) return;
     try {
       const estado = await getEstadoRecorrido(recorridoActual.id);
-      setRouteActive(estado?.activo || false);
-      setHoraInicioRecorrido(estado?.hora_inicio || null);
+      const activo = estado?.activo || false;
+      setRouteActive(activo);
+      setHoraInicioRecorrido(activo ? (estado?.hora_inicio || null) : null);
+
+      // Si hay ruta activa, recargar polyline desde DB para resistir navegación y minimize
+      if (activo) {
+        const polyline = await getPolylineAsignacion(recorridoActual.id);
+        if (polyline.length > 0) {
+          setPolylineCoordinates(polyline);
+        }
+      }
     } catch (error) {
       console.error("Error cargando estado del recorrido:", error);
     }
@@ -85,6 +104,22 @@ export function useDriverRecorrido(profileId: string | undefined) {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [recorridoActual, cargarEstadoRecorrido]);
+
+  // AppState: recargar polyline cuando la app vuelve al primer plano
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        const rec = recorridoActualRef.current;
+        if (!rec || !routeActiveRef.current) return;
+        getPolylineAsignacion(rec.id)
+          .then((polyline) => {
+            if (polyline.length > 0) setPolylineCoordinates(polyline);
+          })
+          .catch(console.error);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   return {
     recorridos,

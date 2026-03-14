@@ -9,14 +9,17 @@ type EstudianteGeocerca = {
 
 type RecorridoMinimo = { id: string } | null;
 
+type EstudianteEstado = { id: string; estado: string };
+
 /**
  * Envía push notifications a los padres al entrar y salir de la geocerca de una parada.
- * Consolida la lógica de entrada/salida que antes vivía como dos efectos con refs en el screen.
+ * No envía "recogido" si el estudiante fue marcado ausente por el chofer.
  */
 export function useGeofencePushNotifications(
   dentroDeZona: boolean,
   estudianteGeocerca: EstudianteGeocerca,
   recorridoActual: RecorridoMinimo,
+  estudiantes?: EstudianteEstado[],
 ) {
   const lastPushStudentRef = useRef<string | null>(null);
   const prevDentroDeZonaRef = useRef(false);
@@ -36,17 +39,23 @@ export function useGeofencePushNotifications(
     ).catch(() => {});
   }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id]);
 
-  // Salida: notificar que el estudiante fue recogido
+  // Salida: notificar que el estudiante fue recogido (solo si no fue marcado ausente)
   useEffect(() => {
     const estabaDentro = prevDentroDeZonaRef.current;
     const prevEst = prevEstudianteRef.current;
     if (estabaDentro && !dentroDeZona && prevEst && recorridoActual) {
-      sendPushToParents(
-        recorridoActual.id,
-        "✅ Recogido correctamente",
-        `${prevEst.nombreCompleto} fue recogido por la buseta y ya va camino al colegio.`,
-        { tipo: "geocerca_salida", id_estudiante: prevEst.id_estudiante },
-      ).catch(() => {});
+      const estudianteActual = estudiantes?.find(
+        (e) => e.id === prevEst.id_estudiante,
+      );
+      // No enviar notificación de recogida si fue marcado ausente
+      if (estudianteActual?.estado !== "ausente") {
+        sendPushToParents(
+          recorridoActual.id,
+          "✅ Recogido correctamente",
+          `${prevEst.nombreCompleto} fue recogido por la buseta y ya va camino al colegio.`,
+          { tipo: "geocerca_salida", id_estudiante: prevEst.id_estudiante },
+        ).catch(() => {});
+      }
     }
     prevDentroDeZonaRef.current = dentroDeZona;
     prevEstudianteRef.current = estudianteGeocerca;
