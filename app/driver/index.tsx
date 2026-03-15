@@ -3,7 +3,7 @@ import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import RouteMap from "@/components/RouteMap";
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import { useAuth } from "@/contexts/AuthContext";
-import { RecorridoSelector } from "@/features/driver";
+import { RecorridoSelector, ReturnAttendanceModal } from "@/features/driver";
 import { Colors } from "@/lib/constants/colors";
 import { useDriverEstudiantes } from "@/lib/hooks/useDriverEstudiantes";
 import { useDriverETAs } from "@/lib/hooks/useDriverETAs";
@@ -13,7 +13,10 @@ import { useGeofencing } from "@/lib/hooks/useGeofencing";
 import type { UbicacionLocal } from "@/lib/hooks/useGPSTracking";
 import { useGPSTracking } from "@/lib/hooks/useGPSTracking";
 import { useRouteDeviation } from "@/lib/hooks/useRouteDeviation";
-import { marcarAusente } from "@/lib/services/asistencias.service";
+import {
+  confirmarAsistenciaVuelta,
+  marcarAusente,
+} from "@/lib/services/asistencias.service";
 import { getUbicacionColegio } from "@/lib/services/configuracion.service";
 import {
   calcularDistancia,
@@ -26,7 +29,7 @@ import {
   guardarPolylineRuta,
   iniciarRecorrido,
 } from "@/lib/services/recorridos.service";
-import { calcularRutaOptimizada } from "@/lib/services/rutas.service";
+import { calcularRutaOptimizada, type Parada } from "@/lib/services/rutas.service";
 import type { UbicacionActual } from "@/lib/services/ubicaciones.service";
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { haptic } from "@/lib/utils/haptics";
@@ -41,6 +44,7 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
+  MessageCircle,
   Play,
   UserX,
 } from "lucide-react-native";
@@ -70,6 +74,8 @@ export default function DriverHomeScreen() {
     recorridoActual,
     setRecorridoActual,
     loadingRecorridos,
+    estadosRecorridos,
+    setEstadosRecorridos,
     paradas,
     setParadas,
     polylineCoordinates,
@@ -83,6 +89,8 @@ export default function DriverHomeScreen() {
     setHoraLlegadaColegio,
   } = useDriverRecorrido(profile?.id);
 
+  const tipoRuta = recorridoActual?.tipo_ruta ?? 'ida';
+
   // ── Estudiantes + Realtime (hook) ──────────────────────────────────────────
   const { estudiantes, setEstudiantes, loading, cargarEstudiantes } =
     useDriverEstudiantes(recorridoActual, profile?.id, routeActive);
@@ -92,6 +100,7 @@ export default function DriverHomeScreen() {
     null,
   );
   const [showRecorridoSelector, setShowRecorridoSelector] = useState(false);
+  const [showReturnAttendance, setShowReturnAttendance] = useState(false);
   const [ubicacionBus, setUbicacionBus] = useState<UbicacionActual | null>(
     null,
   );
@@ -128,6 +137,7 @@ export default function DriverHomeScreen() {
     radioMetros: 150,
     estudiantes,
     paradas,
+    tipoRuta,
   });
 
   const colegioGeofenceActivadoRef = useRef(false);
@@ -136,7 +146,7 @@ export default function DriverHomeScreen() {
   const { desviado, distanciaDesvio } = useRouteDeviation({
     ubicacionActual: ubicacionChofer,
     polylineCoordinates,
-    routeActive,
+    routeActive: routeActive && !dentroDeZona,
     idAsignacion: recorridoActual?.id ?? null,
     umbralMetros: 200,
   });
@@ -147,6 +157,7 @@ export default function DriverHomeScreen() {
     estudianteGeocerca,
     recorridoActual,
     estudiantes,
+    tipoRuta,
   );
 
   // ── Derived stats ──────────────────────────────────────────────────────────
@@ -238,7 +249,11 @@ export default function DriverHomeScreen() {
     paradasVisibles,
   ]);
 
-  const enCaminoAlColegio = routeActive && !nextStudent && !estudianteGeocerca;
+  // For IDA: all students picked up → heading to school (auto-finish at school geofence)
+  // For VUELTA: all students delivered → driver can manually finalize
+  const todosAtendidos = routeActive && !nextStudent && !estudianteGeocerca;
+  const enCaminoAlColegio = todosAtendidos && tipoRuta === 'ida';
+  const todosEntregadosVuelta = todosAtendidos && tipoRuta === 'vuelta';
 
   const paradaMasCercana = useMemo(() => {
     if (!ubicacionChofer || paradasVisibles.length === 0 || !routeActive)
@@ -302,7 +317,7 @@ export default function DriverHomeScreen() {
     getUbicacionColegio().then(setUbicacionColegio).catch(console.error);
   }, []);
 
-  // Auto-finalizar al llegar al colegio
+  // Auto-finalizar al llegar al colegio (solo para rutas IDA)
   useEffect(() => {
     if (!enCaminoAlColegio || !ubicacionColegio || !ubicacionChofer) return;
     if (colegioGeofenceActivadoRef.current) return;
@@ -331,6 +346,7 @@ export default function DriverHomeScreen() {
         .then((success) => {
           if (success) {
             setRouteActive(false);
+            setEstadosRecorridos((prev) => ({ ...prev, [recorridoActual.id]: 'completado' }));
             setHoraLlegadaColegio(horaLlegada);
             setRutaCompletada(true);
             haptic.success();
@@ -422,9 +438,10 @@ export default function DriverHomeScreen() {
     Linking.openURL(url);
   };
 
-  const handleIniciarRecorrido = async () => {
+  // Core start logic — shared between IDA and VUELTA (called after attendance confirmed)
+  // paradasOverride: paradas ya filtradas (VUELTA pre-ausentes), evita depender del closure de estado
+  const doIniciarRecorrido = async (paradasOverride?: Parada[]) => {
     if (!recorridoActual) return;
-    haptic.heavy();
     setOptimizandoRuta(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -446,11 +463,12 @@ export default function DriverHomeScreen() {
         lng: location.coords.longitude,
       };
       const ubicacionColegioLocal = await getUbicacionColegio();
-      if (paradasVisibles.length > 0) {
+      const paradasParaRuta = paradasOverride ?? paradasVisibles;
+      if (paradasParaRuta.length > 0) {
         try {
           const resultado = await calcularRutaOptimizada(
             ubicacionChoferLocal,
-            paradasVisibles,
+            paradasParaRuta,
             recorridoActual.tipo_ruta,
             {
               lat: ubicacionColegioLocal.latitud,
@@ -474,6 +492,7 @@ export default function DriverHomeScreen() {
       const success = await iniciarRecorrido(recorridoActual.id);
       if (success) {
         setRouteActive(true);
+        setEstadosRecorridos((prev) => ({ ...prev, [recorridoActual.id]: 'activo' }));
         haptic.success();
         inicializarEstadosGeocercas(
           recorridoActual.id,
@@ -497,6 +516,75 @@ export default function DriverHomeScreen() {
     }
   };
 
+  const handleIniciarRecorrido = () => {
+    if (!recorridoActual) return;
+    haptic.heavy();
+    if (tipoRuta === 'vuelta') {
+      // Validar que el chofer esté en el colegio (máx 50m)
+      if (!ubicacionChofer || !ubicacionColegio) {
+        showAlert({
+          title: 'Ubicación no disponible',
+          message: 'No se puede determinar tu ubicación. Activa el GPS e intenta de nuevo.',
+          type: 'error',
+          buttons: [{ text: 'OK' }],
+        });
+        return;
+      }
+      const distColegio = calcularDistancia(
+        ubicacionChofer.latitude,
+        ubicacionChofer.longitude,
+        ubicacionColegio.latitud,
+        ubicacionColegio.longitud,
+      );
+      if (distColegio > 200) {
+        showAlert({
+          title: 'Debes estar en el colegio',
+          message: `La ruta de vuelta debe iniciarse desde el colegio. Estás a ${Math.round(distColegio)} m del colegio.`,
+          type: 'warning',
+          buttons: [{ text: 'Entendido' }],
+        });
+        return;
+      }
+      setShowReturnAttendance(true);
+    } else {
+      doIniciarRecorrido();
+    }
+  };
+
+  const handleConfirmarVuelta = async (ausentesIds: string[]) => {
+    setShowReturnAttendance(false);
+    if (!recorridoActual || !profile?.id) return;
+
+    // Calcular paradas filtradas ANTES de guardar asistencia para evitar
+    // el problema de closure stale: paradasVisibles aún no se actualizó
+    // porque cargarEstudiantes() no re-renderizó el componente todavía.
+    const ausentesSet = new Set(ausentesIds);
+    const paradaConteo = new Map<string, { total: number; ausentes: number }>();
+    for (const est of estudiantes) {
+      if (!est.parada?.id) continue;
+      const c = paradaConteo.get(est.parada.id) ?? { total: 0, ausentes: 0 };
+      c.total++;
+      if (ausentesSet.has(est.id)) c.ausentes++;
+      paradaConteo.set(est.parada.id, c);
+    }
+    const paradasFiltradas = paradas.filter((p) => {
+      const c = paradaConteo.get(p.id);
+      if (!c) return false; // sin estudiantes → excluir
+      return c.ausentes < c.total; // incluir si al menos uno está presente
+    });
+
+    if (ausentesIds.length > 0 || estudiantes.length > 0) {
+      await confirmarAsistenciaVuelta(
+        recorridoActual.id_ruta,
+        profile.id,
+        ausentesIds,
+        estudiantes,
+      );
+      await cargarEstudiantes();
+    }
+    await doIniciarRecorrido(paradasFiltradas.length > 0 ? paradasFiltradas : undefined);
+  };
+
   const handleFinalizarRecorrido = async () => {
     if (!recorridoActual) return;
     showAlert({
@@ -513,6 +601,7 @@ export default function DriverHomeScreen() {
             const success = await finalizarRecorrido(recorridoActual.id);
             if (success) {
               setRouteActive(false);
+              setEstadosRecorridos((prev) => ({ ...prev, [recorridoActual.id]: 'completado' }));
               haptic.success();
             } else {
               haptic.error();
@@ -549,6 +638,10 @@ export default function DriverHomeScreen() {
   const estudianteActivoId = estaEnGeocerca
     ? estudianteGeocerca?.id_estudiante
     : nextStudent?.id;
+
+  const idPadreActivo = estudianteActivoId
+    ? (estudiantes.find((e) => e.id === estudianteActivoId)?.id_padre ?? null)
+    : null;
 
   // ── Render ─────────────────────────────────────────────────────────────────
   // Nav bar: bottom=7, altura ≈ 87px. Card flota sobre ella con gap garantizado.
@@ -633,7 +726,8 @@ export default function DriverHomeScreen() {
           >
             <CheckCircle2 size={16} color="#10B981" strokeWidth={2.5} />
             <Text style={{ color: "#1F2937", fontWeight: "700", fontSize: 13 }}>
-              {stats.completed}/{stats.total} RECOGIDOS
+              {stats.completed}/{stats.total}{" "}
+              {tipoRuta === "vuelta" ? "ENTREGADOS" : "RECOGIDOS"}
             </Text>
           </View>
 
@@ -776,7 +870,9 @@ export default function DriverHomeScreen() {
                   marginTop: 3,
                 }}
               >
-                Todos los estudiantes llegaron al colegio.
+                {tipoRuta === 'vuelta'
+                  ? "Todos los estudiantes fueron entregados."
+                  : "Todos los estudiantes llegaron al colegio."}
               </Text>
               {horaLlegadaColegio && (
                 <View
@@ -976,41 +1072,75 @@ export default function DriverHomeScreen() {
                   </View>
                 </View>
 
-                <TouchableOpacity
-                  onPress={handleMarcarAusenteGeocerca}
-                  disabled={!!processingStudent}
-                  activeOpacity={0.8}
-                  style={{
-                    marginTop: 14,
-                    borderWidth: 1.5,
-                    borderColor: "#EF4444",
-                    borderRadius: 14,
-                    paddingVertical: 13,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                    opacity: processingStudent ? 0.55 : 1,
-                  }}
-                >
-                  {processingStudent === estudianteActivoId ? (
-                    <ActivityIndicator size="small" color="#EF4444" />
-                  ) : (
-                    <>
-                      <UserX size={15} color="#EF4444" strokeWidth={2.5} />
-                      <Text
-                        style={{
-                          color: "#EF4444",
-                          fontWeight: "700",
-                          fontSize: 13,
-                          letterSpacing: 0.8,
-                        }}
-                      >
-                        MARCAR AUSENCIA
-                      </Text>
-                    </>
+                <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
+                  {tipoRuta === 'ida' && (
+                  <TouchableOpacity
+                    onPress={handleMarcarAusenteGeocerca}
+                    disabled={!!processingStudent}
+                    activeOpacity={0.8}
+                    style={{
+                      flex: 1,
+                      borderWidth: 1.5,
+                      borderColor: "#EF4444",
+                      borderRadius: 14,
+                      paddingVertical: 13,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      opacity: processingStudent ? 0.55 : 1,
+                    }}
+                  >
+                    {processingStudent === estudianteActivoId ? (
+                      <ActivityIndicator size="small" color="#EF4444" />
+                    ) : (
+                      <>
+                        <UserX size={15} color="#EF4444" strokeWidth={2.5} />
+                        <Text
+                          style={{
+                            color: "#EF4444",
+                            fontWeight: "700",
+                            fontSize: 13,
+                            letterSpacing: 0.8,
+                          }}
+                        >
+                          MARCAR AUSENCIA
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
                   )}
-                </TouchableOpacity>
+                  {idPadreActivo && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/driver/chat",
+                          params: {
+                            idPadre: idPadreActivo,
+                            idAsignacion: recorridoActual?.id,
+                            nombreEstudiante: estudianteActivoNombre,
+                          },
+                        })
+                      }
+                      activeOpacity={0.8}
+                      style={{
+                        width: 50,
+                        borderWidth: 1.5,
+                        borderColor: Colors.tecnibus[300],
+                        borderRadius: 14,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: Colors.tecnibus[50],
+                      }}
+                    >
+                      <MessageCircle
+                        size={20}
+                        color={Colors.tecnibus[600]}
+                        strokeWidth={2}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             )}
 
@@ -1095,10 +1225,96 @@ export default function DriverHomeScreen() {
                     </Text>
                   </View>
                 )}
+                {nextStudent?.id_padre && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: "/driver/chat",
+                        params: {
+                          idPadre: nextStudent.id_padre!,
+                          idAsignacion: recorridoActual?.id,
+                          nombreEstudiante: `${nextStudent.nombre} ${nextStudent.apellido}`,
+                        },
+                      })
+                    }
+                    activeOpacity={0.8}
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: 21,
+                      backgroundColor: Colors.tecnibus[50],
+                      borderWidth: 1.5,
+                      borderColor: Colors.tecnibus[200],
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <MessageCircle
+                      size={20}
+                      color={Colors.tecnibus[600]}
+                      strokeWidth={2}
+                    />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
-          {/* STATE: En camino al colegio */}
+          {/* STATE: VUELTA — todos entregados, finalizar manualmente */}
+          {!rutaCompletada &&
+            !loadingRecorridos &&
+            recorridos.length > 0 &&
+            todosEntregadosVuelta && (
+              <View style={{ alignItems: "center" }}>
+                <View
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 26,
+                    backgroundColor: "#D1FAE5",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <CheckCircle2 size={28} color="#10B981" strokeWidth={2} />
+                </View>
+                <Text style={{ fontSize: 17, fontWeight: "800", color: "#1F2937" }}>
+                  ¡Todos entregados!
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: "#6B7280",
+                    textAlign: "center",
+                    marginTop: 4,
+                    marginBottom: 14,
+                  }}
+                >
+                  Todos los estudiantes fueron entregados en sus paradas.
+                </Text>
+                <TouchableOpacity
+                  onPress={handleFinalizarRecorrido}
+                  activeOpacity={0.85}
+                  style={{
+                    backgroundColor: "#10B981",
+                    borderRadius: 16,
+                    paddingVertical: 14,
+                    width: "100%",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                  }}
+                >
+                  <CheckCircle2 size={18} color="#fff" strokeWidth={2.5} />
+                  <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>
+                    Finalizar recorrido
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+          {/* STATE: En camino al colegio (solo IDA) */}
           {!rutaCompletada &&
             !loadingRecorridos &&
             recorridos.length > 0 &&
@@ -1222,6 +1438,31 @@ export default function DriverHomeScreen() {
                         ? `${recorridoActual.hora_inicio} - ${recorridoActual.hora_fin}`
                         : ""}
                     </Text>
+                    {recorridoActual && (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 4,
+                          marginTop: 3,
+                          backgroundColor: tipoRuta === 'ida' ? "#EEF2FF" : "#FFF7ED",
+                          borderRadius: 20,
+                          paddingHorizontal: 8,
+                          paddingVertical: 3,
+                          alignSelf: "flex-start",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: "700",
+                            color: tipoRuta === 'ida' ? "#6366F1" : "#F97316",
+                          }}
+                        >
+                          {tipoRuta === 'ida' ? "IDA" : "VUELTA"}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   {loading ? (
                     <ActivityIndicator
@@ -1327,6 +1568,7 @@ export default function DriverHomeScreen() {
       <RecorridoSelector
         visible={showRecorridoSelector}
         recorridos={recorridos}
+        estadosRecorridos={estadosRecorridos}
         selectedId={recorridoActual?.id}
         onSelect={(rec) => {
           haptic.light();
@@ -1334,6 +1576,15 @@ export default function DriverHomeScreen() {
           setShowRecorridoSelector(false);
         }}
         onClose={() => setShowRecorridoSelector(false)}
+      />
+
+      <ReturnAttendanceModal
+        visible={showReturnAttendance}
+        estudiantes={estudiantes}
+        loading={loading}
+        nombreRuta={recorridoActual?.nombre_ruta ?? "Ruta de vuelta"}
+        onConfirm={handleConfirmarVuelta}
+        onCancel={() => setShowReturnAttendance(false)}
       />
 
       {/* ── Desvío de ruta ── */}
