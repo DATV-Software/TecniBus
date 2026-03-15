@@ -396,16 +396,38 @@ export async function calcularRutaOptimizada(
     let destino: { lat: number; lng: number };
     let waypointsIntermedios: { lat: number; lng: number }[];
 
+    // Para VUELTA: índice de la parada más lejana del colegio (será el destino final)
+    let idxDestinoVuelta = -1;
+    let paradasIntermedias: Parada[] = paradas;
+
     if (tipoRuta === 'ida') {
-      // RUTA IDA: Chofer → Paradas → Colegio
+      // RUTA IDA: Chofer → Paradas (optimizadas) → Colegio
       origen = ubicacionChofer;
       waypointsIntermedios = stops;
       destino = ubicacionColegio;
     } else {
-      // RUTA VUELTA: Colegio → Paradas → Última parada más lejana
+      // RUTA VUELTA: Colegio → Paradas (optimizadas) → Última parada (sin regresar al colegio)
       origen = ubicacionColegio;
-      waypointsIntermedios = stops.slice(0, -1); // Todas menos la última
-      destino = stops[stops.length - 1]; // Última parada
+
+      if (paradas.length === 1) {
+        // Solo una parada: ir directo a ella
+        idxDestinoVuelta = 0;
+        waypointsIntermedios = [];
+        paradasIntermedias = [];
+        destino = stops[0];
+      } else {
+        // Encontrar la parada más lejana del colegio para usarla como destino final
+        let maxDist = -1;
+        for (let i = 0; i < stops.length; i++) {
+          const dx = stops[i].lat - ubicacionColegio.lat;
+          const dy = stops[i].lng - ubicacionColegio.lng;
+          const d2 = dx * dx + dy * dy;
+          if (d2 > maxDist) { maxDist = d2; idxDestinoVuelta = i; }
+        }
+        destino = stops[idxDestinoVuelta];
+        waypointsIntermedios = stops.filter((_, i) => i !== idxDestinoVuelta);
+        paradasIntermedias = paradas.filter((_, i) => i !== idxDestinoVuelta);
+      }
     }
 
     // Llamar a Google Directions API con optimize:true
@@ -415,9 +437,8 @@ export async function calcularRutaOptimizada(
       destino,
     );
 
-    if (!result || !result.waypointOrder) {
-      console.warn('⚠️ No se pudo optimizar, usando orden original de paradas');
-      // Retornar paradas en orden original si no se puede optimizar
+    if (!result) {
+      console.warn('⚠️ No se pudo calcular la ruta, usando orden original de paradas');
       return {
         paradasOptimizadas: paradas,
         distanciaTotal: 0,
@@ -426,8 +447,23 @@ export async function calcularRutaOptimizada(
       };
     }
 
-    // Reordenar paradas según waypoint_order de Google
-    const paradasOptimizadas = result.waypointOrder.map(index => paradas[index]);
+    // Reordenar paradas según waypoint_order de Google.
+    // waypointOrder puede ser undefined cuando no hay waypoints intermedios (ruta directa).
+    let paradasOptimizadas: Parada[];
+    if (tipoRuta === 'ida') {
+      paradasOptimizadas = result.waypointOrder
+        ? result.waypointOrder.map(index => paradas[index])
+        : paradas;
+    } else {
+      if (result.waypointOrder && result.waypointOrder.length > 0) {
+        // Reconstruir: intermedias optimizadas + parada más lejana al final
+        const intermediasOrdenadas = result.waypointOrder.map(i => paradasIntermedias[i]);
+        paradasOptimizadas = [...intermediasOrdenadas, paradas[idxDestinoVuelta]];
+      } else {
+        // Sin waypoints intermedios (solo 1 parada total) → orden original
+        paradasOptimizadas = paradas;
+      }
+    }
 
     return {
       paradasOptimizadas,
