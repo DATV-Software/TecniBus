@@ -12,12 +12,15 @@ import { supabase } from "@/lib/services/supabase";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 
+export type EstadoRecorridoRun = 'pendiente' | 'activo' | 'completado';
+
 export function useDriverRecorrido(profileId: string | undefined) {
   const { showAlert } = useAlert();
 
   const [recorridos, setRecorridos] = useState<RecorridoChofer[]>([]);
   const [recorridoActual, setRecorridoActual] = useState<RecorridoChofer | null>(null);
   const [loadingRecorridos, setLoadingRecorridos] = useState(true);
+  const [estadosRecorridos, setEstadosRecorridos] = useState<Record<string, EstadoRecorridoRun>>({});
   const [paradas, setParadas] = useState<Parada[]>([]);
   const [polylineCoordinates, setPolylineCoordinates] = useState<
     { latitude: number; longitude: number }[]
@@ -40,6 +43,19 @@ export function useDriverRecorrido(profileId: string | undefined) {
       const data = await getRecorridosHoy(profileId);
       setRecorridos(data);
       if (data.length > 0 && !recorridoActualRef.current) setRecorridoActual(data[0]);
+
+      // Batch-load run status for all today's routes
+      if (data.length > 0) {
+        const estadosArr = await Promise.all(data.map((r) => getEstadoRecorrido(r.id)));
+        const map: Record<string, EstadoRecorridoRun> = {};
+        data.forEach((r, i) => {
+          const e = estadosArr[i];
+          if (e?.activo) map[r.id] = 'activo';
+          else if (e?.hora_fin) map[r.id] = 'completado';
+          else map[r.id] = 'pendiente';
+        });
+        setEstadosRecorridos(map);
+      }
     } catch {
       showAlert({ title: "Error", message: "No se pudieron cargar los recorridos", type: "error" });
     } finally {
@@ -126,6 +142,8 @@ export function useDriverRecorrido(profileId: string | undefined) {
     recorridoActual,
     setRecorridoActual,
     loadingRecorridos,
+    estadosRecorridos,
+    setEstadosRecorridos,
     paradas,
     setParadas,
     polylineCoordinates,
