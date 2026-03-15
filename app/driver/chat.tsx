@@ -8,12 +8,13 @@ import {
   enviarMensaje,
   getChatsPorChofer,
   getMensajes,
+  getOrCreateChat,
   isRecorridoActivo,
   marcarLeidos,
   Mensaje,
   suscribirseAMensajes,
 } from "@/lib/services/chat.service";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { MessageCircle, Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -35,6 +36,12 @@ export default function DriverChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { profile } = useAuth();
+  // Params opcionales para abrir directo desde botón de chat en el mapa
+  const { idPadre, idAsignacion, nombreEstudiante } = useLocalSearchParams<{
+    idPadre?: string;
+    idAsignacion?: string;
+    nombreEstudiante?: string;
+  }>();
 
   const [vista, setVista] = useState<Vista>("lista");
   const [chats, setChats] = useState<ChatResumen[]>([]);
@@ -59,6 +66,38 @@ export default function DriverChatScreen() {
       setCargandoLista(false);
     });
   }, [profile?.id]);
+
+  // Auto-abrir conversación si viene con params directos (desde botón en mapa)
+  useEffect(() => {
+    if (!idPadre || !idAsignacion || !profile?.id) return;
+    const abrir = async () => {
+      setCargandoChat(true);
+      const chatId = await getOrCreateChat(idAsignacion, idPadre, profile.id);
+      if (!chatId) { setCargandoChat(false); return; }
+
+      const chatResumen: ChatResumen = {
+        id_chat: chatId,
+        id_asignacion: idAsignacion,
+        id_padre: idPadre,
+        nombre_padre: nombreEstudiante ? `Padre de ${nombreEstudiante}` : 'Padre',
+        ultimo_mensaje: null,
+        ultima_hora: null,
+        no_leidos: 0,
+      };
+      setChatSeleccionado(chatResumen);
+      setVista("conversacion");
+
+      const [msgs, activo] = await Promise.all([
+        getMensajes(chatId),
+        isRecorridoActivo(idAsignacion),
+      ]);
+      setIdChat(chatId);
+      setMensajes(msgs);
+      setRecorridoActivo(activo);
+      setCargandoChat(false);
+    };
+    abrir();
+  }, [idPadre, idAsignacion, profile?.id]);
 
   const abrirConversacion = async (chat: ChatResumen) => {
     setChatSeleccionado(chat);
