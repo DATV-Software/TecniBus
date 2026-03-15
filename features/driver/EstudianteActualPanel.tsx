@@ -1,6 +1,6 @@
 import { Colors } from '@/lib/constants/colors';
 import type { EstudianteGeocerca } from '@/lib/services/geocercas.service';
-import { MapPin, UserX, Clock } from 'lucide-react-native';
+import { MapPin, MessageCircle, UserX, Clock } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   View,
@@ -16,6 +16,7 @@ type EstudianteActualPanelProps = {
   distanciaMetros: number | null;
   onMarcarAusente: () => void;
   onCerrar: () => void;
+  onChat?: () => void;
 };
 
 export function EstudianteActualPanel({
@@ -24,6 +25,7 @@ export function EstudianteActualPanel({
   distanciaMetros,
   onMarcarAusente,
   onCerrar,
+  onChat,
 }: EstudianteActualPanelProps) {
   const [tiempoEnZona, setTiempoEnZona] = useState(0);
   const [slideAnim] = useState(new Animated.Value(300));
@@ -130,6 +132,12 @@ export function EstudianteActualPanel({
             </Text>
           )}
         </View>
+
+        {onChat && (
+          <TouchableOpacity style={styles.botonChat} onPress={onChat}>
+            <MessageCircle size={20} color={Colors.tecnibus[600]} strokeWidth={2} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Acciones */}
@@ -291,5 +299,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9ca3af',
     fontStyle: 'italic',
+  },
+  botonChat: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.tecnibus[50],
+    borderWidth: 1.5,
+    borderColor: Colors.tecnibus[200],
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
 });
