@@ -11,6 +11,7 @@ type EstudianteRpcRow = {
   parada_direccion: string | null;
   ruta_id: string | null;
   ruta_nombre: string | null;
+  ruta_tipo: string | null;
 };
 
 export type EstudianteDelPadre = {
@@ -29,6 +30,7 @@ export type EstudianteDelPadre = {
     ruta?: {
       id: string;
       nombre: string;
+      tipo?: 'ida' | 'vuelta';
     };
   };
 };
@@ -77,7 +79,8 @@ export async function getMyEstudiantes(): Promise<EstudianteDelPadre[]> {
             ruta: est.ruta_id
               ? {
                   id: est.ruta_id,
-                  nombre: est.ruta_nombre,
+                  nombre: est.ruta_nombre ?? '',
+                  tipo: (est.ruta_tipo === 'vuelta' ? 'vuelta' : 'ida') as 'ida' | 'vuelta',
                 }
               : undefined,
           }

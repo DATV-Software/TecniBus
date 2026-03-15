@@ -29,9 +29,11 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
   const [nombreChofer, setNombreChofer] = useState<string | null>(null);
   const [idChofer, setIdChofer] = useState<string | null>(null);
   const [ubicacionBus, setUbicacionBus] = useState<UbicacionActual | null>(null);
+  const [tipoRuta, setTipoRuta] = useState<'ida' | 'vuelta'>('ida');
 
   const idRuta = estudiante?.parada?.ruta?.id ?? null;
   const paradaId = estudiante?.parada?.id ?? null;
+  const tipoRutaFromEstudiante = estudiante?.parada?.ruta?.tipo ?? 'ida';
 
   const applyETAs = useCallback(
     (etaData: Record<string, number>) => {
@@ -88,6 +90,11 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
 
     if (idRuta) cargarEstadoRecorrido();
   }, [estudiante?.id]);
+
+  // Sincronizar tipoRuta desde el estudiante (disponible inmediatamente, sin query extra)
+  useEffect(() => {
+    setTipoRuta(tipoRutaFromEstudiante);
+  }, [tipoRutaFromEstudiante]);
 
   // Cargar nombre e ID del chofer al cambiar de ruta
   useEffect(() => {
@@ -181,5 +188,6 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
     nombreChofer,
     idChofer,
     ubicacionBus,
+    tipoRuta,
   };
 }
