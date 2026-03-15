@@ -181,6 +181,7 @@ export default function ListaChoferesScreen() {
               icon={UserCircle}
               title={`${item.nombre} ${item.apellido || ""}`}
               subtitle={item.correo}
+              onPress={() => { haptic.light(); router.push(`/admin/choferes/${item.id}` as never); }}
               onDelete={() => confirmarEliminar(item)}
               deleting={deletingId === item.id}
             />

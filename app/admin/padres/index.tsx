@@ -181,6 +181,7 @@ export default function ListaPadresScreen() {
               icon={Users}
               title={`${item.nombre} ${item.apellido || ""}`}
               subtitle={item.correo}
+              onPress={() => { haptic.light(); router.push(`/admin/padres/${item.id}` as never); }}
               onDelete={() => confirmarEliminar(item)}
               deleting={deletingId === item.id}
             />
