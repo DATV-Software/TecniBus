@@ -45,6 +45,7 @@ type EstudianteRow = {
   id: string;
   nombre: string;
   apellido: string;
+  id_padre: string | null;
   id_parada: string | null;
   paradas: { id: string; nombre: string | null } | null;
 };
@@ -52,17 +53,20 @@ type EstudianteRow = {
 type AsistenciaRow = {
   id_estudiante: string;
   estado: EstadoAsistencia;
+  notas: string | null;
 };
 
 export type EstudianteConAsistencia = {
   id: string;
   nombre: string;
   apellido: string;
+  id_padre: string | null;
   parada: {
     id: string;
     nombre: string | null;
   } | null;
   estado: EstadoAsistencia;
+  notas?: string | null;
 };
 
 /**
@@ -358,6 +362,7 @@ export async function getEstudiantesConAsistencia(
         id,
         nombre,
         apellido,
+        id_padre,
         id_parada,
         paradas(id, nombre)
       `)
@@ -373,7 +378,7 @@ export async function getEstudiantesConAsistencia(
 
     const { data: asistencias } = await supabase
       .from('asistencias')
-      .select('id_estudiante, estado')
+      .select('id_estudiante, estado, notas')
       .in('id_estudiante', estudiantesIds)
       .eq('fecha', hoy);
 
@@ -385,13 +390,15 @@ export async function getEstudiantesConAsistencia(
         id: est.id,
         nombre: est.nombre,
         apellido: est.apellido,
+        id_padre: est.id_padre ?? null,
         parada: est.paradas
           ? {
               id: est.paradas.id,
               nombre: est.paradas.nombre,
             }
           : null,
-        estado: asistencia?.estado || 'presente', // Default: presente
+        estado: asistencia?.estado || 'presente',
+        notas: asistencia?.notas ?? null,
       };
     });
 
@@ -399,6 +406,88 @@ export async function getEstudiantesConAsistencia(
   } catch (error) {
     console.error('❌ Error en getEstudiantesConAsistencia:', error);
     return [];
+  }
+}
+
+/**
+ * Confirma asistencia antes de iniciar un recorrido de VUELTA.
+ * Los estudiantes en `ausentesIds` se marcan ausentes; el resto se dejan
+ * en 'presente' (crean registro si no existe, no tocan si ya existe y está ausente).
+ */
+export async function confirmarAsistenciaVuelta(
+  idRuta: string,
+  idChofer: string,
+  ausentesIds: string[],
+  todosLosEstudiantes: EstudianteConAsistencia[]
+): Promise<boolean> {
+  try {
+    const hoy = new Date().toISOString().split('T')[0];
+    const ausentesSet = new Set(ausentesIds);
+
+    // Load existing records in one query
+    const estudiantesIds = todosLosEstudiantes.map((e) => e.id);
+    const { data: existentes } = await supabase
+      .from('asistencias')
+      .select('id, id_estudiante')
+      .in('id_estudiante', estudiantesIds)
+      .eq('fecha', hoy);
+
+    const existentesMap = new Map(
+      (existentes || []).map((r) => [r.id_estudiante, r.id])
+    );
+
+    const toUpdate: { id: string; estado: EstadoAsistencia; notas: string | null; modificado_por: string }[] = [];
+    const toInsert: { id_estudiante: string; id_chofer: string; id_ruta: string; estado: EstadoAsistencia; fecha: string; modificado_por: string; notas: string | null }[] = [];
+
+    for (const est of todosLosEstudiantes) {
+      const isAusente = ausentesSet.has(est.id);
+      const estado: EstadoAsistencia = isAusente ? 'ausente' : 'presente';
+      const notas = isAusente ? 'Marcado ausente por chofer - vuelta' : null;
+      const existenteId = existentesMap.get(est.id);
+
+      if (existenteId) {
+        toUpdate.push({ id: existenteId, estado, notas, modificado_por: idChofer });
+      } else {
+        toInsert.push({
+          id_estudiante: est.id,
+          id_chofer: idChofer,
+          id_ruta: idRuta,
+          estado,
+          fecha: hoy,
+          modificado_por: idChofer,
+          notas,
+        });
+      }
+    }
+
+    const ops: Promise<unknown>[] = [];
+    if (toInsert.length > 0) {
+      ops.push(supabase.from('asistencias').insert(toInsert));
+    }
+    for (const u of toUpdate) {
+      ops.push(
+        supabase
+          .from('asistencias')
+          .update({ estado: u.estado, notas: u.notas, modificado_por: u.modificado_por })
+          .eq('id', u.id)
+      );
+    }
+
+    await Promise.all(ops);
+
+    // Notificar SOLO a padres de estudiantes que el chofer ACABA de marcar ausentes
+    // (excluir los que ya tenían falta justificada del padre)
+    const notifOps = todosLosEstudiantes
+      .filter((e) => ausentesSet.has(e.id) && e.estado !== 'ausente')
+      .map((e) =>
+        notificarPadre(e.id, 'ausente', `${e.nombre} ${e.apellido}`).catch(() => {}),
+      );
+    await Promise.all(notifOps);
+
+    return true;
+  } catch (error) {
+    console.error('❌ Error en confirmarAsistenciaVuelta:', error);
+    return false;
   }
 }
 
