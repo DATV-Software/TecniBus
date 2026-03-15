@@ -23,7 +23,7 @@ import { haptic } from "@/lib/utils/haptics";
 import { calcularPolylineRestante } from "@/lib/utils/polyline";
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { useRouter } from "expo-router";
-import { CheckCircle2, ChevronDown, GraduationCap, Heart, UserX } from "lucide-react-native";
+import { CheckCircle2, ChevronDown, GraduationCap, Heart, LogOut, UserX } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -37,7 +37,7 @@ import {
 export default function ParentHomeScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
 
   // ── Estudiantes + Selección (hook) ─────────────────────────────────────────
   const {
@@ -69,6 +69,7 @@ export default function ParentHomeScreen() {
     nombreChofer,
     idChofer,
     ubicacionBus,
+    tipoRuta,
   } = useParentRecorrido(estudianteSeleccionado);
 
   // ── Estado local ─────────────────────────────────────────────────────────────
@@ -93,57 +94,99 @@ export default function ParentHomeScreen() {
       icon: 'board' | 'departure' | 'stop';
     }[] = [];
 
-    // 1. Inicio de recorrido
     const huboRecorrido = choferEnCamino || estudianteRecogido;
-    events.push({
-      id: 'inicio',
-      title: 'Inicio de recorrido',
-      subtitle: huboRecorrido
-        ? `Salió a las ${horaInicioRecorrido ? formatHoraEC(horaInicioRecorrido) : '--:--'}`
-        : 'Esperando inicio del recorrido',
-      time: horaInicioRecorrido ? formatHoraEC(horaInicioRecorrido) : undefined,
-      status: huboRecorrido ? 'completed' : 'upcoming',
-      icon: 'departure',
-    });
-
-    // 2. Parada del estudiante (casa)
     const parada = estudianteSeleccionado?.parada;
-    if (estudianteRecogido) {
+    const nombreColegio = ubicacionColegio?.nombre || 'Colegio';
+
+    if (tipoRuta === 'vuelta') {
+      // VUELTA: Colegio (inicio) → Parada del estudiante (destino)
+
+      // 1. Inicio desde el colegio
       events.push({
-        id: 'parada-casa',
-        title: parada?.nombre || 'Tu parada',
-        subtitle: horaRecogida
-          ? `Estudiante recogido a las ${horaRecogida}`
-          : 'Estudiante recogido',
-        status: 'completed',
-        icon: 'stop',
+        id: 'inicio',
+        title: `Salida desde ${nombreColegio}`,
+        subtitle: huboRecorrido
+          ? `Salió a las ${horaInicioRecorrido ? formatHoraEC(horaInicioRecorrido) : '--:--'}`
+          : 'Esperando inicio del recorrido',
+        time: horaInicioRecorrido && huboRecorrido ? formatHoraEC(horaInicioRecorrido) : undefined,
+        status: huboRecorrido ? 'completed' : 'upcoming',
+        icon: 'board',
       });
+
+      // 2. Parada del estudiante (destino final)
+      if (estudianteRecogido) {
+        events.push({
+          id: 'parada-casa',
+          title: parada?.nombre || 'Tu parada',
+          subtitle: horaRecogida
+            ? `Entregado a las ${horaRecogida}`
+            : 'Estudiante entregado en su parada',
+          status: 'completed',
+          icon: 'stop',
+        });
+      } else {
+        events.push({
+          id: 'parada-casa',
+          title: parada?.nombre || 'Tu parada',
+          subtitle: parada?.direccion || 'Destino del estudiante',
+          time: choferEnCamino && estimatedMinutes !== null ? `~${estimatedMinutes} min` : undefined,
+          status: choferEnCamino ? 'active' : 'upcoming',
+          icon: 'stop',
+        });
+      }
     } else {
+      // IDA: Inicio de recorrido → Parada del estudiante → Colegio
+
+      // 1. Inicio de recorrido
       events.push({
-        id: 'parada-casa',
-        title: parada?.nombre || 'Tu parada',
-        subtitle: parada?.direccion || 'Parada asignada del estudiante',
-        time: choferEnCamino && estimatedMinutes !== null ? `~${estimatedMinutes} min` : undefined,
-        status: choferEnCamino ? 'active' : 'upcoming',
-        icon: 'stop',
+        id: 'inicio',
+        title: 'Inicio de recorrido',
+        subtitle: huboRecorrido
+          ? `Salió a las ${horaInicioRecorrido ? formatHoraEC(horaInicioRecorrido) : '--:--'}`
+          : 'Esperando inicio del recorrido',
+        time: horaInicioRecorrido ? formatHoraEC(horaInicioRecorrido) : undefined,
+        status: huboRecorrido ? 'completed' : 'upcoming',
+        icon: 'departure',
+      });
+
+      // 2. Parada del estudiante (recogida)
+      if (estudianteRecogido) {
+        events.push({
+          id: 'parada-casa',
+          title: parada?.nombre || 'Tu parada',
+          subtitle: horaRecogida
+            ? `Estudiante recogido a las ${horaRecogida}`
+            : 'Estudiante recogido',
+          status: 'completed',
+          icon: 'stop',
+        });
+      } else {
+        events.push({
+          id: 'parada-casa',
+          title: parada?.nombre || 'Tu parada',
+          subtitle: parada?.direccion || 'Parada asignada del estudiante',
+          time: choferEnCamino && estimatedMinutes !== null ? `~${estimatedMinutes} min` : undefined,
+          status: choferEnCamino ? 'active' : 'upcoming',
+          icon: 'stop',
+        });
+      }
+
+      // 3. Llegada al colegio
+      const colegioCompletado = estudianteRecogido && !choferEnCamino;
+      events.push({
+        id: 'colegio',
+        title: nombreColegio,
+        subtitle: colegioCompletado
+          ? (horaLlegadaColegio ? `Llegaron a las ${horaLlegadaColegio}` : 'Llegaron al colegio')
+          : 'Destino final del recorrido',
+        time: !colegioCompletado && choferEnCamino && etaColegio !== null ? `~${etaColegio} min` : undefined,
+        status: colegioCompletado ? 'completed' : estudianteRecogido ? 'active' : 'upcoming',
+        icon: 'board',
       });
     }
 
-    // 3. Llegada al colegio
-    const colegioCompletado = estudianteRecogido && !choferEnCamino;
-    events.push({
-      id: 'colegio',
-      title: ubicacionColegio?.nombre || 'Colegio',
-      subtitle: colegioCompletado
-        ? (horaLlegadaColegio ? `Llegaron a las ${horaLlegadaColegio}` : 'Llegaron al colegio')
-        : 'Destino final del recorrido',
-      time: !colegioCompletado && choferEnCamino && etaColegio !== null ? `~${etaColegio} min` : undefined,
-      status: colegioCompletado ? 'completed' : estudianteRecogido ? 'active' : 'upcoming',
-      icon: 'board',
-    });
-
     return events;
-  }, [choferEnCamino, horaInicioRecorrido, estudianteSeleccionado?.parada, ubicacionColegio, estimatedMinutes, etaColegio, estudianteRecogido, horaRecogida, horaLlegadaColegio]);
+  }, [tipoRuta, choferEnCamino, horaInicioRecorrido, estudianteSeleccionado?.parada, ubicacionColegio, estimatedMinutes, etaColegio, estudianteRecogido, horaRecogida, horaLlegadaColegio]);
 
   useEffect(() => {
     loadEstudiantes();
@@ -229,9 +272,15 @@ export default function ParentHomeScreen() {
         haptic.success();
 
         if (marcarComoAusente) {
-          showAlert({ title: "Ausencia registrada", message: "El chofer ha sido notificado que el estudiante no asistirá hoy.", type: "info" });
+          const msg = tipoRuta === 'vuelta'
+            ? "El chofer ha sido notificado que el estudiante no irá en la ruta de vuelta."
+            : "El chofer ha sido notificado que el estudiante no asistirá hoy.";
+          showAlert({ title: "Ausencia registrada", message: msg, type: "info" });
         } else {
-          showAlert({ title: "Asistencia actualizada", message: "El estudiante volverá a ser recogido normalmente.", type: "info" });
+          const msg = tipoRuta === 'vuelta'
+            ? "El estudiante volverá a ser entregado normalmente."
+            : "El estudiante volverá a ser recogido normalmente.";
+          showAlert({ title: "Asistencia actualizada", message: msg, type: "info" });
         }
       } else {
         haptic.error();
@@ -309,6 +358,26 @@ export default function ParentHomeScreen() {
           Aún no tienes estudiantes vinculados a tu cuenta. Contacta al
           administrador para asignar estudiantes.
         </Text>
+        <TouchableOpacity
+          onPress={signOut}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 24,
+            backgroundColor: "#FEF2F2",
+            paddingVertical: 12,
+            paddingHorizontal: 20,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "#FCA5A5",
+          }}
+        >
+          <LogOut size={18} color="#DC2626" strokeWidth={2} />
+          <Text style={{ color: "#DC2626", fontWeight: "600", fontSize: 15 }}>
+            Cerrar sesión
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -334,11 +403,11 @@ export default function ParentHomeScreen() {
         <View style={{ flex: 1 }}>
           <RouteMap
             paradas={paradasRuta}
-            ubicacionBus={ubicacionBus}
-            recorridoActivo={choferEnCamino}
+            ubicacionBus={estudianteRecogido ? null : ubicacionBus}
+            recorridoActivo={choferEnCamino && !estudianteRecogido}
             ubicacionColegio={ubicacionColegio}
             showsUserLocation={false}
-            polylineCoordinates={polylineRestante}
+            polylineCoordinates={estudianteRecogido ? [] : polylineRestante}
           />
         </View>
       </View>
@@ -385,14 +454,16 @@ export default function ParentHomeScreen() {
                   className="font-bold"
                   style={{ fontSize: 14, color: "#065F46" }}
                 >
-                  Ya fue recogido
+                  {tipoRuta === 'vuelta' ? 'Ya fue entregado' : 'Ya fue recogido'}
                 </Text>
                 <Text style={{ fontSize: 11, color: "#059669", marginTop: 2 }}>
-                  {horaRecogida ? `Recogido a las ${horaRecogida}` : "La buseta lo recogió correctamente"}
+                  {tipoRuta === 'vuelta'
+                    ? horaRecogida ? `Entregado a las ${horaRecogida}` : 'La buseta lo entregó en su parada'
+                    : horaRecogida ? `Recogido a las ${horaRecogida}` : 'La buseta lo recogió correctamente'}
                 </Text>
               </View>
             </View>
-            {etaColegio !== null && (
+            {tipoRuta === 'ida' && etaColegio !== null && (
               <EstimatedArrivalBadge
                 minutes={etaColegio}
                 onSchedule={choferEnCamino}
@@ -425,7 +496,7 @@ export default function ParentHomeScreen() {
                 className="font-bold"
                 style={{ fontSize: 14, color: "#991B1B" }}
               >
-                No sera recogido hoy
+                {tipoRuta === 'vuelta' ? 'No será entregado hoy' : 'No sera recogido hoy'}
               </Text>
               <Text style={{ fontSize: 11, color: "#DC2626", marginTop: 2 }}>
                 {marcadoPorChofer
@@ -441,7 +512,7 @@ export default function ParentHomeScreen() {
               <EstimatedArrivalBadge
                 minutes={estimatedMinutes}
                 onSchedule={choferEnCamino}
-                label="a tu parada"
+                label={tipoRuta === 'vuelta' ? 'a tu parada' : 'a tu parada'}
               />
             )}
           </>
@@ -572,9 +643,12 @@ export default function ParentHomeScreen() {
                   lineHeight: 18,
                 }}
               >
-                {estudianteSeleccionado?.nombre || "El estudiante"} no sera
-                recogido por la buseta hoy.{"\n"}Si cambias de opinion, puedes
-                reactivar la asistencia arriba.
+                {estudianteSeleccionado?.nombre || "El estudiante"}{" "}
+                {tipoRuta === 'vuelta' ? 'no será entregado' : 'no sera recogido'} por la buseta hoy.
+                {"\n"}
+                {marcadoPorChofer
+                  ? "Fue marcado ausente por el chofer."
+                  : "Si cambias de opinion, puedes reactivar la asistencia arriba."}
               </Text>
             </View>
           )}

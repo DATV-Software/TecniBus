@@ -157,13 +157,6 @@ export default function RouteMap({
     return getRegionFromParadas() || (showsUserLocation ? userLocation : null) || DEFAULT_REGION;
   };
 
-  // Centrar en paradas cuando se cargan
-  useEffect(() => {
-    const region = getRegionFromParadas();
-    if (region && mapRef.current) {
-      mapRef.current.animateToRegion(region, 600);
-    }
-  }, [paradas]);
 
   // Auto-seguir al chofer en vista chofer — con bearing estable y pitch 3D
   useEffect(() => {
