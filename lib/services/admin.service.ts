@@ -109,6 +109,38 @@ export function obtenerPadres(): Promise<Profile[]> {
 }
 
 /* ==========================================
+   FUNCIÓN: ACTUALIZAR USUARIO
+   ========================================== */
+export type ActualizarUsuarioParams = {
+  nombre?: string;
+  apellido?: string;
+  correo?: string;
+  password?: string;
+};
+
+export async function actualizarUsuario(
+  userId: string,
+  params: ActualizarUsuarioParams,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('actualizar-usuario', {
+      body: { userId, ...params },
+    });
+
+    if (error) return { success: false, error: error.message };
+    if (!data?.success) return { success: false, error: data?.error ?? 'Error inesperado' };
+
+    return { success: true };
+  } catch (err) {
+    console.error('❌ Error actualizando usuario:', err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Error inesperado',
+    };
+  }
+}
+
+/* ==========================================
    FUNCIÓN: ELIMINAR USUARIO (EDGE FUNCTION)
    ========================================== */
 export type EliminarResponse = {
