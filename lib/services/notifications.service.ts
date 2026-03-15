@@ -130,6 +130,29 @@ export async function clearPushToken(): Promise<boolean> {
 }
 
 /**
+ * Envía una notificación push al padre de un estudiante específico.
+ * Usa notificar-asistencia con título/mensaje custom.
+ */
+export async function sendPushToStudentParent(
+  idEstudiante: string,
+  titulo: string,
+  mensaje: string,
+): Promise<void> {
+  try {
+    await supabase.functions.invoke('notificar-asistencia', {
+      body: {
+        id_estudiante: idEstudiante,
+        tipo: 'subio', // tipo base requerido, será overrideado por custom
+        titulo_custom: titulo,
+        mensaje_custom: mensaje,
+      },
+    });
+  } catch (error) {
+    console.error('Error en sendPushToStudentParent:', error);
+  }
+}
+
+/**
  * Envía una notificación push a los padres de una ruta (llamar desde el servicio de recorridos)
  * @param idAsignacion ID de la asignación de ruta
  * @param titulo Título de la notificación

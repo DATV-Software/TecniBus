@@ -1,4 +1,4 @@
-import { sendPushToParents } from "@/lib/services/notifications.service";
+import { sendPushToStudentParent } from "@/lib/services/notifications.service";
 import { useEffect, useRef } from "react";
 
 type EstudianteGeocerca = {
@@ -12,34 +12,41 @@ type RecorridoMinimo = { id: string } | null;
 type EstudianteEstado = { id: string; estado: string };
 
 /**
- * Envía push notifications a los padres al entrar y salir de la geocerca de una parada.
- * No envía "recogido" si el estudiante fue marcado ausente por el chofer.
+ * Envía push notifications al padre del estudiante al entrar y salir de la geocerca.
+ * Usa notificación dirigida (solo al padre del estudiante, no a todos los padres de la ruta).
+ * IDA  — entrada: "la buseta se acerca"; salida: "fue recogido"
+ * VUELTA — entrada: "está cerca de llegar"; salida: "fue entregado"
  */
 export function useGeofencePushNotifications(
   dentroDeZona: boolean,
   estudianteGeocerca: EstudianteGeocerca,
   recorridoActual: RecorridoMinimo,
   estudiantes?: EstudianteEstado[],
+  tipoRuta: 'ida' | 'vuelta' = 'ida',
 ) {
   const lastPushStudentRef = useRef<string | null>(null);
   const prevDentroDeZonaRef = useRef(false);
   const prevEstudianteRef = useRef<EstudianteGeocerca>(null);
 
-  // Entrada: notificar al padre que la buseta se acerca
+  // Entrada: notificar al padre del estudiante
   useEffect(() => {
     if (!dentroDeZona || !estudianteGeocerca || !recorridoActual) return;
     if (lastPushStudentRef.current === estudianteGeocerca.id_estudiante) return;
     lastPushStudentRef.current = estudianteGeocerca.id_estudiante;
 
-    sendPushToParents(
-      recorridoActual.id,
-      "🚌 La buseta esta cerca",
-      `La buseta se acerca a la parada de ${estudianteGeocerca.nombreCompleto}. Prepárense para abordaje.`,
-      { tipo: "geocerca_entrada", id_estudiante: estudianteGeocerca.id_estudiante },
-    ).catch(() => {});
-  }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id]);
+    const titulo = tipoRuta === 'vuelta' ? '🏠 Tu hijo está llegando' : '🚌 La buseta esta cerca';
+    const cuerpo = tipoRuta === 'vuelta'
+      ? `La buseta está cerca de la parada de ${estudianteGeocerca.nombreCompleto}. Prepárate para recibirlo.`
+      : `La buseta se acerca a la parada de ${estudianteGeocerca.nombreCompleto}. Prepárense para abordaje.`;
 
-  // Salida: notificar que el estudiante fue recogido (solo si no fue marcado ausente)
+    sendPushToStudentParent(
+      estudianteGeocerca.id_estudiante,
+      titulo,
+      cuerpo,
+    ).catch(() => {});
+  }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id, tipoRuta]);
+
+  // Salida: notificar que el estudiante fue recogido/entregado (solo si no fue marcado ausente)
   useEffect(() => {
     const estabaDentro = prevDentroDeZonaRef.current;
     const prevEst = prevEstudianteRef.current;
@@ -47,17 +54,20 @@ export function useGeofencePushNotifications(
       const estudianteActual = estudiantes?.find(
         (e) => e.id === prevEst.id_estudiante,
       );
-      // No enviar notificación de recogida si fue marcado ausente
       if (estudianteActual?.estado !== "ausente") {
-        sendPushToParents(
-          recorridoActual.id,
-          "✅ Recogido correctamente",
-          `${prevEst.nombreCompleto} fue recogido por la buseta y ya va camino al colegio.`,
-          { tipo: "geocerca_salida", id_estudiante: prevEst.id_estudiante },
+        const titulo = tipoRuta === 'vuelta' ? '✅ Entregado correctamente' : '✅ Recogido correctamente';
+        const cuerpo = tipoRuta === 'vuelta'
+          ? `${prevEst.nombreCompleto} fue entregado en su parada correctamente.`
+          : `${prevEst.nombreCompleto} fue recogido por la buseta y ya va camino al colegio.`;
+
+        sendPushToStudentParent(
+          prevEst.id_estudiante,
+          titulo,
+          cuerpo,
         ).catch(() => {});
       }
     }
     prevDentroDeZonaRef.current = dentroDeZona;
     prevEstudianteRef.current = estudianteGeocerca;
-  }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id]);
+  }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id, tipoRuta]);
 }

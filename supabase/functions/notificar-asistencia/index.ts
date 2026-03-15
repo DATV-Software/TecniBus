@@ -13,6 +13,8 @@ interface NotificacionAsistenciaRequest {
   nombre_estudiante?: string;
   destinatario?: 'padre' | 'chofer'; // Por defecto 'padre' para compatibilidad
   id_ruta?: string; // Solo necesario cuando destinatario es 'chofer'
+  titulo_custom?: string; // Override del título (ej. geocerca)
+  mensaje_custom?: string; // Override del mensaje (ej. geocerca)
 }
 
 interface PushMessage {
@@ -38,7 +40,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { id_estudiante, tipo, nombre_estudiante, destinatario = 'padre', id_ruta }: NotificacionAsistenciaRequest = await req.json();
+    const { id_estudiante, tipo, nombre_estudiante, destinatario = 'padre', id_ruta, titulo_custom, mensaje_custom }: NotificacionAsistenciaRequest = await req.json();
 
     if (!id_estudiante || !tipo) {
       throw new Error('id_estudiante y tipo son requeridos');
@@ -118,35 +120,40 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 3. Construir mensaje según tipo
+    // 3. Construir mensaje según tipo (o usar custom si se proporcionan)
     const nombreCompleto = nombre_estudiante || `${estudiante.nombre} ${estudiante.apellido}`;
     let titulo = '';
     let mensaje = '';
 
-    switch (tipo) {
-      case 'subio':
-        titulo = '🚌 Estudiante abordó la buseta';
-        mensaje = `${nombreCompleto} subió a la buseta`;
-        break;
-      case 'bajo':
-        titulo = '✅ Estudiante llegó a destino';
-        mensaje = `${nombreCompleto} bajó de la buseta`;
-        break;
-      case 'ausente':
-        titulo = '⚠️ Estudiante ausente';
-        mensaje = `${nombreCompleto} no se presentó a la parada`;
-        break;
-      case 'padre_ausente':
-        titulo = '⚠️ Padre reportó ausencia';
-        mensaje = `${nombreCompleto} no asistirá hoy. Marcado por el padre.`;
-        break;
-      case 'padre_presente':
-        titulo = '✅ Padre confirmó asistencia';
-        mensaje = `${nombreCompleto} confirmó asistencia para hoy.`;
-        break;
-      default:
-        titulo = '📢 Actualización de asistencia';
-        mensaje = `Actualización sobre ${nombreCompleto}`;
+    if (titulo_custom && mensaje_custom) {
+      titulo = titulo_custom;
+      mensaje = mensaje_custom;
+    } else {
+      switch (tipo) {
+        case 'subio':
+          titulo = '🚌 Estudiante abordó la buseta';
+          mensaje = `${nombreCompleto} subió a la buseta`;
+          break;
+        case 'bajo':
+          titulo = '✅ Estudiante llegó a destino';
+          mensaje = `${nombreCompleto} bajó de la buseta`;
+          break;
+        case 'ausente':
+          titulo = '⚠️ Estudiante ausente';
+          mensaje = `${nombreCompleto} no se presentó a la parada`;
+          break;
+        case 'padre_ausente':
+          titulo = '⚠️ Padre reportó ausencia';
+          mensaje = `${nombreCompleto} no asistirá hoy. Marcado por el padre.`;
+          break;
+        case 'padre_presente':
+          titulo = '✅ Padre confirmó asistencia';
+          mensaje = `${nombreCompleto} confirmó asistencia para hoy.`;
+          break;
+        default:
+          titulo = '📢 Actualización de asistencia';
+          mensaje = `Actualización sobre ${nombreCompleto}`;
+      }
     }
 
     // 4. Enviar notificación push
