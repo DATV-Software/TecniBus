@@ -119,7 +119,7 @@ export async function marcarEstudianteCompletado(
   idAsignacion: string,
   idEstudiante: string,
   idChofer: string,
-  estadoAsistencia: 'presente' | 'ausente'
+  estadoAsistencia: 'presente' | 'ausente' | 'completado'
 ): Promise<boolean> {
   try {
     console.log('✅ Marcando estudiante como completado:', {
