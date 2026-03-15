@@ -9,11 +9,18 @@ export type ImportError = {
   error: string;
 };
 
+export type CredencialGenerada = {
+  correo: string;
+  password: string;
+  nombre: string;
+};
+
 export type ImportResumen = {
   total: number;
   insertados: number;
   errores: number;
   detalles_errores: ImportError[];
+  credenciales_generadas: CredencialGenerada[];
 };
 
 export type ImportResult = {
@@ -96,37 +103,17 @@ export async function importarTextoCSV(
   entityType: EntityType,
 ): Promise<ImportResult> {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return { success: false, error: 'No hay sesión activa' };
+    const { data, error } = await supabase.functions.invoke('import-entities', {
+      body: { rows, entity_type: entityType },
+    });
+
+    if (error) {
+      console.warn('⚠️ Error en importación:', error.message);
+      return { success: false, error: error.message };
     }
 
-    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-    const jsonContent = JSON.stringify(rows);
-
-    // Crear Blob con el JSON y enviarlo como archivo .json
-    const blob = new Blob([jsonContent], { type: 'application/json' });
-
-    const formData = new FormData();
-    formData.append('file', blob as unknown as File, 'import.json');
-    formData.append('entity_type', entityType);
-
-    const response = await fetch(
-      `${supabaseUrl}/functions/v1/import-entities`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: formData,
-      },
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      console.warn('⚠️ Error en importación:', data.error);
-      return { success: false, error: data.error || 'Error en la importación' };
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Error en la importación' };
     }
 
     console.log('✅ Importación completada:', data.resumen);

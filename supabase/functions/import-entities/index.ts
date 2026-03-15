@@ -13,11 +13,18 @@ interface ImportError {
   error: string;
 }
 
+interface Credencial {
+  correo: string;
+  password: string;
+  nombre: string;
+}
+
 interface ImportResult {
   total: number;
   insertados: number;
   errores: number;
   detalles_errores: ImportError[];
+  credenciales_generadas: Credencial[];
 }
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -27,10 +34,24 @@ const BATCH_SIZE = 10;
 function generatePassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
   let password = '';
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 6; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return password;
+}
+
+function traducirErrorAuth(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes('already been registered') || m.includes('already registered') || m.includes('email address is already')) {
+    return 'El correo ya está registrado en el sistema';
+  }
+  if (m.includes('invalid email')) return 'El correo no es válido';
+  if (m.includes('password should be at least')) return 'La contraseña debe tener al menos 6 caracteres';
+  if (m.includes('unable to validate email address')) return 'No se pudo validar el correo electrónico';
+  if (m.includes('email rate limit exceeded')) return 'Límite de registros alcanzado, intenta más tarde';
+  if (m.includes('user not found')) return 'Usuario no encontrado';
+  if (m.includes('invalid login credentials')) return 'Credenciales incorrectas';
+  return msg; // fallback: mostrar original si no hay traducción
 }
 
 Deno.serve(async (req) => {
@@ -68,50 +89,56 @@ Deno.serve(async (req) => {
       throw new Error('Solo administradores pueden importar entidades');
     }
 
-    // Parsear FormData
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
-    const entityType = formData.get('entity_type') as EntityType | null;
+    const contentType = req.headers.get('content-type') ?? '';
+    let rows: Record<string, string>[];
+    let entityType: EntityType;
 
-    if (!file || !entityType) {
-      throw new Error('file y entity_type son requeridos');
+    if (contentType.includes('application/json')) {
+      // Body JSON directo: { rows: [...], entity_type: '...' }
+      const body = await req.json();
+      rows = body.rows;
+      entityType = body.entity_type;
+
+      if (!Array.isArray(rows)) {
+        throw new Error('rows debe ser un array');
+      }
+    } else {
+      // FormData con archivo CSV/JSON
+      const formData = await req.formData();
+      const file = formData.get('file') as File | null;
+      entityType = formData.get('entity_type') as EntityType;
+
+      if (!file || !entityType) {
+        throw new Error('file y entity_type son requeridos');
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`Archivo excede el límite de 2MB (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+      }
+
+      const content = await file.text();
+      const fileName = file.name.toLowerCase();
+
+      if (fileName.endsWith('.json')) {
+        const parsed = JSON.parse(content);
+        if (!Array.isArray(parsed)) throw new Error('El JSON debe ser un array de objetos');
+        rows = parsed;
+      } else if (fileName.endsWith('.csv')) {
+        const parsed = Papa.parse(content, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: (h: string) => h.trim().toLowerCase(),
+        });
+        if (parsed.errors.length > 0) throw new Error(`Error parseando CSV: ${parsed.errors[0].message}`);
+        rows = parsed.data as Record<string, string>[];
+      } else {
+        throw new Error('Formato no soportado. Use .csv o .json');
+      }
     }
 
     const validTypes: EntityType[] = ['padres', 'conductores', 'estudiantes', 'buses'];
     if (!validTypes.includes(entityType)) {
       throw new Error(`entity_type inválido. Valores permitidos: ${validTypes.join(', ')}`);
-    }
-
-    // Validar tamaño
-    if (file.size > MAX_FILE_SIZE) {
-      throw new Error(`Archivo excede el límite de 2MB (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
-    }
-
-    // Leer contenido
-    const content = await file.text();
-    const fileName = file.name.toLowerCase();
-
-    // Parsear según formato
-    let rows: Record<string, string>[];
-
-    if (fileName.endsWith('.json')) {
-      const parsed = JSON.parse(content);
-      if (!Array.isArray(parsed)) {
-        throw new Error('El JSON debe ser un array de objetos');
-      }
-      rows = parsed;
-    } else if (fileName.endsWith('.csv')) {
-      const parsed = Papa.parse(content, {
-        header: true,
-        skipEmptyLines: true,
-        transformHeader: (h: string) => h.trim().toLowerCase(),
-      });
-      if (parsed.errors.length > 0) {
-        throw new Error(`Error parseando CSV: ${parsed.errors[0].message}`);
-      }
-      rows = parsed.data as Record<string, string>[];
-    } else {
-      throw new Error('Formato no soportado. Use .csv o .json');
     }
 
     // Validar cantidad de filas
@@ -129,6 +156,7 @@ Deno.serve(async (req) => {
       insertados: 0,
       errores: 0,
       detalles_errores: [],
+      credenciales_generadas: [],
     };
 
     const addError = (row: number, error: string) => {
@@ -141,15 +169,17 @@ Deno.serve(async (req) => {
       const batch = rows.slice(batchStart, batchStart + BATCH_SIZE);
 
       const promises = batch.map(async (row, batchIndex) => {
-        const rowNum = batchStart + batchIndex + 1;
+        // +2: +1 por índice base-0, +1 por la fila de encabezado del CSV
+        const rowNum = batchStart + batchIndex + 2;
 
         try {
+          let credencial: Credencial | null = null;
           switch (entityType) {
             case 'padres':
-              await importPadre(supabaseAdmin, row, rowNum, addError);
+              credencial = await importPadre(supabaseAdmin, row, rowNum, addError);
               break;
             case 'conductores':
-              await importConductor(supabaseAdmin, row, rowNum, addError);
+              credencial = await importConductor(supabaseAdmin, row, rowNum, addError);
               break;
             case 'estudiantes':
               await importEstudiante(supabaseAdmin, row, rowNum, addError);
@@ -158,6 +188,7 @@ Deno.serve(async (req) => {
               await importBus(supabaseAdmin, row, rowNum, addError);
               break;
           }
+          if (credencial) result.credenciales_generadas.push(credencial);
           result.insertados++;
         } catch (err) {
           addError(rowNum, err.message || 'Error desconocido');
@@ -205,127 +236,103 @@ Deno.serve(async (req) => {
 async function importPadre(
   supabase: ReturnType<typeof createClient>,
   row: Record<string, string>,
-  rowNum: number,
-  addError: (row: number, error: string) => void,
-) {
-  const email = row.email?.trim();
+  _rowNum: number,
+  _addError: (row: number, error: string) => void,
+): Promise<Credencial | null> {
+  const correo = row.correo?.trim();
   const nombre = row.nombre?.trim();
   const apellido = row.apellido?.trim() || '';
-  const password = row.password?.trim() || generatePassword();
-
-  if (!email) {
-    throw new Error('Email es obligatorio');
+  const passwordProvisto = row.contraseña?.trim() || row.contrasena?.trim();
+  if (passwordProvisto && passwordProvisto.length < 6) {
+    throw new Error('La contraseña debe tener al menos 6 caracteres');
   }
-  if (!nombre) {
-    throw new Error('Nombre es obligatorio');
-  }
+  const password = passwordProvisto || generatePassword();
 
-  // Crear Auth user
+  if (!correo) throw new Error('correo es obligatorio');
+  if (!nombre) throw new Error('nombre es obligatorio');
+
   const { data: userData, error: authError } = await supabase.auth.admin.createUser({
-    email,
+    email: correo,
     password,
     email_confirm: true,
     user_metadata: { nombre, apellido, rol: 'padre' },
   });
 
-  if (authError) {
-    throw new Error(`Auth: ${authError.message}`);
-  }
+  if (authError) throw new Error(traducirErrorAuth(authError.message));
 
   const userId = userData.user.id;
 
-  // Insertar profile
   const { error: profileError } = await supabase
     .from('profiles')
-    .insert({
-      id: userId,
-      correo: email,
-      nombre,
-      apellido,
-      rol: 'padre',
-    });
+    .insert({ id: userId, correo, nombre, apellido, rol: 'padre' });
 
   if (profileError) {
     await supabase.auth.admin.deleteUser(userId);
     throw new Error(`Profile: ${profileError.message}`);
   }
 
-  // Insertar en tabla padres
-  const insertData: Record<string, string> = { id: userId };
-  if (row.domicilio) insertData.domicilio = row.domicilio.trim();
-  if (row.tipo_representante) insertData.tipo_representante = row.tipo_representante.trim();
-
   const { error: roleError } = await supabase
     .from('padres')
-    .insert(insertData);
+    .insert({ id: userId });
 
   if (roleError) {
     await supabase.auth.admin.deleteUser(userId);
     throw new Error(`Tabla padres: ${roleError.message}`);
   }
+
+  // Solo retornar credencial si la contraseña fue autogenerada
+  return passwordProvisto ? null : { correo, password, nombre };
 }
 
 async function importConductor(
   supabase: ReturnType<typeof createClient>,
   row: Record<string, string>,
-  rowNum: number,
-  addError: (row: number, error: string) => void,
-) {
-  const email = row.email?.trim();
+  _rowNum: number,
+  _addError: (row: number, error: string) => void,
+): Promise<Credencial | null> {
+  const correo = row.correo?.trim();
   const nombre = row.nombre?.trim();
   const apellido = row.apellido?.trim() || '';
-  const cedula = row.cedula?.trim();
-  const licencia = row.licencia?.trim();
-  const password = row.password?.trim() || generatePassword();
+  const passwordProvisto = row.contraseña?.trim() || row.contrasena?.trim();
+  if (passwordProvisto && passwordProvisto.length < 6) {
+    throw new Error('La contraseña debe tener al menos 6 caracteres');
+  }
+  const password = passwordProvisto || generatePassword();
 
-  if (!email) throw new Error('Email es obligatorio');
-  if (!nombre) throw new Error('Nombre es obligatorio');
-  if (!cedula) throw new Error('Cédula es obligatoria');
-  if (!licencia) throw new Error('Licencia es obligatoria');
+  if (!correo) throw new Error('correo es obligatorio');
+  if (!nombre) throw new Error('nombre es obligatorio');
 
-  // Crear Auth user
   const { data: userData, error: authError } = await supabase.auth.admin.createUser({
-    email,
+    email: correo,
     password,
     email_confirm: true,
     user_metadata: { nombre, apellido, rol: 'chofer' },
   });
 
-  if (authError) {
-    throw new Error(`Auth: ${authError.message}`);
-  }
+  if (authError) throw new Error(traducirErrorAuth(authError.message));
 
   const userId = userData.user.id;
 
-  // Insertar profile
   const { error: profileError } = await supabase
     .from('profiles')
-    .insert({
-      id: userId,
-      correo: email,
-      nombre,
-      apellido,
-      rol: 'chofer',
-    });
+    .insert({ id: userId, correo, nombre, apellido, rol: 'chofer' });
 
   if (profileError) {
     await supabase.auth.admin.deleteUser(userId);
     throw new Error(`Profile: ${profileError.message}`);
   }
 
-  // Insertar en tabla choferes
   const { error: roleError } = await supabase
     .from('choferes')
-    .insert({
-      id: userId,
-      cedula,
-      licencia,
-    });
+    .insert({ id: userId });
 
   if (roleError) {
     await supabase.auth.admin.deleteUser(userId);
     throw new Error(`Tabla choferes: ${roleError.message}`);
   }
+
+  // Solo retornar credencial si la contraseña fue autogenerada
+  return passwordProvisto ? null : { correo, password, nombre };
 }
 
 async function importEstudiante(
@@ -336,50 +343,31 @@ async function importEstudiante(
 ) {
   const nombre = row.nombre?.trim();
   const apellido = row.apellido?.trim() || '';
-  const id_padre = row.id_padre?.trim();
-  const id_ruta = row.id_ruta?.trim();
-  const id_parada = row.id_parada?.trim();
+  const nombreParada = row.parada?.trim();
 
-  if (!nombre) throw new Error('Nombre es obligatorio');
+  if (!nombre) throw new Error('nombre es obligatorio');
 
-  // Validar que id_padre existe si se proporciona
-  if (id_padre) {
-    const { data: padre, error } = await supabase
-      .from('padres')
+  const insertData: Record<string, unknown> = { nombre, apellido };
+
+  // Buscar parada por nombre si se proporcionó
+  if (nombreParada) {
+    const { data: parada, error } = await supabase
+      .from('paradas')
       .select('id')
-      .eq('id', id_padre)
+      .ilike('nombre', nombreParada)
       .single();
 
-    if (error || !padre) {
-      throw new Error(`id_padre '${id_padre}' no existe`);
+    if (error || !parada) {
+      throw new Error(`Parada '${nombreParada}' no encontrada`);
     }
+    insertData.id_parada = parada.id;
   }
-
-  // Validar que id_ruta existe si se proporciona
-  if (id_ruta) {
-    const { data: ruta, error } = await supabase
-      .from('rutas')
-      .select('id')
-      .eq('id', id_ruta)
-      .single();
-
-    if (error || !ruta) {
-      throw new Error(`id_ruta '${id_ruta}' no existe`);
-    }
-  }
-
-  const insertData: Record<string, string> = { nombre, apellido };
-  if (id_padre) insertData.id_padre = id_padre;
-  if (id_ruta) insertData.id_ruta = id_ruta;
-  if (id_parada) insertData.id_parada = id_parada;
 
   const { error: insertError } = await supabase
     .from('estudiantes')
     .insert(insertData);
 
-  if (insertError) {
-    throw new Error(`Insert: ${insertError.message}`);
-  }
+  if (insertError) throw new Error(`Insert: ${insertError.message}`);
 }
 
 async function importBus(

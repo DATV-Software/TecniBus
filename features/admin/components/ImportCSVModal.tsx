@@ -3,10 +3,13 @@ import { EntityType, ImportResumen, importarTextoCSV } from "@/lib/services/impo
 import { parseCSV, validarFilaEntidad } from "@/lib/utils/csvParser";
 import { haptic } from "@/lib/utils/haptics";
 import * as DocumentPicker from "expo-document-picker";
+import { File } from "expo-file-system";
 import {
   AlertCircle,
   CheckCircle,
+  Copy,
   FileText,
+  KeyRound,
   Upload,
   X,
   XCircle,
@@ -14,6 +17,7 @@ import {
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Clipboard,
   Modal,
   ScrollView,
   Text,
@@ -23,29 +27,27 @@ import {
 
 interface EntityConfig {
   label: string;
-  columnas: string;
   ejemplo: string;
+  autoPassword?: boolean;
 }
 
 const ENTIDADES: Record<EntityType, EntityConfig> = {
   padres: {
     label: "Representantes",
-    columnas: "email (req), nombre (req), apellido, domicilio",
-    ejemplo: "email,nombre,apellido\njuan@mail.com,Juan,Pérez",
+    ejemplo: "nombre,apellido,correo,contraseña\nJuan,Pérez,juan@mail.com,Pass123\nMaría,Torres,maria@mail.com,",
+    autoPassword: true,
   },
   conductores: {
     label: "Conductores",
-    columnas: "email (req), nombre (req), apellido, cedula (req), licencia (req)",
-    ejemplo: "email,nombre,apellido,cedula,licencia\npedro@mail.com,Pedro,Ruiz,0912345678,B",
+    ejemplo: "nombre,apellido,correo,contraseña\nPedro,Ruiz,pedro@mail.com,Pass123\nLuis,Gómez,luis@mail.com,",
+    autoPassword: true,
   },
   estudiantes: {
     label: "Estudiantes",
-    columnas: "nombre (req), apellido",
-    ejemplo: "nombre,apellido\nLuisa,Pérez\nCarlos,Torres",
+    ejemplo: "nombre,apellido,parada\nLuisa,Pérez,Av. Principal\nCarlos,Torres,Calle 5",
   },
   buses: {
     label: "Buses",
-    columnas: "placa (req), capacidad (req)",
     ejemplo: "placa,capacidad\nABC-1234,40\nXYZ-5678,35",
   },
 };
@@ -78,17 +80,25 @@ export function ImportCSVModal({
   const handleSeleccionarArchivo = async () => {
     haptic.light();
     const result = await DocumentPicker.getDocumentAsync({
-      type: ["text/csv", "text/plain", "application/octet-stream"],
+      type: "*/*",
       copyToCacheDirectory: true,
     });
 
     if (result.canceled) return;
 
     const asset = result.assets[0];
+    console.log("[CSV] asset.uri:", asset.uri, "| mimeType:", asset.mimeType);
+
+    // Validar extensión CSV (el MIME type varía según plataforma/app)
+    const nombre = asset.name.toLowerCase();
+    if (!nombre.endsWith(".csv") && !nombre.endsWith(".txt")) {
+      onToast("Por favor selecciona un archivo .csv", "error");
+      return;
+    }
+
     try {
-      // Leer el contenido del archivo
-      const response = await fetch(asset.uri);
-      const texto = await response.text();
+      const file = new File(asset.uri);
+      const texto = await file.text();
 
       const parsed = parseCSV(texto);
       if (parsed.error) {
@@ -111,8 +121,9 @@ export function ImportCSVModal({
         contenido: texto,
       });
       setResumen(null);
-    } catch {
-      onToast("No se pudo leer el archivo.", "error");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      onToast(`Error leyendo archivo: ${msg}`, "error");
     }
   };
 
@@ -226,37 +237,23 @@ export function ImportCSVModal({
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                 <FileText size={14} color={Colors.tecnibus[600]} />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: "600",
-                    color: Colors.tecnibus[700],
-                  }}
-                >
-                  Columnas del CSV
+                <Text style={{ fontSize: 13, fontWeight: "600", color: Colors.tecnibus[700] }}>
+                  Formato del CSV
                 </Text>
               </View>
-              <Text style={{ fontSize: 12, color: Colors.tecnibus[800] }}>
-                {cfg.columnas}
-              </Text>
-              <View
-                style={{
-                  backgroundColor: "#F3F4F6",
-                  borderRadius: 8,
-                  padding: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: 11,
-                    color: "#374151",
-                    lineHeight: 18,
-                  }}
-                >
+              <View style={{ backgroundColor: "#F3F4F6", borderRadius: 8, padding: 10 }}>
+                <Text style={{ fontFamily: "monospace", fontSize: 11, color: "#374151", lineHeight: 18 }}>
                   {cfg.ejemplo}
                 </Text>
               </View>
+              {cfg.autoPassword && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <KeyRound size={12} color={Colors.tecnibus[500]} />
+                  <Text style={{ fontSize: 11, color: Colors.tecnibus[600], flex: 1 }}>
+                    Si omites la contraseña se genera automáticamente y se muestra al finalizar la importación.
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Selector de archivo */}
@@ -494,6 +491,53 @@ export function ImportCSVModal({
                         ... y {resumen.detalles_errores.length - 5} error(es) más.
                       </Text>
                     )}
+                  </View>
+                )}
+
+                {/* Credenciales autogeneradas */}
+                {resumen.credenciales_generadas?.length > 0 && (
+                  <View style={{ gap: 6 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <KeyRound size={13} color={Colors.tecnibus[600]} />
+                      <Text style={{ fontSize: 12, fontWeight: "600", color: Colors.tecnibus[700] }}>
+                        Contraseñas generadas automáticamente
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>
+                      Anota estas credenciales antes de cerrar, no se volverán a mostrar.
+                    </Text>
+                    {resumen.credenciales_generadas.map((c, i) => (
+                      <View
+                        key={i}
+                        style={{
+                          backgroundColor: Colors.tecnibus[50],
+                          borderWidth: 1,
+                          borderColor: Colors.tecnibus[200],
+                          borderRadius: 8,
+                          padding: 10,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                        }}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 12, fontWeight: "600", color: "#1F2937" }}>
+                            {c.nombre}
+                          </Text>
+                          <Text style={{ fontSize: 11, color: "#6B7280" }}>{c.correo}</Text>
+                          <Text style={{ fontSize: 12, color: Colors.tecnibus[700], fontFamily: "monospace", marginTop: 2 }}>
+                            {c.password}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => Clipboard.setString(c.password)}
+                          style={{ padding: 6, backgroundColor: Colors.tecnibus[100], borderRadius: 8 }}
+                        >
+                          <Copy size={14} color={Colors.tecnibus[600]} />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
                   </View>
                 )}
 

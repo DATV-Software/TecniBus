@@ -3,6 +3,7 @@ import { Colors } from "@/lib/constants/colors";
 import {
   BusetaModal,
   EntityCard,
+  ImportCSVModal,
   SearchBar,
   SubScreenHeader,
 } from "@/features/admin";
@@ -11,7 +12,7 @@ import { useToast } from "@/lib/hooks/useToast";
 import { QUERY_KEYS } from "@/lib/constants/queryKeys";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Bus, Plus, Users } from "lucide-react-native";
+import { Bus, Plus, Upload, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -37,6 +38,7 @@ export default function BusetasListScreen() {
   const { toast, showToast, hideToast } = useToast();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [editBuseta, setEditBuseta] = useState<Buseta | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -110,10 +112,11 @@ export default function BusetasListScreen() {
       />
 
       {/* Action bar */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
+      <View style={{ flexDirection: "row", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4, gap: 10 }}>
         <TouchableOpacity
           onPress={handleCreate}
           style={{
+            flex: 1,
             backgroundColor: Colors.tecnibus[600],
             borderRadius: 14,
             paddingVertical: 14,
@@ -127,6 +130,23 @@ export default function BusetasListScreen() {
           <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>
             Registrar Buseta
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => { haptic.light(); setShowImport(true); }}
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 14,
+            paddingHorizontal: 14,
+            paddingVertical: 14,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            borderWidth: 1,
+            borderColor: Colors.tecnibus[200],
+          }}
+        >
+          <Upload size={17} color={Colors.tecnibus[600]} />
+          <Text style={{ color: Colors.tecnibus[600], fontWeight: "600", fontSize: 13 }}>CSV</Text>
         </TouchableOpacity>
       </View>
 
@@ -177,6 +197,14 @@ export default function BusetasListScreen() {
           }
         />
       )}
+
+      <ImportCSVModal
+        visible={showImport}
+        onClose={() => setShowImport(false)}
+        entityType="buses"
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.busetas })}
+        onToast={showToast}
+      />
 
       <BusetaModal
         visible={showModal}

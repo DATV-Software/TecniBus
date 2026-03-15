@@ -51,8 +51,8 @@ export function parseCSV(text: string): ParseResult {
 
 /** Columnas requeridas por tipo de entidad */
 const COLUMNAS_REQUERIDAS: Record<string, string[]> = {
-  padres:      ["email", "nombre"],
-  conductores: ["email", "nombre", "cedula", "licencia"],
+  padres:      ["nombre", "correo"],
+  conductores: ["nombre", "correo"],
   estudiantes: ["nombre"],
   buses:       ["placa", "capacidad"],
 };
