@@ -5,6 +5,7 @@
  * - GPS active dot (right)
  */
 import { CheckCircle2, Clock } from 'lucide-react-native';
+import { memo } from 'react';
 import { Text, View } from 'react-native';
 
 type Props = {
@@ -17,7 +18,7 @@ type Props = {
   topOffset: number; // headerHeight + gap
 };
 
-export function DriverOverlayPills({
+function DriverOverlayPillsComponent({
   routeActive,
   tracking,
   tipoRuta,
@@ -124,3 +125,9 @@ export function DriverOverlayPills({
     </>
   );
 }
+
+/**
+ * Memoized: stats and ETA values change at most once per geofence event,
+ * not on every GPS position update.
+ */
+export const DriverOverlayPills = memo(DriverOverlayPillsComponent);

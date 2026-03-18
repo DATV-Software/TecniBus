@@ -14,6 +14,7 @@ import {
   Play,
   UserX,
 } from 'lucide-react-native';
+import { memo } from 'react';
 import {
   ActivityIndicator,
   Text,
@@ -76,7 +77,7 @@ type Props = {
   setShowRecorridoSelector: (v: boolean) => void;
 };
 
-export function DriverBottomCard({
+function DriverBottomCardComponent({
   recorridos,
   recorridoActual,
   tipoRuta,
@@ -832,3 +833,9 @@ export function DriverBottomCard({
     </TourStep>
   );
 }
+
+/**
+ * Memoized: re-renders only when route state, student data, or ETA values
+ * actually change — not on every GPS position update in the parent screen.
+ */
+export const DriverBottomCard = memo(DriverBottomCardComponent);
