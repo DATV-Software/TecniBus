@@ -2,7 +2,7 @@ import { Colors } from "@/lib/constants/colors";
 import type { Parada } from "@/lib/services/rutas.service";
 import type { UbicacionActual } from "@/lib/services/ubicaciones.service";
 import * as Location from "expo-location";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -72,7 +72,7 @@ type RouteMapProps = {
   showsUserLocation?: boolean;
 };
 
-export default function RouteMap({
+function RouteMapComponent({
   paradas,
   ubicacionBus,
   recorridoActivo,
@@ -157,6 +157,16 @@ export default function RouteMap({
     return getRegionFromParadas() || (showsUserLocation ? userLocation : null) || DEFAULT_REGION;
   };
 
+  // Stable handler — avoids re-creating inline arrow on every render
+  const handlePanDrag = useCallback(() => {
+    isUserInteractingRef.current = true;
+    if (userInteractingTimerRef.current) {
+      clearTimeout(userInteractingTimerRef.current);
+    }
+    userInteractingTimerRef.current = setTimeout(() => {
+      isUserInteractingRef.current = false;
+    }, 8000);
+  }, []);
 
   // Auto-seguir al chofer en vista chofer — con bearing estable y pitch 3D
   useEffect(() => {
@@ -248,15 +258,7 @@ export default function RouteMap({
         showsMyLocationButton={true}
         showsCompass={true}
         showsScale={true}
-        onPanDrag={() => {
-          isUserInteractingRef.current = true;
-          if (userInteractingTimerRef.current) {
-            clearTimeout(userInteractingTimerRef.current);
-          }
-          userInteractingTimerRef.current = setTimeout(() => {
-            isUserInteractingRef.current = false;
-          }, 8000);
-        }}
+        onPanDrag={handlePanDrag}
       >
         {/* Polyline verde: ruta restante (se va consumiendo conforme avanza el bus) */}
         {polylineCoordinates && polylineCoordinates.length > 0 && (
@@ -361,3 +363,11 @@ const styles = StyleSheet.create({
   },
   loadingText: { marginTop: 8, color: "#6b7280", fontSize: 14 },
 });
+
+/**
+ * Memoized: only re-renders when paradas array reference, ubicacionBus,
+ * recorridoActivo, polylineCoordinates, or chofer position/bearing change.
+ * This prevents the MapView from being torn-down and rebuilt on every
+ * GPS tick in the parent/driver screens.
+ */
+export default memo(RouteMapComponent);
