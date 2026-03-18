@@ -1,4 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
+import { calcularDistancia } from "@/lib/services/geocercas.service";
 import type { Parada } from "@/lib/services/rutas.service";
 import type { UbicacionActual } from "@/lib/services/ubicaciones.service";
 import * as Location from "expo-location";
@@ -35,21 +36,6 @@ const DEFAULT_REGION: Region = {
   latitudeDelta: 0.05,
   longitudeDelta: 0.05,
 };
-
-function distanciaMetros(
-  lat1: number, lon1: number,
-  lat2: number, lon2: number,
-): number {
-  const R = 6371000;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 type RouteMapProps = {
   paradas: Parada[];
@@ -178,7 +164,7 @@ function RouteMapComponent({
     // Validar cambio mínimo antes de animar — evita micro-animaciones
     const prev = lastAnimatedPositionRef.current;
     if (prev) {
-      const distDelta = distanciaMetros(
+      const distDelta = calcularDistancia(
         prev.lat, prev.lng,
         ubicacionChofer.latitude, ubicacionChofer.longitude,
       );
@@ -221,7 +207,7 @@ function RouteMapComponent({
 
     const prev = lastAnimatedPositionRef.current;
     if (prev) {
-      const distDelta = distanciaMetros(
+      const distDelta = calcularDistancia(
         prev.lat, prev.lng,
         ubicacionBus.latitud, ubicacionBus.longitud,
       );
