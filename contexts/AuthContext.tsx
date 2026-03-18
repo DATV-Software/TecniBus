@@ -1,5 +1,5 @@
 import { Session, User } from '@supabase/supabase-js';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 import { supabase } from '../lib/services/supabase';
 import { Profile } from '../lib/services/useProfile';
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.remove();
   }, [profile?.rol]);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     try {
       console.log('🔍 Buscando perfil para usuario:', userId);
       
@@ -116,20 +116,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user) {
       setLoading(true);
       await fetchProfile(user.id);
     }
-  };
+  }, [user, fetchProfile]);
 
-  const patchProfile = (fields: Partial<Profile>) => {
+  const patchProfile = useCallback((fields: Partial<Profile>) => {
     setProfile(prev => (prev ? { ...prev, ...fields } : prev));
-  };
+  }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
       // NO setear loading aquí - lo manejará el componente de login
       const { error } = await supabase.auth.signInWithPassword({
@@ -146,9 +146,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       return { error: error as Error };
     }
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       console.log('🚪 Cerrando sesión...');
 
@@ -168,9 +168,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('❌ Error cerrando sesión:', error);
     }
-  };
+  }, []);
 
-  const value = {
+  // Memoize context value so consumers only re-render when actual data changes,
+  // not on every AuthProvider render cycle.
+  const value = useMemo(() => ({
     session,
     user,
     profile,
@@ -179,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     refreshProfile,
     patchProfile,
-  };
+  }), [session, user, profile, loading, signIn, signOut, refreshProfile, patchProfile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
