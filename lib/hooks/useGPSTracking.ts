@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { guardarUbicacion } from '@/lib/services/ubicaciones.service';
 import { networkDetector } from '@/lib/network/networkDetector';
 import { classifyError, isRetryable } from '@/lib/network/errorClassifier';
 import type { GpsFlushPayload } from '@/lib/network/types';
+
+const GPS_BUFFER_STORAGE_KEY = '@tecnibus:gps_buffer_v1';
 
 type UseGPSTrackingProps = {
   idAsignacion: string | null;
@@ -119,6 +122,7 @@ export function useGPSTracking({
     isFlushing.current = true;
     const points = [...gpsBufferRef.current];
     gpsBufferRef.current = [];
+    void AsyncStorage.removeItem(GPS_BUFFER_STORAGE_KEY);
 
     console.log(`[GPS] Flushing ${points.length} buffered GPS point(s)`);
 
@@ -140,6 +144,7 @@ export function useGPSTracking({
         // Put remaining points back in the buffer if we lose connection again
         const failedIdx = points.indexOf(point);
         gpsBufferRef.current = points.slice(failedIdx);
+        void AsyncStorage.setItem(GPS_BUFFER_STORAGE_KEY, JSON.stringify(gpsBufferRef.current));
         console.warn('[GPS] Flush interrupted — re-buffering remaining points');
         break;
       }
@@ -172,6 +177,21 @@ export function useGPSTracking({
         }
         setPermisoConcedido(true);
 
+        // Restore GPS buffer persisted from a previous session
+        try {
+          const raw = await AsyncStorage.getItem(GPS_BUFFER_STORAGE_KEY);
+          if (raw) {
+            const restored = JSON.parse(raw) as GpsFlushPayload['points'];
+            if (restored.length > 0) {
+              gpsBufferRef.current = restored;
+              console.log(`[GPS] Restored ${restored.length} buffered point(s) from storage`);
+              if (networkDetector.isOnline) void flushGpsBuffer();
+            }
+          }
+        } catch {
+          // Non-fatal: start with empty buffer
+        }
+
         const pos = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
@@ -187,7 +207,7 @@ export function useGPSTracking({
         setError('Error al solicitar permisos de ubicación');
       }
     })();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Watch Position ────────────────────────────────────────────────────────
 
@@ -316,6 +336,7 @@ export function useGPSTracking({
               heading: heading ?? undefined,
               capturedAt: timestamp,
             });
+            void AsyncStorage.setItem(GPS_BUFFER_STORAGE_KEY, JSON.stringify(buffer));
             // Still update ultimaGuardadaRef so we don't flood the buffer
             ultimaGuardadaRef.current = { lat: latitude, lng: longitude };
             return;
@@ -350,6 +371,7 @@ export function useGPSTracking({
                   heading: heading ?? undefined,
                   capturedAt: timestamp,
                 });
+                void AsyncStorage.setItem(GPS_BUFFER_STORAGE_KEY, JSON.stringify(buffer));
               }
             }
           });
@@ -383,6 +405,7 @@ export function useGPSTracking({
       consecutiveStopsRef.current = 0;
       movementStateRef.current = 'detenido';
       gpsBufferRef.current = [];
+      void AsyncStorage.removeItem(GPS_BUFFER_STORAGE_KEY);
     }
   }, [recorridoActivo]);
 
