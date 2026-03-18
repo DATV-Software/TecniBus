@@ -16,6 +16,21 @@ Notifications.setNotificationHandler({
 });
 
 /**
+ * Devuelve el estado actual del permiso de notificaciones push.
+ */
+export async function getNotificationPermissionStatus(): Promise<'granted' | 'denied' | 'undetermined'> {
+  if (!Device.isDevice) return 'undetermined';
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status === 'granted') return 'granted';
+    if (status === 'denied') return 'denied';
+    return 'undetermined';
+  } catch {
+    return 'undetermined';
+  }
+}
+
+/**
  * Registra el dispositivo para notificaciones push y guarda el token en Supabase
  * @returns El push token o null si falla
  */

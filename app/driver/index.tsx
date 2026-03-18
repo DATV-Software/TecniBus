@@ -20,13 +20,14 @@ import type { UbicacionLocal } from "@/lib/hooks/useGPSTracking";
 import { useGPSTracking } from "@/lib/hooks/useGPSTracking";
 import { useRouteDeviation } from "@/lib/hooks/useRouteDeviation";
 import { getUbicacionColegio } from "@/lib/services/configuracion.service";
+import { getNotificationPermissionStatus } from "@/lib/services/notifications.service";
 import { calcularDistancia } from "@/lib/services/geocercas.service";
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { haptic } from "@/lib/utils/haptics";
 import { calcularPolylineRestante } from "@/lib/utils/polyline";
 import { Bus } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { StatusBar, StyleSheet, Text, View } from "react-native";
+import { Alert, StatusBar, StyleSheet, Text, View } from "react-native";
 import { TourStep, useTourAutoStart } from "@/features/tour";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -37,6 +38,19 @@ export default function DriverHomeScreen() {
   const insets = useSafeAreaInsets();
 
   useTourAutoStart('driver');
+
+  // One-time notification permission check — alert driver if denied
+  useEffect(() => {
+    getNotificationPermissionStatus().then((status) => {
+      if (status === 'denied') {
+        Alert.alert(
+          'Notificaciones desactivadas',
+          'Las notificaciones push están desactivadas. No recibirás alertas de inicio/fin de recorrido. Puedes activarlas en Configuración del dispositivo.',
+          [{ text: 'Entendido' }],
+        );
+      }
+    });
+  }, []);
 
   const [headerHeight, setHeaderHeight] = useState(160);
 
