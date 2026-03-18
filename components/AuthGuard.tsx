@@ -19,7 +19,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace("/login");
       return;
     }
-    // Autenticado → redirección por rol (incluso si está en login)
+    // Autenticado → redirección por rol (el tour se muestra sobre el dashboard)
     if (user && profile) {
       const expectedPath =
         profile.rol === "admin"
