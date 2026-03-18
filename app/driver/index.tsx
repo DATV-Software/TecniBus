@@ -48,9 +48,10 @@ import {
   Play,
   UserX,
 } from "lucide-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   Linking,
   StatusBar,
   StyleSheet,
@@ -58,13 +59,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { TourStep, useTourAutoStart } from "@/features/tour";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function DriverHomeScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
   const { profile } = useAuth();
   const insets = useSafeAreaInsets();
+
+  useTourAutoStart('driver');
   // Altura del header medida via onLayout para posicionar pills correctamente
   const [headerHeight, setHeaderHeight] = useState(160);
 
@@ -312,6 +318,16 @@ export default function DriverHomeScreen() {
     ubicacionChofer?.longitude,
   ]);
 
+  // Abrir selector si hay recorridos pendientes después de finalizar
+  const abrirSelectorSiHayPendientes = useCallback((recorridoCompletadoId: string) => {
+    const pendientes = recorridos.filter(
+      (r) => r.id !== recorridoCompletadoId && estadosRecorridos[r.id] !== 'completado',
+    );
+    if (pendientes.length > 0) {
+      setTimeout(() => setShowRecorridoSelector(true), 1500);
+    }
+  }, [recorridos, estadosRecorridos]);
+
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => {
     getUbicacionColegio().then(setUbicacionColegio).catch(console.error);
@@ -350,6 +366,7 @@ export default function DriverHomeScreen() {
             setHoraLlegadaColegio(horaLlegada);
             setRutaCompletada(true);
             haptic.success();
+            abrirSelectorSiHayPendientes(recorridoActual.id);
           }
         })
         .catch((err) =>
@@ -362,6 +379,7 @@ export default function DriverHomeScreen() {
     ubicacionChofer?.longitude,
     ubicacionColegio,
     recorridoActual?.id,
+    abrirSelectorSiHayPendientes,
   ]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
@@ -603,6 +621,7 @@ export default function DriverHomeScreen() {
               setRouteActive(false);
               setEstadosRecorridos((prev) => ({ ...prev, [recorridoActual.id]: 'completado' }));
               haptic.success();
+              abrirSelectorSiHayPendientes(recorridoActual.id);
             } else {
               haptic.error();
               showAlert({
@@ -665,7 +684,16 @@ export default function DriverHomeScreen() {
         />
       </View>
 
-      {/* ── CAPA 1: Header (tiene fondo propio via LinearGradient) ── */}
+      {/* ── CAPA 1: Header — TourStep 1 ── */}
+      <TourStep
+        scope="driver"
+        id="driver-header"
+        order={1}
+        title="Tu Panel de Chofer"
+        description="Aquí ves tu ruta asignada para el día. Cuando el recorrido esté activo aparece el badge 'EN CURSO' con la hora de salida. Selecciona la ruta desde aquí antes de arrancar."
+        borderRadius={24}
+        padding={0}
+      >
       <View onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
         <DashboardHeader
           title="PANEL DE CHOFER"
@@ -696,6 +724,7 @@ export default function DriverHomeScreen() {
           </View>
         )}
       </View>
+      </TourStep>
 
       {/* ── CAPA 2: Pills flotando sobre el mapa, debajo del header ── */}
       {routeActive && (
@@ -795,20 +824,31 @@ export default function DriverHomeScreen() {
         </View>
       )}
 
-      {/* ── CAPA 4: Bottom card — mismo estilo glass que BottomNavigation ── */}
-      <View
+      {/* ── CAPA 4: Bottom card — TourStep 2 ── */}
+      <TourStep
+        scope="driver"
+        id="driver-card"
+        order={2}
+        title="Control del Recorrido"
+        description="Desde aquí inicias el recorrido, ves al próximo estudiante en ruta, gestionas asistencias y finalizas cuando termines. También puedes navegar directamente a Google Maps."
         style={{
           position: "absolute",
           left: 30,
           right: 30,
           bottom: BOTTOM_CARD_BOTTOM,
+          zIndex: 5,
+        }}
+        borderRadius={28}
+        padding={0}
+      >
+      <View
+        style={{
           borderRadius: 28,
           shadowColor: Colors.tecnibus[800],
           shadowOffset: { width: 0, height: 6 },
           shadowOpacity: 0.15,
           shadowRadius: 20,
           elevation: 14,
-          zIndex: 5,
         }}
       >
         <LinearGradient
@@ -1563,6 +1603,7 @@ export default function DriverHomeScreen() {
             )}
         </LinearGradient>
       </View>
+      </TourStep>
 
       {/* ── Modals ── */}
       <RecorridoSelector
@@ -1573,6 +1614,10 @@ export default function DriverHomeScreen() {
         onSelect={(rec) => {
           haptic.light();
           setRecorridoActual(rec);
+          setRutaCompletada(false);
+          setHoraLlegadaColegio(null);
+          setPolylineCoordinates([]);
+          colegioGeofenceActivadoRef.current = false;
           setShowRecorridoSelector(false);
         }}
         onClose={() => setShowRecorridoSelector(false)}
@@ -1707,6 +1752,27 @@ export default function DriverHomeScreen() {
         onMiddlePress={() => router.push("/driver/chat")}
         onSettingsPress={() => router.push("/driver/settings")}
       />
+
+      {/* ── TOUR ANCHOR: Bottom Navigation (step 3) ── */}
+      <TourStep
+        scope="driver"
+        id="driver-nav"
+        order={3}
+        title="Chat con los Padres"
+        description="Usa el botón central para abrir el chat y comunicarte con los padres de tus estudiantes durante el recorrido. El ícono de ajustes te lleva a la configuración."
+        style={{
+          position: 'absolute',
+          bottom: 7 + Math.max(insets.bottom, 8),
+          left: 30,
+          right: 30,
+          height: 64,
+        }}
+        borderRadius={28}
+        padding={0}
+        pointerEvents="none"
+      >
+        <View style={{ flex: 1 }} collapsable={false} />
+      </TourStep>
     </View>
   );
 }
