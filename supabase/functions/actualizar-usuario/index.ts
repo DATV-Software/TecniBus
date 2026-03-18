@@ -1,11 +1,29 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { makeCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ActualizarUsuarioSchema = z.object({
+  userId: z.string().uuid(),
+  nombre: z.string().min(1).trim().optional(),
+  apellido: z.string().min(1).trim().optional(),
+  correo: z.string().email().optional(),
+  password: z.string().min(8).optional(),
+}).refine(d => d.nombre || d.apellido || d.correo || d.password, {
+  message: 'Se requiere al menos un campo para actualizar',
+});
+
+// Per-isolate rate limiter: 20 req/min per userId
+const rateLimitMap = new Map<string, number[]>();
+function checkRateLimit(userId: string, maxPerMinute = 20): boolean {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(userId) ?? []).filter(t => now - t < 60_000);
+  if (timestamps.length >= maxPerMinute) return false;
+  rateLimitMap.set(userId, [...timestamps, now]);
+  return true;
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = makeCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
@@ -30,8 +48,17 @@ Deno.serve(async (req) => {
 
     if (profile?.rol !== 'admin') throw new Error('Solo administradores pueden modificar usuarios');
 
-    const { userId, nombre, apellido, correo, password } = await req.json();
-    if (!userId) throw new Error('userId es requerido');
+    if (!checkRateLimit(user.id)) {
+      return new Response(JSON.stringify({ success: false, error: 'Demasiadas solicitudes, espera un minuto' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 });
+    }
+
+    const parseResult = ActualizarUsuarioSchema.safeParse(await req.json());
+    if (!parseResult.success) {
+      return new Response(JSON.stringify({ success: false, error: parseResult.error.issues }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
+    }
+    const { userId, nombre, apellido, correo, password } = parseResult.data;
 
     // 1. Actualizar auth.users si cambia correo o contraseña
     const authUpdates: Record<string, string> = {};

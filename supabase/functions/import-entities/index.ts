@@ -1,10 +1,22 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Papa from "https://esm.sh/papaparse@5.4.1";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { makeCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ImportJsonBodySchema = z.object({
+  rows: z.array(z.record(z.string())),
+  entity_type: z.enum(['padres', 'conductores', 'estudiantes', 'buses']),
+});
+
+// Per-isolate rate limiter: 20 req/min per userId
+const rateLimitMap = new Map<string, number[]>();
+function checkRateLimit(userId: string, maxPerMinute = 20): boolean {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(userId) ?? []).filter(t => now - t < 60_000);
+  if (timestamps.length >= maxPerMinute) return false;
+  rateLimitMap.set(userId, [...timestamps, now]);
+  return true;
+}
 
 type EntityType = 'padres' | 'conductores' | 'estudiantes' | 'buses';
 
@@ -55,6 +67,7 @@ function traducirErrorAuth(msg: string): string {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = makeCorsHeaders(req);
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -89,19 +102,24 @@ Deno.serve(async (req) => {
       throw new Error('Solo administradores pueden importar entidades');
     }
 
+    if (!checkRateLimit(user.id)) {
+      return new Response(JSON.stringify({ success: false, error: 'Demasiadas solicitudes, espera un minuto' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 });
+    }
+
     const contentType = req.headers.get('content-type') ?? '';
     let rows: Record<string, string>[];
     let entityType: EntityType;
 
     if (contentType.includes('application/json')) {
       // Body JSON directo: { rows: [...], entity_type: '...' }
-      const body = await req.json();
-      rows = body.rows;
-      entityType = body.entity_type;
-
-      if (!Array.isArray(rows)) {
-        throw new Error('rows debe ser un array');
+      const parseResult = ImportJsonBodySchema.safeParse(await req.json());
+      if (!parseResult.success) {
+        return new Response(JSON.stringify({ success: false, error: parseResult.error.issues }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
       }
+      rows = parseResult.data.rows;
+      entityType = parseResult.data.entity_type;
     } else {
       // FormData con archivo CSV/JSON
       const formData = await req.formData();
