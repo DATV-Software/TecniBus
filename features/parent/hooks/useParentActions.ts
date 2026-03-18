@@ -1,7 +1,7 @@
 /**
  * Extracts all handler functions from the parent screen.
  */
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useAlert } from '@/components/ui/AlertBox/useAlert';
 import { toggleAsistencia } from '@/lib/services/asistencias.service';
@@ -42,9 +42,12 @@ export function useParentActions({
 }: Options) {
   const router = useRouter();
   const { showAlert } = useAlert();
+  const toggleDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Toggle student attendance (absent / present) ───────────────────────────
   const handleToggleAttendance = useCallback(async () => {
+    if (toggleDebounceRef.current) return; // debounce: ignore rapid taps
+    toggleDebounceRef.current = setTimeout(() => { toggleDebounceRef.current = null; }, 800);
     if (!estudianteSeleccionado?.id || !estudianteSeleccionado?.parada?.ruta?.id) {
       showAlert({
         title: 'Error',
