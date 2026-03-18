@@ -10,6 +10,7 @@ import { Colors } from '@/lib/constants/colors';
 import { EstimatedArrivalBadge } from '../EstimatedArrivalBadge';
 import { RecorridoStatusBadge } from '../RecorridoStatusBadge';
 import { CheckCircle2, ChevronDown, GraduationCap, UserX } from 'lucide-react-native';
+import { memo, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { haptic } from '@/lib/utils/haptics';
 import type { EstudianteDelPadre } from '@/lib/services/padres.service';
@@ -28,7 +29,7 @@ type Props = {
   onOpenStudentSelector: () => void;
 };
 
-export function ParentStatusBadges({
+function ParentStatusBadgesComponent({
   tipoRuta,
   estudianteRecogido,
   isAttending,
@@ -41,6 +42,11 @@ export function ParentStatusBadges({
   estudianteSeleccionado,
   onOpenStudentSelector,
 }: Props) {
+  const handleSelectorPress = useCallback(() => {
+    haptic.light();
+    onOpenStudentSelector();
+  }, [onOpenStudentSelector]);
+
   return (
     <View>
       {/* ── Badge: student picked up / delivered ── */}
@@ -136,10 +142,7 @@ export function ParentStatusBadges({
       {estudiantes.length > 1 && (
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => {
-            haptic.light();
-            onOpenStudentSelector();
-          }}
+          onPress={handleSelectorPress}
           style={{
             marginHorizontal: 16,
             marginTop: 8,
@@ -179,3 +182,10 @@ export function ParentStatusBadges({
     </View>
   );
 }
+
+/**
+ * Memoized: badge state changes on attendance/geofence events, not on
+ * every bus position update.  Wrapping in memo prevents re-renders caused
+ * by ubicacionBus updates flowing through the parent screen.
+ */
+export const ParentStatusBadges = memo(ParentStatusBadgesComponent);
