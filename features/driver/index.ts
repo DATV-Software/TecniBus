@@ -4,3 +4,8 @@ export { MapCard } from "./MapCard";
 export { RecorridoSelector } from "./RecorridoSelector";
 export { EstudianteActualPanel } from "./EstudianteActualPanel";
 export { ReturnAttendanceModal } from "./ReturnAttendanceModal";
+export { DriverBottomCard } from "./components/DriverBottomCard";
+export { DriverOverlayPills } from "./components/DriverOverlayPills";
+export { DriverAlerts } from "./components/DriverAlerts";
+export { useDriverDerivedState } from "./hooks/useDriverDerivedState";
+export { useDriverActions } from "./hooks/useDriverActions";
