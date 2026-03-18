@@ -5,9 +5,9 @@ import { Fingerprint, Lock, Mail } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Keyboard,
-  Linking,
   Platform,
   ScrollView,
   StatusBar,
@@ -435,9 +435,9 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              {/* Reset password */}
+              {/* Reset password — URL se agregará cuando la página esté lista */}
               <TouchableOpacity
-                onPress={() => Linking.openURL("https://PLACEHOLDER_RESET_URL")}
+                onPress={() => Alert.alert('Recuperar contraseña', 'Contacta al administrador de tu institución para restablecer tu contraseña.')}
                 activeOpacity={0.7}
                 className="self-end mb-2"
               >
@@ -489,7 +489,7 @@ export default function LoginScreen() {
               <Text className="text-center text-gray-600 text-sm mt-3 font-calsans">
                 ¿No tienes cuenta?{" "}
                 <Text
-                  onPress={() => Linking.openURL("https://youtube.com")}
+                  onPress={() => Alert.alert('Contacto', 'Para crear una cuenta, contacta al administrador de tu institución.')}
                   className="text-tecnibus-500 underline"
                 >
                   Contacta a tu institución
