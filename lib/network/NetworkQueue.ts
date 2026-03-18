@@ -77,11 +77,13 @@ export class NetworkQueue {
       }
     }
 
+    const now = Date.now();
     const action: QueuedAction<T> = {
-      id: `${type}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      id: `${type}_${now}_${Math.random().toString(36).slice(2, 9)}`,
       type,
       payload,
-      timestamp: Date.now(),
+      timestamp: now,
+      enqueuedAt: now,
       retryCount: 0,
       maxRetries: getMaxRetries(type),
       status: 'pending',
@@ -129,6 +131,17 @@ export class NetworkQueue {
   }
 
   private async _processAction(action: QueuedAction): Promise<void> {
+    // Drop stale actions (>24h). Actions without enqueuedAt (legacy) are treated as fresh.
+    const MAX_ACTION_AGE_MS = 24 * 60 * 60 * 1000;
+    const enqueuedAt = action.enqueuedAt ?? Date.now();
+    if (Date.now() - enqueuedAt > MAX_ACTION_AGE_MS) {
+      this._queue = this._queue.filter((a) => a.id !== action.id);
+      await this._persist();
+      this._notify();
+      console.warn(`[Queue] 🗑️ Dropped stale action ${action.type} (>24h old)`);
+      return;
+    }
+
     const executor = this._executors.get(action.type);
     if (!executor) {
       console.warn(`[Queue] No executor for: ${action.type} — skipping`);

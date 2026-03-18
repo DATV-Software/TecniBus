@@ -22,6 +22,8 @@ export interface QueuedAction<T = unknown> {
   payload: T;
   /** Unix ms when action was first queued */
   timestamp: number;
+  /** Unix ms when this action was enqueued (used for staleness check) */
+  enqueuedAt: number;
   /** Number of retries already attempted */
   retryCount: number;
   /** Maximum retries before marking as failed */
