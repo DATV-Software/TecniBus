@@ -5,3 +5,8 @@ export { DraggableBottomSheet } from "./DraggableBottomSheet";
 export { RecorridoStatusBadge } from "./RecorridoStatusBadge";
 export { StudentSelector } from "./StudentSelector";
 export { useParentTourSetup } from "./useParentTourSetup";
+export { ParentStatusBadges } from "./components/ParentStatusBadges";
+export { ParentAbsenceCard } from "./components/ParentAbsenceCard";
+export { ParentLoadingState, ParentEmptyState } from "./components/ParentScreenStates";
+export { useParentDerivedState } from "./hooks/useParentDerivedState";
+export { useParentActions } from "./hooks/useParentActions";
