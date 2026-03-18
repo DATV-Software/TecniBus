@@ -527,6 +527,7 @@ export type Database = {
           created_at: string | null
           id: string
           nombre: string
+          onboarding_completed: boolean
           push_token: string | null
           rol: string
           telefono: string | null
@@ -538,6 +539,7 @@ export type Database = {
           created_at?: string | null
           id: string
           nombre: string
+          onboarding_completed?: boolean
           push_token?: string | null
           rol: string
           telefono?: string | null
@@ -549,6 +551,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           nombre?: string
+          onboarding_completed?: boolean
           push_token?: string | null
           rol?: string
           telefono?: string | null
