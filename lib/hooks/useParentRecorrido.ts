@@ -162,19 +162,14 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null, isAtte
   }, [idAsignacion, choferEnCamino, isAttending]);
 
   // Realtime ubicación del bus (solo si asiste)
+  // The realtime subscription is the primary path. The one-time fetch
+  // above (getUltimaUbicacion) seeds the initial position so the marker
+  // appears immediately. Polling is intentionally removed: duplicating
+  // a realtime subscription with a 5 s interval doubles network requests,
+  // drains battery, and causes redundant setState calls on every tick.
   useEffect(() => {
     if (!idAsignacion || !choferEnCamino || !isAttending) return;
     return suscribirseAUbicaciones(idAsignacion, setUbicacionBus);
-  }, [idAsignacion, choferEnCamino, isAttending]);
-
-  // Polling ubicación cada 5s — respaldo al Realtime (solo si asiste)
-  useEffect(() => {
-    if (!idAsignacion || !choferEnCamino || !isAttending) return;
-    const interval = setInterval(async () => {
-      const ubicacion = await getUltimaUbicacion(idAsignacion);
-      if (ubicacion) setUbicacionBus(ubicacion);
-    }, 5000);
-    return () => clearInterval(interval);
   }, [idAsignacion, choferEnCamino, isAttending]);
 
   return {
