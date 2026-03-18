@@ -25,7 +25,7 @@ import { formatHoraEC } from "@/lib/utils/datetime";
 import { haptic } from "@/lib/utils/haptics";
 import { calcularPolylineRestante } from "@/lib/utils/polyline";
 import { Bus } from "lucide-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatusBar, StyleSheet, Text, View } from "react-native";
 import { TourStep, useTourAutoStart } from "@/features/tour";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -216,6 +216,36 @@ export default function DriverHomeScreen() {
     marcarCompletadoManual,
   });
 
+  // ── Stable callbacks for memoized child components ──────────────────────────
+  // Inline arrow functions in JSX defeat React.memo — the child always sees a
+  // new function reference on every render, so memo never short-circuits.
+  const handleDismissCompletada = useCallback(() => {
+    setRutaCompletada(false);
+    setHoraLlegadaColegio(null);
+    setPolylineCoordinates([]);
+  }, [setRutaCompletada, setHoraLlegadaColegio, setPolylineCoordinates]);
+
+  const handleCambiarRecorrido = useCallback(() => setShowRecorridoSelector(true), []);
+
+  const handleRecorridoSelect = useCallback(
+    (rec: import("@/lib/services/asignaciones.service").RecorridoChofer) => {
+      haptic.light();
+      setRecorridoActual(rec);
+      setRutaCompletada(false);
+      setHoraLlegadaColegio(null);
+      setPolylineCoordinates([]);
+      colegioGeofenceActivadoRef.current = false;
+      setShowRecorridoSelector(false);
+    },
+    [setRecorridoActual, setRutaCompletada, setHoraLlegadaColegio, setPolylineCoordinates],
+  );
+
+  const handleCloseRecorridoSelector = useCallback(() => setShowRecorridoSelector(false), []);
+  const handleCloseReturnAttendance = useCallback(() => setShowReturnAttendance(false), []);
+  const handleHomePress = useCallback(() => {}, []);
+  const handleMiddlePress = useCallback(() => router.push("/driver/chat"), [router]);
+  const handleSettingsPress = useCallback(() => router.push("/driver/settings"), [router]);
+
   // ── Effects ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     getUbicacionColegio().then(setUbicacionColegio).catch(console.error);
@@ -348,12 +378,8 @@ export default function DriverHomeScreen() {
         onIniciarRecorrido={handleIniciarRecorrido}
         onFinalizarRecorrido={handleFinalizarRecorrido}
         onMarcarAusenteGeocerca={handleMarcarAusenteGeocerca}
-        onDismissCompletada={() => {
-          setRutaCompletada(false);
-          setHoraLlegadaColegio(null);
-          setPolylineCoordinates([]);
-        }}
-        onCambiarRecorrido={() => setShowRecorridoSelector(true)}
+        onDismissCompletada={handleDismissCompletada}
+        onCambiarRecorrido={handleCambiarRecorrido}
         setRutaCompletada={setRutaCompletada}
         setHoraLlegadaColegio={setHoraLlegadaColegio}
         setPolylineCoordinates={setPolylineCoordinates}
@@ -367,16 +393,8 @@ export default function DriverHomeScreen() {
         recorridos={recorridos}
         estadosRecorridos={estadosRecorridos}
         selectedId={recorridoActual?.id}
-        onSelect={(rec) => {
-          haptic.light();
-          setRecorridoActual(rec);
-          setRutaCompletada(false);
-          setHoraLlegadaColegio(null);
-          setPolylineCoordinates([]);
-          colegioGeofenceActivadoRef.current = false;
-          setShowRecorridoSelector(false);
-        }}
-        onClose={() => setShowRecorridoSelector(false)}
+        onSelect={handleRecorridoSelect}
+        onClose={handleCloseRecorridoSelector}
       />
 
       <ReturnAttendanceModal
@@ -385,7 +403,7 @@ export default function DriverHomeScreen() {
         loading={loading}
         nombreRuta={recorridoActual?.nombre_ruta ?? "Ruta de vuelta"}
         onConfirm={handleConfirmarVuelta}
-        onCancel={() => setShowReturnAttendance(false)}
+        onCancel={handleCloseReturnAttendance}
       />
 
       {/* ── Alerts: deviation, GPS error, optimizing overlay ── */}
@@ -402,9 +420,9 @@ export default function DriverHomeScreen() {
       {/* ── Bottom navigation ── */}
       <BottomNavigation
         activeTab="home"
-        onHomePress={() => {}}
-        onMiddlePress={() => router.push("/driver/chat")}
-        onSettingsPress={() => router.push("/driver/settings")}
+        onHomePress={handleHomePress}
+        onMiddlePress={handleMiddlePress}
+        onSettingsPress={handleSettingsPress}
       />
 
       {/* ── TOUR ANCHOR: Bottom Navigation (step 3) ── */}
