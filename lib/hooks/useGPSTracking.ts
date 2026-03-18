@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import { guardarUbicacion } from '@/lib/services/ubicaciones.service';
+import { networkDetector } from '@/lib/network/networkDetector';
+import { classifyError, isRetryable } from '@/lib/network/errorClassifier';
+import type { GpsFlushPayload } from '@/lib/network/types';
 
 type UseGPSTrackingProps = {
   idAsignacion: string | null;
@@ -26,6 +29,9 @@ const DB_THRESHOLD: Record<MovementState, number | null> = {
   detenido: null, // no escribir
 };
 
+// GPS offline buffer: max points to accumulate while offline
+const GPS_BUFFER_MAX = 50;
+
 function distanciaMetros(
   lat1: number, lon1: number,
   lat2: number, lon2: number,
@@ -41,7 +47,6 @@ function distanciaMetros(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Calcula el ángulo de dirección entre dos puntos (0–360°)
 function calcularBearingDePosiciones(
   lat1: number, lon1: number,
   lat2: number, lon2: number,
@@ -56,22 +61,22 @@ function calcularBearingDePosiciones(
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 }
 
-// Interpolación exponencial con shortest-path para evitar wraparound 350°→10° = +340°
 function suavizarAngulo(current: number, target: number, factor: number): number {
   const diff = ((target - current + 540) % 360) - 180;
   return (current + diff * factor + 360) % 360;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 /**
  * Hook GPS con pipeline de filtrado avanzado — estilo Uber V3.
  *
- * - Una sola suscripción watchPositionAsync durante todo el recorrido
- * - Filtro de precisión: descarta puntos con accuracy > 50m
- * - Validación física: descarta teleportaciones (> 150 km/h implícito)
- * - Bearing calculado desde posiciones + suavizado EMA(0.3)
- * - Bearing congelado al detenerse (sin snap a norte)
- * - Throttle de setState: no re-renderiza si distancia < 2m y bearing < 3°
- * - DB writes optimizados por estado: activo=15m, lento=25m, detenido=nunca
+ * Offline resilience additions:
+ * - When offline, GPS points are buffered in memory (up to GPS_BUFFER_MAX)
+ * - When network is restored, buffered points are flushed to the DB
+ * - DB write failures that are network-errors trigger networkDetector.reportNetworkError()
  */
 export function useGPSTracking({
   idAsignacion,
@@ -85,13 +90,69 @@ export function useGPSTracking({
   const ultimaGuardadaRef = useRef<{ lat: number; lng: number } | null>(null);
   const suscripcionRef = useRef<Location.LocationSubscription | null>(null);
 
-  // Refs de pipeline V3
+  // Pipeline V3 refs
   const prevPositionRef = useRef<{ lat: number; lng: number; timestamp: number } | null>(null);
   const lastBearingRef = useRef<number>(0);
   const consecutiveStopsRef = useRef<number>(0);
   const movementStateRef = useRef<MovementState>('detenido');
 
-  // Solicitar permisos y obtener posición inicial inmediata
+  // Offline GPS buffer
+  const gpsBufferRef = useRef<GpsFlushPayload['points']>([]);
+  const isFlushing = useRef(false);
+
+  // ── Flush GPS buffer ──────────────────────────────────────────────────────
+
+  const flushGpsBuffer = async () => {
+    if (isFlushing.current) return;
+    if (gpsBufferRef.current.length === 0) return;
+    if (!networkDetector.isOnline) return;
+
+    isFlushing.current = true;
+    const points = [...gpsBufferRef.current];
+    gpsBufferRef.current = [];
+
+    console.log(`[GPS] Flushing ${points.length} buffered GPS point(s)`);
+
+    for (const point of points) {
+      try {
+        await guardarUbicacion(
+          point.idAsignacion,
+          point.idChofer,
+          point.latitud,
+          point.longitud,
+          point.velocidad,
+          point.precisionGps,
+          point.heading,
+        );
+        // Update "last saved" reference to the most recently flushed point
+        ultimaGuardadaRef.current = { lat: point.latitud, lng: point.longitud };
+        await sleep(150); // avoid flooding
+      } catch (err) {
+        // Put remaining points back in the buffer if we lose connection again
+        const failedIdx = points.indexOf(point);
+        gpsBufferRef.current = points.slice(failedIdx);
+        console.warn('[GPS] Flush interrupted — re-buffering remaining points');
+        break;
+      }
+    }
+
+    isFlushing.current = false;
+  };
+
+  // ── Subscribe to reconnection for automatic flush ─────────────────────────
+
+  useEffect(() => {
+    const unsub = networkDetector.subscribe((online) => {
+      if (online && gpsBufferRef.current.length > 0) {
+        void flushGpsBuffer();
+      }
+    });
+    return unsub;
+    // flushGpsBuffer uses only refs so it's stable
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── GPS Permission ────────────────────────────────────────────────────────
+
   useEffect(() => {
     (async () => {
       try {
@@ -102,8 +163,6 @@ export function useGPSTracking({
         }
         setPermisoConcedido(true);
 
-        // Posición inmediata para mostrar el marcador sin esperar watchPositionAsync
-        // (watchPositionAsync con distanceInterval>0 no dispara si el usuario está parado)
         const pos = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
@@ -121,7 +180,8 @@ export function useGPSTracking({
     })();
   }, []);
 
-  // Iniciar watchPositionAsync cuando hay permiso
+  // ── Watch Position ────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!permisoConcedido) return;
 
@@ -157,7 +217,7 @@ export function useGPSTracking({
             const deltaTime = timestamp - prev.timestamp;
             const dist = distanciaMetros(prev.lat, prev.lng, latitude, longitude);
             if (deltaTime > 0) {
-              const velocidadImplicada = (dist / (deltaTime / 1000)) * 3.6; // km/h
+              const velocidadImplicada = (dist / (deltaTime / 1000)) * 3.6;
               if (velocidadImplicada > 150) return;
             }
           }
@@ -169,7 +229,7 @@ export function useGPSTracking({
             : 0;
           const enMovimiento = distance > 2 || speedKmh > 3;
 
-          // PASO D: Estado de movimiento (sin reiniciar watchPositionAsync)
+          // PASO D: Estado de movimiento
           if (!enMovimiento) {
             consecutiveStopsRef.current += 1;
           } else {
@@ -186,7 +246,7 @@ export function useGPSTracking({
           }
           movementStateRef.current = newState;
 
-          // PASO E: Cálculo de bearing — capturar antes de actualizar para PASO F
+          // PASO E: Cálculo de bearing
           const prevBearing = lastBearingRef.current;
           if (enMovimiento && prev) {
             const rawBearing = calcularBearingDePosiciones(
@@ -195,10 +255,8 @@ export function useGPSTracking({
             );
             lastBearingRef.current = suavizarAngulo(lastBearingRef.current, rawBearing, 0.3);
           }
-          // else: lastBearingRef queda congelado — sin snap a 0° al detenerse
 
-          // PASO F: Throttle de setState — evitar renders cuando no hay cambio real
-          // Siempre actualizar en la primera posición (prev = null) para mostrar el marcador
+          // PASO F: Throttle de setState
           const bearingDiff = Math.abs(((lastBearingRef.current - prevBearing + 540) % 360) - 180);
           if (prev && distance < 2 && bearingDiff < 3) {
             prevPositionRef.current = { lat: latitude, lng: longitude, timestamp };
@@ -216,8 +274,9 @@ export function useGPSTracking({
             bearing: lastBearingRef.current,
           });
 
-          // Guardar en DB según estado de movimiento
+          // ── DB write with offline buffering ──────────────────────────────
           if (!recorridoActivo || !idAsignacion) return;
+
           const umbralDB = DB_THRESHOLD[movementStateRef.current];
           if (umbralDB === null) return; // detenido → no escribir
 
@@ -227,6 +286,29 @@ export function useGPSTracking({
             if (distDB < umbralDB) return;
           }
 
+          if (!networkDetector.isOnline) {
+            // Offline → buffer this point
+            const buffer = gpsBufferRef.current;
+            if (buffer.length >= GPS_BUFFER_MAX) {
+              // Drop oldest point to make room (circular buffer)
+              buffer.shift();
+            }
+            buffer.push({
+              idAsignacion,
+              idChofer,
+              latitud: latitude,
+              longitud: longitude,
+              velocidad: speed ? speed * 3.6 : undefined,
+              precisionGps: accuracy || undefined,
+              heading: heading ?? undefined,
+              capturedAt: timestamp,
+            });
+            // Still update ultimaGuardadaRef so we don't flood the buffer
+            ultimaGuardadaRef.current = { lat: latitude, lng: longitude };
+            return;
+          }
+
+          // Online → write immediately
           guardarUbicacion(
             idAsignacion,
             idChofer,
@@ -237,7 +319,27 @@ export function useGPSTracking({
             heading ?? undefined,
           ).then(() => {
             ultimaGuardadaRef.current = { lat: latitude, lng: longitude };
-          }).catch(console.error);
+          }).catch((err: unknown) => {
+            const kind = classifyError(err);
+            if (isRetryable(kind)) {
+              // Tell the detector we lost connectivity
+              networkDetector.reportNetworkError();
+              // Buffer this point for later
+              const buffer = gpsBufferRef.current;
+              if (buffer.length < GPS_BUFFER_MAX) {
+                buffer.push({
+                  idAsignacion,
+                  idChofer,
+                  latitud: latitude,
+                  longitud: longitude,
+                  velocidad: speed ? speed * 3.6 : undefined,
+                  precisionGps: accuracy || undefined,
+                  heading: heading ?? undefined,
+                  capturedAt: timestamp,
+                });
+              }
+            }
+          });
         },
       );
 
@@ -259,13 +361,15 @@ export function useGPSTracking({
     };
   }, [permisoConcedido, recorridoActivo, idAsignacion, idChofer]);
 
-  // Resetear estado al detener el recorrido
+  // ── Reset on route end ────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!recorridoActivo) {
       ultimaGuardadaRef.current = null;
       prevPositionRef.current = null;
       consecutiveStopsRef.current = 0;
       movementStateRef.current = 'detenido';
+      gpsBufferRef.current = [];
     }
   }, [recorridoActivo]);
 
@@ -274,5 +378,7 @@ export function useGPSTracking({
     error,
     tracking: recorridoActivo && permisoConcedido,
     ubicacionActual,
+    /** Number of GPS points buffered while offline */
+    gpsBufferedCount: gpsBufferRef.current.length,
   };
 }
