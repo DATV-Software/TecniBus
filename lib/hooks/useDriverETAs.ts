@@ -3,7 +3,7 @@ import { publishETAsToRecorrido } from "@/lib/services/recorridos.service";
 import type { Parada } from "@/lib/services/rutas.service";
 import type { EstudianteConAsistencia } from "@/lib/services/asistencias.service";
 import type { UbicacionLocal } from "@/lib/hooks/useGPSTracking";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Params = {
   ubicacionChofer: UbicacionLocal | null;
@@ -29,16 +29,24 @@ export function useDriverETAs({
   const [etasPorParada, setEtasPorParada] = useState<Record<string, number>>({});
   const [etaFinRuta, setEtaFinRuta] = useState<number | null>(null);
 
-  const paradasPendientesKey = paradasVisibles
-    .filter((p) =>
-      estudiantes.some(
-        (e) => e.parada?.id === p.id && e.estado !== "ausente" && e.estado !== "completado",
-      ),
-    )
-    .map((p) => p.id)
-    .join(",");
+  // Memoized keys — avoids rebuilding strings on every GPS tick render
+  const paradasPendientesKey = useMemo(
+    () =>
+      paradasVisibles
+        .filter((p) =>
+          estudiantes.some(
+            (e) => e.parada?.id === p.id && e.estado !== "ausente" && e.estado !== "completado",
+          ),
+        )
+        .map((p) => p.id)
+        .join(","),
+    [paradasVisibles, estudiantes],
+  );
 
-  const estudiantesEstadoKey = estudiantes.map((e) => e.estado).join(",");
+  const estudiantesEstadoKey = useMemo(
+    () => estudiantes.map((e) => e.estado).join(","),
+    [estudiantes],
+  );
 
   useEffect(() => {
     if (!ubicacionChofer || !routeActive) {
