@@ -26,11 +26,15 @@ import {
   Section,
 } from "@/components/layout";
 import { StatusPanel } from "@/components/ui";
-import { AdminQuickActions, AdminStatsGrid } from "@/features/admin";
+import { AdminQuickActions, AdminStatsGrid, useAdminTourSetup } from "@/features/admin";
+import { TourStep, useTourAutoStart } from "@/features/tour";
 
 export default function AdminHomeScreen() {
   const router = useRouter();
   const { profile } = useAuth();
+  const { scrollRef, scrollToStatus, scrollToActions } = useAdminTourSetup();
+
+  useTourAutoStart('admin');
 
   const DEFAULT_STATS: DashboardStats = {
     totalStudents: 0,
@@ -110,6 +114,7 @@ export default function AdminHomeScreen() {
       />
 
       <ScrollView
+        ref={scrollRef}
         className="flex-1"
         showsVerticalScrollIndicator={false}
         bounces={false}
@@ -141,41 +146,69 @@ export default function AdminHomeScreen() {
           </View>
         ) : (
           <>
-            {/* Stats 2x2 - se superponen sobre el header */}
-            <AdminStatsGrid
-              stats={stats}
-              onStudentsPress={handleStudentsPress}
-              onDriversPress={handleDriversPress}
-              onParentsPress={handleParentsPress}
-              onBusesPress={handleBusesPress}
-            />
+            {/* Stats 2x2 — TourStep wraps the grid directly */}
+            <TourStep
+              scope="admin"
+              id="admin-stats"
+              order={1}
+              title="Estadísticas en tiempo real"
+              description="Consulta el total de estudiantes, choferes, padres y busetas del sistema. Toca cualquier tarjeta para ver el listado completo."
+              borderRadius={16}
+              padding={4}
+            >
+              <AdminStatsGrid
+                stats={stats}
+                onStudentsPress={handleStudentsPress}
+                onDriversPress={handleDriversPress}
+                onParentsPress={handleParentsPress}
+                onBusesPress={handleBusesPress}
+              />
+            </TourStep>
 
-            {/* Decoraciones entre stats y status panel */}
             <DecorationTop />
 
-            {/* Estado Activo */}
-            <View
-              style={{ paddingHorizontal: 20, marginTop: 20, marginBottom: 24 }}
-            >
-              <StatusPanel
-                activeCount={stats.activeBuses}
-                totalCount={stats.totalBuses}
-                label="En ruta actualmente"
-                onLiveViewPress={handleTrackingPress}
-              />
+            {/* Estado Activo — TourStep wraps StatusPanel directly */}
+            <View style={{ paddingHorizontal: 20, marginTop: 20, marginBottom: 24 }}>
+              <TourStep
+                scope="admin"
+                id="admin-status"
+                order={2}
+                title="Monitoreo de Flotas"
+                description="Aquí ves cuántas busetas están en ruta ahora mismo. Toca 'En vivo' para abrir el mapa con todas las busetas en tiempo real."
+                borderRadius={16}
+                padding={4}
+                beforeShow={scrollToStatus}
+              >
+                <StatusPanel
+                  activeCount={stats.activeBuses}
+                  totalCount={stats.totalBuses}
+                  label="En ruta actualmente"
+                  onLiveViewPress={handleTrackingPress}
+                />
+              </TourStep>
             </View>
 
-            {/* Decoraciones entre status panel y acciones */}
             <DecorationMid />
 
-            {/* Acciones Rápidas */}
+            {/* Acciones Rápidas — TourStep wraps actions directly (inside Section) */}
             <Section title="Acciones Rápidas">
-              <AdminQuickActions
-                onRoutesPress={handleRoutesPress}
-                onAnnouncementsPress={handleAnnouncementsPress}
-                onAssignmentsPress={handleAssignmentsPress}
-                onReportesPress={handleReportesPress}
-              />
+              <TourStep
+                scope="admin"
+                id="admin-actions"
+                order={3}
+                title="Acciones Rápidas"
+                description="Desde aquí gestionas rutas, vinculas choferes a busetas, publicas anuncios para los padres y accedes a reportes del sistema."
+                borderRadius={16}
+                padding={4}
+                beforeShow={scrollToActions}
+              >
+                <AdminQuickActions
+                  onRoutesPress={handleRoutesPress}
+                  onAnnouncementsPress={handleAnnouncementsPress}
+                  onAssignmentsPress={handleAssignmentsPress}
+                  onReportesPress={handleReportesPress}
+                />
+              </TourStep>
             </Section>
 
             {/* Decoraciones al final */}
