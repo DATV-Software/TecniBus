@@ -37,10 +37,15 @@ export function useDriverEstudiantes(
   useEffect(() => {
     if (!recorridoActual) return;
     const channel = supabase
-      .channel("asistencias-changes")
+      .channel(`asistencias-driver-${recorridoActual.id_ruta}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "asistencias" },
+        {
+          event: "*",
+          schema: "public",
+          table: "asistencias",
+          filter: `id_ruta=eq.${recorridoActual.id_ruta}`,
+        },
         () => cargarEstudiantes(),
       )
       .subscribe();

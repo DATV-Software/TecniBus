@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 type BroadcastMsg<T> = { payload: T };
 type RecorridoPayload = { id_asignacion: string };
 
-export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
+export function useParentRecorrido(estudiante: EstudianteDelPadre | null, isAttending = true) {
   const [choferEnCamino, setChoferEnCamino] = useState(false);
   const [idAsignacion, setIdAsignacion] = useState<string | null>(null);
   const [horaInicioRecorrido, setHoraInicioRecorrido] = useState<string | null>(null);
@@ -53,7 +53,8 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
       setIdAsignacion(estado?.id_asignacion || null);
       setHoraInicioRecorrido(activo ? (estado?.hora_inicio || null) : null);
 
-      if (activo && estado?.id_asignacion) {
+      // Si el estudiante está ausente, no cargar polyline/ETAs (ahorro de recursos)
+      if (activo && estado?.id_asignacion && isAttending) {
         const polyline = await getPolylineAsignacion(estado.id_asignacion);
         setPolylineCoordinates(polyline);
         if (estado.eta_paradas) applyETAs(estado.eta_paradas);
@@ -69,7 +70,7 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
       setPolylineCoordinates([]);
       setUbicacionBus(null);
     }
-  }, [idRuta, applyETAs]);
+  }, [idRuta, applyETAs, isAttending]);
 
   const refreshETAs = useCallback(async () => {
     if (!idRuta || !choferEnCamino) return;
@@ -110,28 +111,27 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
   }, [idRuta]);
 
   // Broadcast: recorrido iniciado / finalizado
+  // No filtramos por idAsignacion porque al inicio es null y perderíamos el evento
   useEffect(() => {
     if (!idRuta) return;
     const channel = supabase
       .channel("recorrido-status")
-      .on("broadcast", { event: "recorrido_iniciado" }, (msg: BroadcastMsg<RecorridoPayload>) => {
-        if (msg.payload.id_asignacion === idAsignacion) {
-          setChoferEnCamino(true);
-          cargarEstadoRecorrido();
-        }
+      .on("broadcast", { event: "recorrido_iniciado" }, () => {
+        // Siempre recargar estado completo — el filtro real es por id_ruta en el RPC
+        cargarEstadoRecorrido();
       })
-      .on("broadcast", { event: "recorrido_finalizado" }, (msg: BroadcastMsg<RecorridoPayload>) => {
-        if (msg.payload.id_asignacion === idAsignacion) {
-          setChoferEnCamino(false);
-          setHoraInicioRecorrido(null);
-          setPolylineCoordinates([]);
-          setUbicacionBus(null);
-          setHoraLlegadaColegio(formatHoraEC(new Date().toISOString()));
-        }
+      .on("broadcast", { event: "recorrido_finalizado" }, () => {
+        setChoferEnCamino(false);
+        setHoraInicioRecorrido(null);
+        setPolylineCoordinates([]);
+        setUbicacionBus(null);
+        setEstimatedMinutes(null);
+        setEtaColegio(null);
+        setHoraLlegadaColegio(formatHoraEC(new Date().toISOString()));
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [idRuta, idAsignacion, cargarEstadoRecorrido]);
+  }, [idRuta, cargarEstadoRecorrido]);
 
   // Realtime: cambios en estados_recorrido
   useEffect(() => {
@@ -147,35 +147,35 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null) {
     return () => { supabase.removeChannel(channel); };
   }, [idRuta, cargarEstadoRecorrido]);
 
-  // Polling ETAs cada 10s cuando está en camino
+  // Polling ETAs cada 10s cuando está en camino (solo si asiste)
   useEffect(() => {
-    if (!choferEnCamino || !idRuta) return;
+    if (!choferEnCamino || !idRuta || !isAttending) return;
     refreshETAs();
     const interval = setInterval(refreshETAs, 10000);
     return () => clearInterval(interval);
-  }, [choferEnCamino, idRuta, refreshETAs]);
+  }, [choferEnCamino, idRuta, isAttending, refreshETAs]);
 
-  // Ubicación inicial del bus
+  // Ubicación inicial del bus (solo si asiste)
   useEffect(() => {
-    if (!idAsignacion || !choferEnCamino) { setUbicacionBus(null); return; }
+    if (!idAsignacion || !choferEnCamino || !isAttending) { setUbicacionBus(null); return; }
     getUltimaUbicacion(idAsignacion).then(setUbicacionBus).catch(() => {});
-  }, [idAsignacion, choferEnCamino]);
+  }, [idAsignacion, choferEnCamino, isAttending]);
 
-  // Realtime ubicación del bus
+  // Realtime ubicación del bus (solo si asiste)
   useEffect(() => {
-    if (!idAsignacion || !choferEnCamino) return;
+    if (!idAsignacion || !choferEnCamino || !isAttending) return;
     return suscribirseAUbicaciones(idAsignacion, setUbicacionBus);
-  }, [idAsignacion, choferEnCamino]);
+  }, [idAsignacion, choferEnCamino, isAttending]);
 
-  // Polling ubicación cada 5s (respaldo al Realtime)
+  // Polling ubicación cada 5s — respaldo al Realtime (solo si asiste)
   useEffect(() => {
-    if (!idAsignacion || !choferEnCamino) return;
+    if (!idAsignacion || !choferEnCamino || !isAttending) return;
     const interval = setInterval(async () => {
       const ubicacion = await getUltimaUbicacion(idAsignacion);
       if (ubicacion) setUbicacionBus(ubicacion);
     }, 5000);
     return () => clearInterval(interval);
-  }, [idAsignacion, choferEnCamino]);
+  }, [idAsignacion, choferEnCamino, isAttending]);
 
   return {
     choferEnCamino,

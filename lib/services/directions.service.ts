@@ -70,17 +70,32 @@ async function callGetDirections(
       ? intermediates.map((w) => `${w.lat},${w.lng}`).join("|")
       : undefined;
 
-  const { data, error } = await supabase.functions.invoke<EdgeFunctionResponse>(
-    "get-directions",
-    {
-      body: {
-        origin: `${origin.lat},${origin.lng}`,
-        destination: `${destination.lat},${destination.lng}`,
-        ...(waypointsStr !== undefined && { waypoints: waypointsStr }),
-        optimize,
-      },
+  const payload = {
+    body: {
+      origin: `${origin.lat},${origin.lng}`,
+      destination: `${destination.lat},${destination.lng}`,
+      ...(waypointsStr !== undefined && { waypoints: waypointsStr }),
+      optimize,
     },
+  };
+
+  let { data, error } = await supabase.functions.invoke<EdgeFunctionResponse>(
+    "get-directions",
+    payload,
   );
+
+  // Si falla por 401 (token expirado), refrescar sesión y reintentar
+  if (error && error.message?.includes("non-2xx")) {
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (!refreshError) {
+      const retry = await supabase.functions.invoke<EdgeFunctionResponse>(
+        "get-directions",
+        payload,
+      );
+      data = retry.data;
+      error = retry.error;
+    }
+  }
 
   if (error || !data) {
     console.error("Error en get-directions:", error?.message ?? "Sin respuesta");

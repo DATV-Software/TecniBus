@@ -42,19 +42,32 @@ export function useDriverRecorrido(profileId: string | undefined) {
       setLoadingRecorridos(true);
       const data = await getRecorridosHoy(profileId);
       setRecorridos(data);
-      if (data.length > 0 && !recorridoActualRef.current) setRecorridoActual(data[0]);
 
       // Batch-load run status for all today's routes
       if (data.length > 0) {
         const estadosArr = await Promise.all(data.map((r) => getEstadoRecorrido(r.id)));
         const map: Record<string, EstadoRecorridoRun> = {};
+        let activeRecorrido: RecorridoChofer | null = null;
+        let firstPending: RecorridoChofer | null = null;
+
         data.forEach((r, i) => {
           const e = estadosArr[i];
-          if (e?.activo) map[r.id] = 'activo';
-          else if (e?.hora_fin) map[r.id] = 'completado';
-          else map[r.id] = 'pendiente';
+          if (e?.activo) {
+            map[r.id] = 'activo';
+            if (!activeRecorrido) activeRecorrido = r;
+          } else if (e?.hora_fin) {
+            map[r.id] = 'completado';
+          } else {
+            map[r.id] = 'pendiente';
+            if (!firstPending) firstPending = r;
+          }
         });
         setEstadosRecorridos(map);
+
+        // Auto-seleccionar: activo > pendiente > primero
+        if (!recorridoActualRef.current) {
+          setRecorridoActual(activeRecorrido || firstPending || data[0]);
+        }
       }
     } catch {
       showAlert({ title: "Error", message: "No se pudieron cargar los recorridos", type: "error" });
