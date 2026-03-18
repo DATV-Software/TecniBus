@@ -4,19 +4,22 @@ import {
   ReactNode,
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from "react";
 import {
-  Animated,
   Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -46,9 +49,10 @@ export const DraggableBottomSheet = forwardRef<
   },
   ref,
 ) {
-  const translateY = useRef(
-    new Animated.Value(SCREEN_HEIGHT * (1 - initialSnapPoint)),
-  ).current;
+  // Reanimated shared value — animation runs on the UI thread, not JS thread.
+  // This prevents sheet animation jank caused by JS thread congestion from
+  // GPS/realtime state updates arriving while the user drags the sheet.
+  const translateY = useSharedValue(SCREEN_HEIGHT * (1 - initialSnapPoint));
   const [currentSnapPoint, setCurrentSnapPoint] = useState(initialSnapPoint);
 
   const snapToPoint = useCallback(
@@ -56,15 +60,15 @@ export const DraggableBottomSheet = forwardRef<
       const clampedPoint = Math.max(minSnapPoint, Math.min(maxSnapPoint, point));
       const position = SCREEN_HEIGHT * (1 - clampedPoint);
 
+      // Update React state for chevron / text rendering
       setCurrentSnapPoint(clampedPoint);
       onSnapPointChange?.(clampedPoint);
 
-      Animated.spring(translateY, {
-        toValue: position,
-        useNativeDriver: false,
+      // Animate on the UI thread — matches original spring feel
+      translateY.value = withSpring(position, {
         damping: 25,
         stiffness: 120,
-      }).start();
+      });
     },
     [minSnapPoint, maxSnapPoint, onSnapPointChange, translateY],
   );
@@ -78,27 +82,20 @@ export const DraggableBottomSheet = forwardRef<
     [snapToPoint, maxSnapPoint, minSnapPoint],
   );
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     if (currentSnapPoint === minSnapPoint) {
       snapToPoint(maxSnapPoint);
     } else {
       snapToPoint(minSnapPoint);
     }
-  };
+  }, [currentSnapPoint, minSnapPoint, maxSnapPoint, snapToPoint]);
 
-  useEffect(() => {
-    snapToPoint(initialSnapPoint);
-  }, []);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        {
-          transform: [{ translateY }],
-        },
-      ]}
-    >
+    <Animated.View style={[styles.container, animatedStyle]}>
       {/* Drag Handle - Tap to toggle */}
       <View style={styles.handleContainer}>
         <TouchableOpacity
