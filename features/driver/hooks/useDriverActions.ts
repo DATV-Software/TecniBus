@@ -279,7 +279,6 @@ export function useDriverActions({
 
   // ── Confirm VUELTA attendance and start route ─────────────────────────────
   const handleConfirmarVuelta = useCallback(async (ausentesIds: string[]) => {
-    setShowReturnAttendance(false);
     if (!recorridoActual || !profileId) return;
 
     // Pre-compute filtered stops BEFORE saving attendance to avoid stale closure
@@ -299,9 +298,12 @@ export function useDriverActions({
     });
 
     if (ausentesIds.length > 0 || estudiantes.length > 0) {
-      await confirmarAsistenciaVuelta(recorridoActual.id_ruta, profileId, ausentesIds, estudiantes);
+      const ok = await confirmarAsistenciaVuelta(recorridoActual.id_ruta, profileId, ausentesIds, estudiantes);
+      if (!ok) throw new Error('No se pudo confirmar la asistencia. Intenta nuevamente.');
       await cargarEstudiantes();
     }
+    // Close modal only after successful confirmation
+    setShowReturnAttendance(false);
     await doIniciarRecorrido(paradasFiltradas.length > 0 ? paradasFiltradas : undefined);
   }, [
     recorridoActual, profileId, estudiantes, paradas,

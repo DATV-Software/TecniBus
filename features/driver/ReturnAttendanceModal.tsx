@@ -16,7 +16,7 @@ interface ReturnAttendanceModalProps {
   estudiantes: EstudianteConAsistencia[];
   loading?: boolean;
   nombreRuta: string;
-  onConfirm: (ausentesIds: string[]) => void;
+  onConfirm: (ausentesIds: string[]) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -31,6 +31,8 @@ export function ReturnAttendanceModal({
   onCancel,
 }: ReturnAttendanceModalProps) {
   const [ausentesIds, setAusentesIds] = useState<Set<string>>(new Set());
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
   const listRef = useRef<SectionList<EstudianteConAsistencia, Section>>(null);
 
   // Pre-seleccionar estudiantes ya marcados ausentes (ej: por el padre antes del recorrido)
@@ -51,13 +53,22 @@ export function ReturnAttendanceModal({
     });
   };
 
-  const handleConfirm = () => {
-    onConfirm(Array.from(ausentesIds));
-    setAusentesIds(new Set());
+  const handleConfirm = async () => {
+    setConfirmError(null);
+    setConfirming(true);
+    try {
+      await onConfirm(Array.from(ausentesIds));
+      setAusentesIds(new Set());
+    } catch (e) {
+      setConfirmError(e instanceof Error ? e.message : 'Error al confirmar asistencia');
+    } finally {
+      setConfirming(false);
+    }
   };
 
   const handleCancel = () => {
     setAusentesIds(new Set());
+    setConfirmError(null);
     onCancel();
   };
 
@@ -387,12 +398,19 @@ export function ReturnAttendanceModal({
               gap: 10,
             }}
           >
+            {confirmError ? (
+              <View style={{ backgroundColor: "#FEE2E2", borderRadius: 10, padding: 10 }}>
+                <Text style={{ color: "#DC2626", fontSize: 13, textAlign: "center" }}>
+                  {confirmError}
+                </Text>
+              </View>
+            ) : null}
             <TouchableOpacity
               onPress={handleConfirm}
-              disabled={loading}
+              disabled={loading || confirming}
               activeOpacity={0.85}
               style={{
-                backgroundColor: loading ? "#9CA3AF" : Colors.tecnibus[600],
+                backgroundColor: loading || confirming ? "#9CA3AF" : Colors.tecnibus[600],
                 borderRadius: 16,
                 paddingVertical: 16,
                 flexDirection: "row",
@@ -408,7 +426,7 @@ export function ReturnAttendanceModal({
             >
               <Play size={18} color="#fff" strokeWidth={2.5} fill="#fff" />
               <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
-                Confirmar e Iniciar ({presentes} estudiantes)
+                {confirming ? "Confirmando..." : confirmError ? "Reintentar" : `Confirmar e Iniciar (${presentes} estudiantes)`}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
