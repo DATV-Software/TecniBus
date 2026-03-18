@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   calcularDistancia,
   marcarEntradaGeocerca,
@@ -78,6 +78,14 @@ export function useGeofencing({
       debounceTargetRef.current = null;
     }
   }, [recorridoActivo]);
+
+  // Stable key derived from student id+estado pairs.
+  // Computing this outside the effect avoids recreating it on every GPS tick
+  // just to decide whether the effect body should re-run.
+  const estudiantesKey = useMemo(
+    () => estudiantes.map((e) => `${e.id}:${e.estado}`).join(','),
+    [estudiantes],
+  );
 
   useEffect(() => {
     if (!recorridoActivo || !idAsignacion || !ubicacionActual) return;
@@ -203,13 +211,13 @@ export function useGeofencing({
     }
   }, [
     ubicacionActual,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    estudiantes.map((e) => `${e.id}:${e.estado}`).join(','),
+    estudiantesKey,
     recorridoActivo,
     idAsignacion,
     idChofer,
     radioMetros,
     tipoRuta,
+    paradas,
   ]);
 
   const marcarCompletadoManual = async () => {
