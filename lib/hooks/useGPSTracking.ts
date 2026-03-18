@@ -96,6 +96,15 @@ export function useGPSTracking({
   const consecutiveStopsRef = useRef<number>(0);
   const movementStateRef = useRef<MovementState>('detenido');
 
+  // Refs for values read inside the watchPosition callback — keeps the callback
+  // stable across route changes without restarting the GPS subscription.
+  const idAsignacionRef = useRef(idAsignacion);
+  const idChoferRef = useRef(idChofer);
+  const recorridoActivoRef = useRef(recorridoActivo);
+  useEffect(() => { idAsignacionRef.current = idAsignacion; }, [idAsignacion]);
+  useEffect(() => { idChoferRef.current = idChofer; }, [idChofer]);
+  useEffect(() => { recorridoActivoRef.current = recorridoActivo; }, [recorridoActivo]);
+
   // Offline GPS buffer
   const gpsBufferRef = useRef<GpsFlushPayload['points']>([]);
   const isFlushing = useRef(false);
@@ -275,7 +284,11 @@ export function useGPSTracking({
           });
 
           // ── DB write with offline buffering ──────────────────────────────
-          if (!recorridoActivo || !idAsignacion) return;
+          // Read from refs so the callback always uses the current route ID
+          // even if the driver switched routes without restarting GPS.
+          const currentAsignacion = idAsignacionRef.current;
+          const currentChofer = idChoferRef.current;
+          if (!recorridoActivoRef.current || !currentAsignacion) return;
 
           const umbralDB = DB_THRESHOLD[movementStateRef.current];
           if (umbralDB === null) return; // detenido → no escribir
@@ -294,8 +307,8 @@ export function useGPSTracking({
               buffer.shift();
             }
             buffer.push({
-              idAsignacion,
-              idChofer,
+              idAsignacion: currentAsignacion,
+              idChofer: currentChofer,
               latitud: latitude,
               longitud: longitude,
               velocidad: speed ? speed * 3.6 : undefined,
@@ -310,8 +323,8 @@ export function useGPSTracking({
 
           // Online → write immediately
           guardarUbicacion(
-            idAsignacion,
-            idChofer,
+            currentAsignacion,
+            currentChofer,
             latitude,
             longitude,
             speed ? speed * 3.6 : undefined,
@@ -328,8 +341,8 @@ export function useGPSTracking({
               const buffer = gpsBufferRef.current;
               if (buffer.length < GPS_BUFFER_MAX) {
                 buffer.push({
-                  idAsignacion,
-                  idChofer,
+                  idAsignacion: currentAsignacion,
+                  idChofer: currentChofer,
                   latitud: latitude,
                   longitud: longitude,
                   velocidad: speed ? speed * 3.6 : undefined,
