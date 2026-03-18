@@ -13,6 +13,7 @@ export type Profile = {
   avatar_url: string | null;
   rol: UserRole;
   created_at: string;
+  onboarding_completed: boolean;
 };
 
 export function useProfile() {

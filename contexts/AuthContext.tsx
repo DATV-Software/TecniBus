@@ -16,6 +16,7 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  patchProfile: (fields: Partial<Profile>) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -124,6 +125,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const patchProfile = (fields: Partial<Profile>) => {
+    setProfile(prev => (prev ? { ...prev, ...fields } : prev));
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       // NO setear loading aquí - lo manejará el componente de login
@@ -173,6 +178,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     refreshProfile,
+    patchProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
