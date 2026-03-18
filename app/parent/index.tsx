@@ -33,11 +33,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { TourStep, useTourAutoStart } from "@/features/tour";
+import { useParentTourSetup } from "@/features/parent/useParentTourSetup";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ParentHomeScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
   const { profile, signOut } = useAuth();
+  const { sheetRef, sheetScrollRef, expandSheet, expandAndScrollTimeline } = useParentTourSetup();
+  const insets = useSafeAreaInsets();
+
+  useTourAutoStart('parent');
 
   // ── Estudiantes + Selección (hook) ─────────────────────────────────────────
   const {
@@ -70,7 +77,7 @@ export default function ParentHomeScreen() {
     idChofer,
     ubicacionBus,
     tipoRuta,
-  } = useParentRecorrido(estudianteSeleccionado);
+  } = useParentRecorrido(estudianteSeleccionado, isAttending);
 
   // ── Estado local ─────────────────────────────────────────────────────────────
   const [processingAttendance, setProcessingAttendance] = useState(false);
@@ -416,16 +423,27 @@ export default function ParentHomeScreen() {
       <View
         style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}
       >
-        <DashboardHeader
-          title="PANEL DE PADRE"
-          subtitle={`¡Hola ${profile?.nombre}!`}
-          gradientColors={[
-            Colors.tecnibus[600],
-            Colors.tecnibus[500],
-            Colors.tecnibus[400],
-          ]}
-          icon={Heart}
-        />
+        {/* TourStep 1: Header */}
+        <TourStep
+          scope="parent"
+          id="parent-header"
+          order={1}
+          title="Estado del Recorrido"
+          description="Aquí ves el estado en tiempo real: si la buseta está en camino, el tiempo estimado de llegada a tu parada y si tu hijo está marcado como asistente o ausente hoy."
+          borderRadius={24}
+          padding={0}
+        >
+          <DashboardHeader
+            title="PANEL DE PADRE"
+            subtitle={`¡Hola ${profile?.nombre}!`}
+            gradientColors={[
+              Colors.tecnibus[600],
+              Colors.tecnibus[500],
+              Colors.tecnibus[400],
+            ]}
+            icon={Heart}
+          />
+        </TourStep>
 
         {/* Badges: recogido / ausente / en camino */}
         {estudianteRecogido ? (
@@ -570,12 +588,14 @@ export default function ParentHomeScreen() {
 
       {/* Draggable Bottom Sheet */}
       <DraggableBottomSheet
+        ref={sheetRef}
         initialSnapPoint={0.15}
         minSnapPoint={0.15}
         maxSnapPoint={0.52}
         onSnapPointChange={handleSheetSnapChange}
       >
         <ScrollView
+          ref={sheetScrollRef}
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           scrollEnabled={isSheetExpanded}
@@ -584,21 +604,43 @@ export default function ParentHomeScreen() {
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingBottom: 430 }}
         >
-          {/* Hero Card */}
-          <ParentTrackingHero
-            studentName={estudianteSeleccionado?.nombreCompleto || "Estudiante"}
-            driverName={nombreChofer || "—"}
-            isOnline={choferEnCamino}
-            isAttending={isAttending}
-            isRecogido={estudianteRecogido}
-            routeStarted={choferEnCamino}
-            onChatPress={handleChatDriver}
-            onNotifyAbsencePress={handleToggleAttendance}
-          />
+          {/* Hero Card — TourStep step 2 */}
+          <TourStep
+            scope="parent"
+            id="parent-hero"
+            order={2}
+            title="Info del Chofer y Acciones"
+            description="Aquí ves el nombre del chofer, si está activo, y los botones para chatear directamente con él o reportar la falta de tu hijo antes de que inicie el recorrido."
+            beforeShow={expandSheet}
+            borderRadius={20}
+            padding={4}
+          >
+            <ParentTrackingHero
+              studentName={estudianteSeleccionado?.nombreCompleto || "Estudiante"}
+              driverName={nombreChofer || "—"}
+              isOnline={choferEnCamino}
+              isAttending={isAttending}
+              isRecogido={estudianteRecogido}
+              routeStarted={choferEnCamino}
+              onChatPress={handleChatDriver}
+              onNotifyAbsencePress={handleToggleAttendance}
+            />
+          </TourStep>
 
-          {/* Timeline / ausencia */}
+          {/* Timeline / ausencia — TourStep step 3 */}
           {isAttending || estudianteRecogido ? (
-            <TodayTimeline events={timelineEvents} isLive={choferEnCamino} />
+            <TourStep
+              scope="parent"
+              id="parent-timeline"
+              order={3}
+              title="Timeline del Recorrido"
+              description="Este timeline muestra cada etapa del recorrido en tiempo real: inicio, tu parada y llegada al colegio. Los tiempos estimados (ETA) se actualizan conforme avanza la buseta."
+              beforeShow={expandAndScrollTimeline}
+              borderRadius={20}
+              padding={4}
+            >
+              <TodayTimeline events={timelineEvents} isLive={choferEnCamino} />
+            </TourStep>
           ) : (
             <View
               style={{
@@ -672,6 +714,27 @@ export default function ParentHomeScreen() {
         onMiddlePress={handleChatDriver}
         onSettingsPress={handleSettings}
       />
+
+      {/* ── TOUR ANCHOR: Bottom Navigation (step 4) ── */}
+      <TourStep
+        scope="parent"
+        id="parent-nav"
+        order={4}
+        title="Chat y Ajustes"
+        description="El botón central abre el chat directo con el chofer durante el recorrido. El ícono de ajustes te lleva a la configuración de tu perfil y notificaciones."
+        style={{
+          position: 'absolute',
+          bottom: 7 + Math.max(insets.bottom, 8),
+          left: 30,
+          right: 30,
+          height: 64,
+        }}
+        borderRadius={28}
+        padding={0}
+        pointerEvents="none"
+      >
+        <View style={{ flex: 1 }} collapsable={false} />
+      </TourStep>
     </View>
   );
 }

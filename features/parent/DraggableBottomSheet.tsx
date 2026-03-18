@@ -1,6 +1,14 @@
 import { Colors } from "@/lib/constants/colors";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import {
+  ReactNode,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   Dimensions,
@@ -12,6 +20,11 @@ import {
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+export interface DraggableBottomSheetRef {
+  expand: () => void;
+  collapse: () => void;
+}
+
 interface DraggableBottomSheetProps {
   children: ReactNode;
   initialSnapPoint?: number;
@@ -20,35 +33,52 @@ interface DraggableBottomSheetProps {
   onSnapPointChange?: (snapPoint: number) => void;
 }
 
-export function DraggableBottomSheet({
-  children,
-  initialSnapPoint = 0.2,
-  minSnapPoint = 0.2,
-  maxSnapPoint = 0.45,
-  onSnapPointChange,
-}: DraggableBottomSheetProps) {
+export const DraggableBottomSheet = forwardRef<
+  DraggableBottomSheetRef,
+  DraggableBottomSheetProps
+>(function DraggableBottomSheet(
+  {
+    children,
+    initialSnapPoint = 0.2,
+    minSnapPoint = 0.2,
+    maxSnapPoint = 0.45,
+    onSnapPointChange,
+  },
+  ref,
+) {
   const translateY = useRef(
     new Animated.Value(SCREEN_HEIGHT * (1 - initialSnapPoint)),
   ).current;
   const [currentSnapPoint, setCurrentSnapPoint] = useState(initialSnapPoint);
 
-  const snapToPoint = (point: number) => {
-    const clampedPoint = Math.max(minSnapPoint, Math.min(maxSnapPoint, point));
-    const position = SCREEN_HEIGHT * (1 - clampedPoint);
+  const snapToPoint = useCallback(
+    (point: number) => {
+      const clampedPoint = Math.max(minSnapPoint, Math.min(maxSnapPoint, point));
+      const position = SCREEN_HEIGHT * (1 - clampedPoint);
 
-    setCurrentSnapPoint(clampedPoint);
-    onSnapPointChange?.(clampedPoint);
+      setCurrentSnapPoint(clampedPoint);
+      onSnapPointChange?.(clampedPoint);
 
-    Animated.spring(translateY, {
-      toValue: position,
-      useNativeDriver: true,
-      damping: 25,
-      stiffness: 120,
-    }).start();
-  };
+      Animated.spring(translateY, {
+        toValue: position,
+        useNativeDriver: false,
+        damping: 25,
+        stiffness: 120,
+      }).start();
+    },
+    [minSnapPoint, maxSnapPoint, onSnapPointChange, translateY],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      expand: () => snapToPoint(maxSnapPoint),
+      collapse: () => snapToPoint(minSnapPoint),
+    }),
+    [snapToPoint, maxSnapPoint, minSnapPoint],
+  );
 
   const handleToggle = () => {
-    // Toggle between min and max snap points
     if (currentSnapPoint === minSnapPoint) {
       snapToPoint(maxSnapPoint);
     } else {
@@ -109,7 +139,7 @@ export function DraggableBottomSheet({
       <View style={styles.content}>{children}</View>
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
