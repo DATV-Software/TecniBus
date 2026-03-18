@@ -158,8 +158,12 @@ export async function marcarSubida(
   idEstudiante: string,
   idRuta: string,
   idChofer: string,
-  nombreEstudiante?: string
+  nombreEstudiante?: string,
+  tipoRuta?: string
 ): Promise<boolean> {
+  if (tipoRuta !== undefined && !['ida', 'vuelta'].includes(tipoRuta)) {
+    throw new Error(`tipoRuta inválido: ${tipoRuta}`);
+  }
   try {
     const notas = 'Estudiante subio a la buseta';
     const existente = await findAsistenciaHoy(idEstudiante);
@@ -197,8 +201,12 @@ export async function marcarBajada(
   idEstudiante: string,
   idRuta: string,
   idChofer: string,
-  nombreEstudiante?: string
+  nombreEstudiante?: string,
+  tipoRuta?: string
 ): Promise<boolean> {
+  if (tipoRuta !== undefined && !['ida', 'vuelta'].includes(tipoRuta)) {
+    throw new Error(`tipoRuta inválido: ${tipoRuta}`);
+  }
   try {
     const notas = 'Estudiante bajo de la buseta - llego a destino';
     const existente = await findAsistenciaIdHoy(idEstudiante);
