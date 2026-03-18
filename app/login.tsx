@@ -416,7 +416,7 @@ export default function LoginScreen() {
               </View>
 
               {/* Password */}
-              <View className="mb-4">
+              <View className="mb-2">
                 <Text className="text-sm font-calsans text-gray-700 mb-2">
                   Contraseña
                 </Text>
@@ -434,6 +434,17 @@ export default function LoginScreen() {
                   />
                 </View>
               </View>
+
+              {/* Reset password */}
+              <TouchableOpacity
+                onPress={() => Linking.openURL("https://PLACEHOLDER_RESET_URL")}
+                activeOpacity={0.7}
+                className="self-end mb-2"
+              >
+                <Text className="text-tecnibus-500 text-sm font-calsans">
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Button */}
