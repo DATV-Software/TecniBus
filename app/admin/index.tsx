@@ -6,6 +6,7 @@ import {
 } from "@/lib/services/stats.service";
 import { haptic } from "@/lib/utils/haptics";
 import { QUERY_KEYS } from "@/lib/constants/queryKeys";
+import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -50,61 +51,61 @@ export default function AdminHomeScreen() {
     queryFn: getDashboardStats,
   });
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     if (isRefetching) return;
     haptic.light();
     refetch();
-  };
+  }, [isRefetching, refetch]);
 
-  const handleSettings = () => {
+  const handleSettings = useCallback(() => {
     haptic.light();
     router.push("/admin/settings");
-  };
+  }, [router]);
 
-  const handleTrackingPress = () => {
+  const handleTrackingPress = useCallback(() => {
     haptic.light();
     router.push("/admin/liveview");
-  };
+  }, [router]);
 
-  const handleStudentsPress = () => {
+  const handleStudentsPress = useCallback(() => {
     haptic.light();
     router.push("/admin/estudiantes");
-  };
+  }, [router]);
 
-  const handleDriversPress = () => {
+  const handleDriversPress = useCallback(() => {
     haptic.light();
     router.push("/admin/choferes");
-  };
+  }, [router]);
 
-  const handleParentsPress = () => {
+  const handleParentsPress = useCallback(() => {
     haptic.light();
     router.push("/admin/padres");
-  };
+  }, [router]);
 
-  const handleBusesPress = () => {
+  const handleBusesPress = useCallback(() => {
     haptic.light();
     router.push("/admin/busetas");
-  };
+  }, [router]);
 
-  const handleRoutesPress = () => {
+  const handleRoutesPress = useCallback(() => {
     haptic.light();
     router.push("/admin/rutas");
-  };
+  }, [router]);
 
-  const handleAnnouncementsPress = () => {
+  const handleAnnouncementsPress = useCallback(() => {
     haptic.light();
     router.push("/admin/anuncios");
-  };
+  }, [router]);
 
-  const handleAssignmentsPress = () => {
+  const handleAssignmentsPress = useCallback(() => {
     haptic.light();
     router.push("/admin/asignaciones");
-  };
+  }, [router]);
 
-  const handleReportesPress = () => {
+  const handleReportesPress = useCallback(() => {
     haptic.light();
     router.push("/admin/reportes");
-  };
+  }, [router]);
 
   return (
     <View className="flex-1" style={{ backgroundColor: Colors.tecnibus[50] }}>
