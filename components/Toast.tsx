@@ -71,29 +71,13 @@ export default function Toast({
   }));
 
   const config = {
-    success: {
-      bgColor: 'bg-green-500',
-      icon: CheckCircle2,
-      iconColor: '#ffffff',
-    },
-    error: {
-      bgColor: 'bg-red-500',
-      icon: XCircle,
-      iconColor: '#ffffff',
-    },
-    info: {
-      bgColor: 'bg-primary-600',
-      icon: Info,
-      iconColor: '#ffffff',
-    },
-    warning: {
-      bgColor: 'bg-accent-500',
-      icon: AlertTriangle,
-      iconColor: '#ffffff',
-    },
+    success: { bg: '#22c55e', icon: CheckCircle2, iconColor: '#ffffff' },
+    error:   { bg: '#ef4444', icon: XCircle,      iconColor: '#ffffff' },
+    info:    { bg: '#3DA7D7', icon: Info,          iconColor: '#ffffff' },
+    warning: { bg: '#f59e0b', icon: AlertTriangle, iconColor: '#ffffff' },
   };
 
-  const { bgColor, icon: Icon, iconColor } = config[type];
+  const { bg, icon: Icon, iconColor } = config[type];
 
   if (!visible) return null;
 
@@ -102,7 +86,7 @@ export default function Toast({
       style={[animatedStyle, toastSpacing]}
       className="absolute top-0 left-0 right-0 z-50 px-6"
     >
-      <View className={`${bgColor} rounded-2xl p-4 flex-row items-center`} style={shadow}>
+      <View className="rounded-2xl p-4 flex-row items-center" style={[{ backgroundColor: bg }, shadow]}>
         <Icon size={24} color={iconColor} strokeWidth={2.5} />
         <Text className="text-white font-semibold text-base ml-3 flex-1">
           {message}
