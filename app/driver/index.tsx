@@ -451,7 +451,7 @@ export default function DriverHomeScreen() {
           bottom: 7 + Math.max(insets.bottom, 8),
           left: 30,
           right: 30,
-          height: 64,
+          height: 74,
         }}
         borderRadius={28}
         padding={0}
