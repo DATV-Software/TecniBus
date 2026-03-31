@@ -8,10 +8,13 @@ import { AppState, AppStateStatus } from 'react-native';
 const PING_URL =
   `${process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://supabase.com'}/rest/v1/`;
 
+const PING_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 const PING_TIMEOUT_MS = 6_000;
 const OFFLINE_POLL_MS = 8_000;
+// Delay before the very first ping so the device network stack is ready
+const STARTUP_DELAY_MS = 1_500;
 
-async function ping(): Promise<boolean> {
+async function pingOnce(): Promise<boolean> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), PING_TIMEOUT_MS);
   try {
@@ -19,6 +22,7 @@ async function ping(): Promise<boolean> {
       method: 'HEAD',
       cache: 'no-cache',
       signal: controller.signal,
+      headers: { apikey: PING_ANON_KEY },
     });
     // Any HTTP response (even 4xx) means the server is reachable
     return res.status < 500;
@@ -27,6 +31,14 @@ async function ping(): Promise<boolean> {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function ping(retries = 2): Promise<boolean> {
+  for (let i = 0; i <= retries; i++) {
+    if (await pingOnce()) return true;
+    if (i < retries) await new Promise((r) => setTimeout(r, 1_000));
+  }
+  return false;
 }
 
 type NetworkListener = (isOnline: boolean) => void;
@@ -76,6 +88,8 @@ class NetworkDetector {
       }
     });
 
+    // Wait for the device network stack to be ready before first ping
+    await new Promise((r) => setTimeout(r, STARTUP_DELAY_MS));
     await this.check();
   }
 

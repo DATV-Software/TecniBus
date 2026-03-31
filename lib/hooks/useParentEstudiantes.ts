@@ -2,7 +2,7 @@ import {
   getMyEstudiantes,
   type EstudianteDelPadre,
 } from "@/lib/services/padres.service";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function useParentEstudiantes() {
   const [estudiantes, setEstudiantes] = useState<EstudianteDelPadre[]>([]);
@@ -16,6 +16,10 @@ export function useParentEstudiantes() {
     if (data.length > 0) setEstudianteSeleccionado(data[0]);
     setLoading(false);
   };
+
+  useEffect(() => {
+    void loadEstudiantes();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     estudiantes,
