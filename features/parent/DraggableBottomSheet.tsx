@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 import Animated, {
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -24,8 +25,8 @@ import Animated, {
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export interface DraggableBottomSheetRef {
-  expand: () => void;
-  collapse: () => void;
+  expand: (onDone?: () => void) => void;
+  collapse: (onDone?: () => void) => void;
 }
 
 interface DraggableBottomSheetProps {
@@ -56,7 +57,7 @@ export const DraggableBottomSheet = forwardRef<
   const [currentSnapPoint, setCurrentSnapPoint] = useState(initialSnapPoint);
 
   const snapToPoint = useCallback(
-    (point: number) => {
+    (point: number, onDone?: () => void) => {
       const clampedPoint = Math.max(minSnapPoint, Math.min(maxSnapPoint, point));
       const position = SCREEN_HEIGHT * (1 - clampedPoint);
 
@@ -64,11 +65,12 @@ export const DraggableBottomSheet = forwardRef<
       setCurrentSnapPoint(clampedPoint);
       onSnapPointChange?.(clampedPoint);
 
-      // Animate on the UI thread — matches original spring feel
-      translateY.value = withSpring(position, {
-        damping: 25,
-        stiffness: 120,
-      });
+      // Animate on the UI thread — callback fires when spring settles
+      translateY.value = withSpring(
+        position,
+        { damping: 25, stiffness: 120 },
+        onDone ? () => { 'worklet'; runOnJS(onDone)(); } : undefined,
+      );
     },
     [minSnapPoint, maxSnapPoint, onSnapPointChange, translateY],
   );
@@ -76,8 +78,8 @@ export const DraggableBottomSheet = forwardRef<
   useImperativeHandle(
     ref,
     () => ({
-      expand: () => snapToPoint(maxSnapPoint),
-      collapse: () => snapToPoint(minSnapPoint),
+      expand: (onDone?: () => void) => snapToPoint(maxSnapPoint, onDone),
+      collapse: (onDone?: () => void) => snapToPoint(minSnapPoint, onDone),
     }),
     [snapToPoint, maxSnapPoint, minSnapPoint],
   );

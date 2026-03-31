@@ -209,27 +209,27 @@ export default function ParentHomeScreen() {
             />
           </TourStep>
 
-          {/* Timeline or absence card — TourStep 3 */}
-          {isAttending || estudianteRecogido ? (
-            <TourStep
-              scope="parent"
-              id="parent-timeline"
-              order={3}
-              title="Timeline del Recorrido"
-              description="Este timeline muestra cada etapa del recorrido en tiempo real: inicio, tu parada y llegada al colegio. Los tiempos estimados (ETA) se actualizan conforme avanza la buseta."
-              beforeShow={expandAndScrollTimeline}
-              borderRadius={20}
-              padding={4}
-            >
+          {/* Timeline or absence card — TourStep 3 always registered */}
+          <TourStep
+            scope="parent"
+            id="parent-timeline"
+            order={3}
+            title="Timeline del Recorrido"
+            description="Este timeline muestra cada etapa del recorrido en tiempo real: inicio, tu parada y llegada al colegio. Los tiempos estimados (ETA) se actualizan conforme avanza la buseta."
+            beforeShow={expandAndScrollTimeline}
+            borderRadius={20}
+            padding={4}
+          >
+            {isAttending || estudianteRecogido ? (
               <TodayTimeline events={timelineEvents} isLive={choferEnCamino} />
-            </TourStep>
-          ) : (
-            <ParentAbsenceCard
-              tipoRuta={tipoRuta}
-              nombreEstudiante={estudianteSeleccionado?.nombre}
-              marcadoPorChofer={marcadoPorChofer}
-            />
-          )}
+            ) : (
+              <ParentAbsenceCard
+                tipoRuta={tipoRuta}
+                nombreEstudiante={estudianteSeleccionado?.nombre}
+                marcadoPorChofer={marcadoPorChofer}
+              />
+            )}
+          </TourStep>
         </ScrollView>
       </DraggableBottomSheet>
 
@@ -263,7 +263,7 @@ export default function ParentHomeScreen() {
           bottom: 7 + Math.max(insets.bottom, 8),
           left: 30,
           right: 30,
-          height: 64,
+          height: 74,
         }}
         borderRadius={28}
         padding={0}

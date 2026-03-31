@@ -11,16 +11,28 @@ export function useParentTourSetup() {
   const sheetScrollRef = useRef<ScrollView>(null);
 
   const expandSheet = useCallback(async () => {
-    sheetRef.current?.expand();
-    // Spring con damping:25, stiffness:120 tarda ~800ms en asentarse
-    await new Promise<void>(r => setTimeout(r, 900));
+    await new Promise<void>(r => {
+      if (sheetRef.current) {
+        sheetRef.current.expand(r);
+      } else {
+        r();
+      }
+    });
+    // Small extra delay so layout commits after animation
+    await new Promise<void>(r => setTimeout(r, 80));
   }, []);
 
   const expandAndScrollTimeline = useCallback(async () => {
-    sheetRef.current?.expand();
-    await new Promise<void>(r => setTimeout(r, 900));
+    await new Promise<void>(r => {
+      if (sheetRef.current) {
+        sheetRef.current.expand(r);
+      } else {
+        r();
+      }
+    });
+    await new Promise<void>(r => setTimeout(r, 80));
     sheetScrollRef.current?.scrollTo({ y: 230, animated: true });
-    await new Promise<void>(r => setTimeout(r, 500));
+    await new Promise<void>(r => setTimeout(r, 400));
   }, []);
 
   return { sheetRef, sheetScrollRef, expandSheet, expandAndScrollTimeline };
