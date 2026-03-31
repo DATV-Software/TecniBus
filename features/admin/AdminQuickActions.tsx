@@ -17,7 +17,7 @@ export function AdminQuickActions({
   onReportesPress,
 }: AdminQuickActionsProps) {
   return (
-    <View style={{ paddingHorizontal: 20 }}>
+    <View>
       <View className="flex-row" style={{ gap: 12, marginBottom: 12 }}>
         <View className="flex-1">
           <ActionCard

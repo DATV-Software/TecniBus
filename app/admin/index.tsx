@@ -1,14 +1,14 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Colors } from "@/lib/constants/colors";
+import { QUERY_KEYS } from "@/lib/constants/queryKeys";
 import {
   DashboardStats,
   getDashboardStats,
 } from "@/lib/services/stats.service";
 import { haptic } from "@/lib/utils/haptics";
-import { QUERY_KEYS } from "@/lib/constants/queryKeys";
-import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { useCallback } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -156,6 +156,7 @@ export default function AdminHomeScreen() {
               description="Consulta el total de estudiantes, choferes, padres y busetas del sistema. Toca cualquier tarjeta para ver el listado completo."
               borderRadius={16}
               padding={4}
+              style={{ marginHorizontal: 20, marginTop: -20 }}
             >
               <AdminStatsGrid
                 stats={stats}
@@ -174,7 +175,7 @@ export default function AdminHomeScreen() {
                 scope="admin"
                 id="admin-status"
                 order={2}
-                title="Monitoreo de Flotas"
+                title="Monitoreo de Busetas"
                 description="Aquí ves cuántas busetas están en ruta ahora mismo. Toca 'En vivo' para abrir el mapa con todas las busetas en tiempo real."
                 borderRadius={16}
                 padding={4}
@@ -202,6 +203,7 @@ export default function AdminHomeScreen() {
                 borderRadius={16}
                 padding={4}
                 beforeShow={scrollToActions}
+                style={{ marginHorizontal: 20 }}
               >
                 <AdminQuickActions
                   onRoutesPress={handleRoutesPress}

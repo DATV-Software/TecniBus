@@ -20,7 +20,7 @@ export function AdminStatsGrid({
   onBusesPress,
 }: AdminStatsGridProps) {
   return (
-    <View style={{ paddingHorizontal: 20, marginTop: -20, zIndex: 10 }}>
+    <View style={{ zIndex: 10 }}>
       <View className="flex-row" style={{ gap: 12, marginBottom: 12 }}>
         <StatCard
           icon={GraduationCap}
