@@ -1,14 +1,15 @@
 import SplashScreen from "@/components/SplashScreen";
 import { AlertProvider } from "@/components/ui/AlertBox/AlertProvider";
-import { NetworkBanner } from "@/components/NetworkBanner";
+import Toast from "@/components/Toast";
 import { networkDetector } from "@/lib/network/networkDetector";
 import { networkQueue } from "@/lib/network/NetworkQueue";
 import { registerAllExecutors } from "@/lib/network/offlineActions";
 import { useSyncQueue } from "@/lib/hooks/useSyncQueue";
+import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthGuard } from "../components/AuthGuard";
@@ -45,20 +46,42 @@ const queryClient = new QueryClient({
  */
 function AppContent() {
   useNotificationNavigation();
-
-  // Activates queue processing on reconnect + on app foreground
   useSyncQueue();
 
-  // Process any actions left in queue from previous session
+  const { isOnline } = useNetworkStatus();
+  const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'error' | 'success' }>({
+    visible: false, message: '', type: 'error',
+  });
+  const prevOnlineRef = useRef<boolean | null>(null);
+
   useEffect(() => {
     if (networkDetector.isOnline && networkQueue.pendingCount > 0) {
       void networkQueue.processQueue();
     }
   }, []);
 
+  useEffect(() => {
+    if (prevOnlineRef.current === null) {
+      prevOnlineRef.current = isOnline;
+      return;
+    }
+    if (!isOnline && prevOnlineRef.current) {
+      setToast({ visible: true, message: 'Sin conexión a internet', type: 'error' });
+    } else if (isOnline && !prevOnlineRef.current) {
+      setToast({ visible: true, message: 'Conexión restaurada', type: 'success' });
+    }
+    prevOnlineRef.current = isOnline;
+  }, [isOnline]);
+
   return (
     <View style={{ flex: 1 }}>
-      <NetworkBanner />
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        duration={3000}
+        onHide={() => setToast((t) => ({ ...t, visible: false }))}
+      />
       <TourProvider>
         <AuthGuard>
           <Stack

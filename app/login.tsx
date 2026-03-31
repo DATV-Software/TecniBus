@@ -3,9 +3,9 @@ import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { Fingerprint, Lock, Mail } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
+import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Keyboard,
   Platform,
@@ -30,6 +30,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { showAlert } = useAlert();
   const { signIn, signOut, user, profile, loading: authLoading } = useAuth();
   const shadow = useShadow("lg");
 
@@ -437,7 +438,7 @@ export default function LoginScreen() {
 
               {/* Reset password — URL se agregará cuando la página esté lista */}
               <TouchableOpacity
-                onPress={() => Alert.alert('Recuperar contraseña', 'Contacta al administrador de tu institución para restablecer tu contraseña.')}
+                onPress={() => showAlert({ title: 'Recuperar contraseña', message: 'Contacta al administrador de tu institución para restablecer tu contraseña.', type: 'info' })}
                 activeOpacity={0.7}
                 className="self-end mb-2"
               >
@@ -489,7 +490,7 @@ export default function LoginScreen() {
               <Text className="text-center text-gray-600 text-sm mt-3 font-calsans">
                 ¿No tienes cuenta?{" "}
                 <Text
-                  onPress={() => Alert.alert('Contacto', 'Para crear una cuenta, contacta al administrador de tu institución.')}
+                  onPress={() => showAlert({ title: 'Contacto', message: 'Para crear una cuenta, contacta al administrador de tu institución.', type: 'info' })}
                   className="text-tecnibus-500 underline"
                 >
                   Contacta a tu institución
