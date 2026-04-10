@@ -126,13 +126,12 @@ Detailed technical documentation is available in our GitHub Wiki:
 
 ---
 
-## Academic Context
 
-TecniBus was developed as the Integrative Technical Project (Proyecto Integrador) for the Technical Baccalaureate in Computer Science at Unidad Educativa Técnico Salesiano (UETS), Ecuador, 2025–2026. The project focuses on production-level architecture, real-world problem solving, and applied software engineering — including secure API design, relational data modeling, and cross-platform mobile development.
-## License
+## License ⚖️
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This software is **Proprietary**. All rights reserved to **Diego Torres**.
+
+For more details, see the [LICENSE](LICENSE) file.
 
 ---
-
-Copyright (c) 2026 Diego Torres — TecniBus
+Copyright (c) 2026 Diego Torres — DATV Software
