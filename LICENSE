@@ -1,21 +1,30 @@
-MIT License
+PROPRIETARY AND INTELLECTUAL PROPERTY LICENSE
 
-Copyright (c) 2026 Diego Torres
+TecniBus 
+DATV Software
+Diego Torres
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Copyright (c) 2026 Diego Torres. All rights reserved.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. OWNERSHIP: All source code, architectural design, database schemas, and 
+   user interfaces contained in this repository are the exclusive intellectual 
+   property of Diego Torres.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. REFACTORING & IMPLEMENTATION: Any code resulting from the refactoring, 
+   optimization, or framework migration of previous versions is considered 
+   a new and original work under the authorship of the current Owner.
+
+3. RESTRICTIONS: No person or entity (including collaborators of associated 
+   academic documentation) is authorized to:
+   a) Copy, redistribute, or modify this software for commercial purposes.
+   b) Claim ownership or authorship of the technical implementation.
+   c) Access or grant access to the source code to third parties without 
+      explicit written consent from the Owner.
+
+4. ACADEMIC SCOPE: Participation in the technical report or theoretical 
+   research for thesis purposes does not grant any rights over the software 
+   assets, source code, or commercial exploitation of the product.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. 
+UNAUTHORIZED USE WILL BE SUBJECT TO LEGAL ACTION UNDER ECUADORIAN 
+AND INTERNATIONAL INTELLECTUAL PROPERTY LAWS.
