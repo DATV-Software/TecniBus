@@ -46,7 +46,7 @@ jobs:
           npm run build:web 2>/dev/null || echo "Web build not configured, skipping"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-${{ github.ref_name }}
           path: dist/
