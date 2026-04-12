@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+echo '🔍 Validating memory file structure before push...'
+node scripts/memory-structure-check.js
+if [ $? -ne 0 ]; then
+  echo '❌ Memory structure validation failed. See issues above.'
+  exit 1
+fi
+echo '✅ Memory structure valid'
+echo '✨ Ready to push'
