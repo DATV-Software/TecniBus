@@ -33,7 +33,7 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           echo "🚀 Deploying to production via eas update..."
-          eas update --branch main --message "Auto-deploy from GitHub Actions" --skip-confirmation
+          eas update --branch main --message "Auto-deploy from GitHub Actions"
 
       - name: Notify deployment
         run: |
