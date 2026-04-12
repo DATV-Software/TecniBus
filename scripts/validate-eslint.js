@@ -17,11 +17,11 @@ try {
   // Run ESLint on staged files (non-blocking to allow pre-existing warnings)
   try {
     execSync(`npx eslint ${stagedFiles.join(' ')}`, { stdio: 'inherit' });
-  } catch (error) {
+  } catch (_) {
     console.log('\n⚠️ ESLint found issues (non-blocking for pre-existing warnings)');
   }
 
   process.exit(0);
-} catch (error) {
+} catch (_) {
   process.exit(1);
 }
