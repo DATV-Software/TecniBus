@@ -37,11 +37,6 @@ Esta sesión completó la arquitectura de CI/CD y preparó el proyecto para la p
 - **Solución**: Cambiar a `api.cache.using(() => process.env.NODE_ENV)`
 - **Status**: ✅ Arreglado, commit dcae8e7
 
-### 4. Documentation
-- ✅ `docs/CI-CD-SETUP.md` — Workflow diario actualizado
-- ✅ `docs/DEPLOYMENT.md` — GitHub secrets setup
-- ✅ `docs/FIRST-BUILD.md` — Primera build (NUEVO)
-
 ## 🚧 Próximos Pasos Inmediatos
 
 ### 1. Primera Build de Producción (LOCAL)
