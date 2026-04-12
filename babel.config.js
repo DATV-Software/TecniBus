@@ -1,5 +1,5 @@
 module.exports = function (api) {
-  api.cache(true);
+  api.cache.using(() => process.env.NODE_ENV);
   const isProd = api.env('production');
   return {
     presets: [

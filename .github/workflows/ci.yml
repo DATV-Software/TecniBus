@@ -34,9 +34,6 @@ jobs:
       - name: Run TypeScript check
         run: npx tsc --noEmit
 
-      - name: Validate memory structure
-        run: node scripts/memory-structure-check.js 2>/dev/null || echo "⚠️ Memory validation skipped in CI (developer-local only)"
-
       - name: Build artifact
         run: |
           echo "📦 Building artifact..."
