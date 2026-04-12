@@ -1,4 +1,4 @@
-import { TouchableOpacity, Text, View } from 'react-native';
+import { TouchableOpacity, Text } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
 import { useShadow } from '@/lib/utils/shadows';
 

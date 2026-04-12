@@ -27,7 +27,6 @@ import type { EstudianteGeocerca } from '@/lib/services/geocercas.service';
 import type { Parada } from '@/lib/services/rutas.service';
 import type { EstadoRecorridoRun } from '@/lib/hooks/useDriverRecorrido';
 import { TourStep } from '@/features/tour';
-import { haptic } from '@/lib/utils/haptics';
 
 type Props = {
   // Route state

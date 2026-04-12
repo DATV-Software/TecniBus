@@ -29,6 +29,7 @@ const BusMarker = memo(() => (
     resizeMode="contain"
   />
 ));
+BusMarker.displayName = 'BusMarker';
 
 const DEFAULT_REGION: Region = {
   latitude: -2.9, // Cuenca, Ecuador

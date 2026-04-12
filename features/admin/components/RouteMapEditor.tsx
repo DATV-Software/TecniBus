@@ -28,7 +28,7 @@ interface RouteMapEditorProps {
   onParadaDeleted: () => void;
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 const MAP_HEIGHT = 320;
 
 // Default to Cuenca, Ecuador
