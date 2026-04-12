@@ -17,6 +17,8 @@ TecniBus now has automated quality gates:
 git add .
 
 # 2. Commit (pre-commit hook validates ESLint + TypeScript)
+#    - ESLint: non-blocking warnings allowed, errors halt commit
+#    - TypeScript: blocking errors halt commit
 git commit -m "feat: description"
 
 # 3. Use /commit skill (validates & updates memory if needed)
@@ -30,17 +32,21 @@ git commit -m "feat: description"
 # 4. Push to develop (pre-push hook validates memory structure)
 git push origin develop
 
-# 5. GitHub Actions CI runs automatically
-# → ESLint, TypeScript, tests, build artifact
-# → Results visible on GitHub
+# 5. GitHub Actions CI runs automatically (all branches)
+# → ESLint (non-blocking, warnings reported)
+# → TypeScript (blocker, breaks build if errors)
+# → Memory validation (non-blocking, local-only)
+# → Build artifact upload
+# → Results visible on GitHub PR
 
 # 6. When ready to release, create PR develop → main
 # → You review code
-# → You merge (decides when to deploy)
+# → You merge
 
-# 7. Merge triggers deploy workflow
+# 7. Merge triggers GitHub Actions CI on main
+# → CI passes → Deploy workflow triggers automatically
 # → eas update runs automatically
-# → Production updated
+# → Production updated instantly
 # → Zero manual deployment steps
 ```
 
