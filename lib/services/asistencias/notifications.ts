@@ -23,6 +23,5 @@ export async function notificarPadre(
       },
     });
   } catch (error) {
-    console.error('Error enviando notificacion al padre:', error);
   }
 }

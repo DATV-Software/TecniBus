@@ -87,7 +87,6 @@ export function ImportCSVModal({
     if (result.canceled) return;
 
     const asset = result.assets[0];
-    console.log("[CSV] asset.uri:", asset.uri, "| mimeType:", asset.mimeType);
 
     // Validar extensión CSV (el MIME type varía según plataforma/app)
     const nombre = asset.name.toLowerCase();

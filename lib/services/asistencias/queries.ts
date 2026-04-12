@@ -113,7 +113,6 @@ export async function getEstudiantesConAsistencia(
       };
     });
   } catch (error) {
-    console.error('Error en getEstudiantesConAsistencia:', error);
     return [];
   }
 }

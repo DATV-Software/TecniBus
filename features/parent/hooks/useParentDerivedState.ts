@@ -56,7 +56,7 @@ export function useParentDerivedState({
   useEffect(() => {
     getUbicacionColegio()
       .then(setUbicacionColegio)
-      .catch((e) => console.error('[Parent] Error cargando colegio:', e));
+      .catch(() => {});
   }, []);
 
   // ── Single stop shown on map (only child's stop — privacy) ─────────────────

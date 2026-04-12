@@ -212,7 +212,6 @@ export function useDriverActions({
             await guardarPolylineRuta(recorridoActual.id, resultado.polylineCoordinates);
           }
         } catch (error) {
-          console.error('Error optimizando ruta:', error);
         } finally {
           setOptimizandoRuta(false);
         }
@@ -222,9 +221,7 @@ export function useDriverActions({
         setRouteActive(true);
         setEstadosRecorridos((prev) => ({ ...prev, [recorridoActual.id]: 'activo' }));
         haptic.success();
-        inicializarEstadosGeocercas(recorridoActual.id, profileId || '').catch(
-          (err) => console.warn('Error inicializando geocercas:', err),
-        );
+        inicializarEstadosGeocercas(recorridoActual.id, profileId || '').catch(() => {});
       } else {
         haptic.error();
         showAlert({ title: 'Error', message: 'No se pudo iniciar el recorrido', type: 'error' });
@@ -356,7 +353,7 @@ export function useDriverActions({
       '🏫 Llegaron al colegio',
       `Tus hijos llegaron al colegio a las ${horaLlegada}. ¡Buen día escolar!`,
       { tipo: 'llegada_colegio', hora: horaLlegada },
-    ).catch((err) => console.warn('Error push colegio:', err));
+    ).catch(() => {});
 
     const success = await finalizarRecorrido(recorridoActual.id);
     if (success) {

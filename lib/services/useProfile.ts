@@ -45,15 +45,12 @@ export function useProfile() {
         .single();
 
       if (fetchError) {
-        console.error('Error fetching profile:', fetchError);
         setError(fetchError.message);
         setProfile(null);
       } else {
         setProfile(data);
-        console.log('✅ Perfil cargado:', data);
       }
     } catch (err) {
-      console.error('Error inesperado:', err);
       setError('Error inesperado al cargar perfil');
       setProfile(null);
     } finally {

@@ -104,7 +104,6 @@ export function useParentActions({
         });
       }
     } catch (error) {
-      console.error('Error toggling attendance:', error);
       haptic.error();
       showAlert({
         title: 'Error',

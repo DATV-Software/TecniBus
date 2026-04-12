@@ -72,21 +72,18 @@ export async function importarEntidades(
     const data = await response.json();
 
     if (!response.ok || !data.success) {
-      console.warn('⚠️ Error en importación:', data.error);
       return {
         success: false,
         error: data.error || 'Error en la importación',
       };
     }
 
-    console.log('✅ Importación completada:', data.resumen);
     return {
       success: true,
       resumen: data.resumen,
     };
 
   } catch (err) {
-    console.error('❌ Error inesperado en importación:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Error inesperado',
@@ -108,7 +105,6 @@ export async function importarTextoCSV(
     });
 
     if (error) {
-      console.warn('⚠️ Error en importación:', error.message);
       return { success: false, error: error.message };
     }
 
@@ -116,11 +112,9 @@ export async function importarTextoCSV(
       return { success: false, error: data?.error || 'Error en la importación' };
     }
 
-    console.log('✅ Importación completada:', data.resumen);
     return { success: true, resumen: data.resumen };
 
   } catch (err) {
-    console.error('❌ Error inesperado en importación por texto:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Error inesperado',

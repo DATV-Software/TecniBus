@@ -101,7 +101,6 @@ export default function AnunciosScreen() {
       );
 
       if (error) {
-        console.error("Error enviando anuncio:", error);
         showAlert({
           title: "Error",
           message: "No se pudo enviar el anuncio. Intenta nuevamente.",
@@ -131,7 +130,6 @@ export default function AnunciosScreen() {
 
       haptic.success();
     } catch (error) {
-      console.error("Error en enviarAnuncio:", error);
       showAlert({
         title: "Error",
         message: "Ocurrió un error inesperado. Intenta nuevamente.",

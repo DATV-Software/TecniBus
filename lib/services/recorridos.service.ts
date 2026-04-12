@@ -30,7 +30,6 @@ export async function guardarPolylineRuta(
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('❌ Error en guardarPolylineRuta:', error);
     return false;
   }
 }
@@ -56,7 +55,7 @@ export async function publishETAsToRecorrido(
     .from('estados_recorrido')
     .update({ eta_paradas: etas })
     .eq('id_asignacion', idAsignacion);
-  if (error) console.error('❌ Error publicando ETAs:', error.message);
+  if (error) return;
 }
 
 export async function iniciarRecorrido(idAsignacion: string): Promise<boolean> {
@@ -78,7 +77,6 @@ export async function iniciarRecorrido(idAsignacion: string): Promise<boolean> {
 
     return data || true;
   } catch (error) {
-    console.error('❌ Error iniciando recorrido:', error);
     return false;
   }
 }
@@ -95,7 +93,6 @@ export async function finalizarRecorrido(idAsignacion: string): Promise<boolean>
 
     return data || true;
   } catch (error) {
-    console.error('❌ Error finalizando recorrido:', error);
     return false;
   }
 }
@@ -116,7 +113,6 @@ export async function getEstadoRecorrido(
       ? { activo: estado.activo || false, hora_inicio: estado.hora_inicio, hora_fin: estado.hora_fin }
       : { activo: false, hora_inicio: null, hora_fin: null };
   } catch (error) {
-    console.error('❌ Error obteniendo estado de recorrido:', error);
     return null;
   }
 }
@@ -143,7 +139,6 @@ export async function getEstadoRecorridoPorRuta(
         }
       : { activo: false, hora_inicio: null, hora_fin: null, id_asignacion: null, eta_paradas: null };
   } catch (error) {
-    console.error('❌ Error obteniendo estado de recorrido por ruta:', error);
     return null;
   }
 }

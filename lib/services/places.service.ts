@@ -26,7 +26,6 @@ export async function searchPlaceSuggestions(query: string): Promise<PlaceSugges
   );
 
   if (error || !data?.predictions) {
-    console.error("Places autocomplete error:", error);
     return [];
   }
 
@@ -43,7 +42,6 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string |
   );
 
   if (error || data === null) {
-    console.error("Reverse geocode error:", error);
     return null;
   }
 
@@ -61,7 +59,6 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails | n
   );
 
   if (error || !data?.lat) {
-    console.error("Place details error:", error);
     return null;
   }
 

@@ -79,7 +79,6 @@ export async function toggleAsistencia(
         .rpc('get_chofer_de_ruta', { p_id_ruta: idRuta });
 
       if (errorChofer || !idChofer) {
-        console.error('No hay chofer asignado a la ruta:', idRuta, errorChofer);
         throw new Error('No hay chofer asignado a esta ruta');
       }
 
@@ -104,12 +103,10 @@ export async function toggleAsistencia(
         },
       });
     } catch (error) {
-      console.error('Error notificando al chofer:', error);
     }
 
     return true;
   } catch (error) {
-    console.error('Error en toggleAsistencia:', error);
     return false;
   }
 }
@@ -144,7 +141,6 @@ export async function marcarAusente(
 
     return true;
   } catch (error) {
-    console.error('Error en marcarAusente:', error);
     return false;
   }
 }
@@ -187,7 +183,6 @@ export async function marcarSubida(
 
     return true;
   } catch (error) {
-    console.error('Error en marcarSubida:', error);
     return false;
   }
 }
@@ -228,7 +223,6 @@ export async function marcarBajada(
 
     return true;
   } catch (error) {
-    console.error('Error en marcarBajada:', error);
     return false;
   }
 }
@@ -330,7 +324,6 @@ export async function confirmarAsistenciaVuelta(
 
     return true;
   } catch (error) {
-    console.error('Error en confirmarAsistenciaVuelta:', error);
     return false;
   }
 }

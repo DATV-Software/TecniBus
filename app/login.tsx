@@ -117,7 +117,6 @@ export default function LoginScreen() {
       const savedEmail = await SecureStore.getItemAsync("userEmail");
       setHasSavedCredentials(!!savedEmail);
     } catch (error) {
-      console.error("Error verificando biometría:", error);
       setIsBiometricSupported(false);
     }
   };
@@ -160,7 +159,6 @@ export default function LoginScreen() {
         haptic.warning();
       }
     } catch (error) {
-      console.error("Error en autenticación biométrica:", error);
       showToast("Error en autenticación biométrica", "error");
       haptic.error();
     }
@@ -272,7 +270,6 @@ export default function LoginScreen() {
       const { error } = await signIn(email, password);
 
       if (error) {
-        console.error("❌ Error de login:", error);
         setIsLoading(false);
         showToast(`${getAuthErrorMessage(error)}`, "error");
         haptic.error();
@@ -290,12 +287,10 @@ export default function LoginScreen() {
             await SecureStore.setItemAsync("userPassword", password);
             setHasSavedCredentials(true);
           } catch (error) {
-            console.error("❌ Error guardando credenciales:", error);
           }
         }
       }
     } catch (error) {
-      console.error("❌ Error inesperado:", error);
       setIsLoading(false);
       showToast("Error inesperado. Intenta nuevamente", "error");
       haptic.error();
@@ -316,7 +311,6 @@ export default function LoginScreen() {
       showToast("Sesión limpiada completamente", "success");
       haptic.success();
     } catch (error) {
-      console.error("Error limpiando sesión:", error);
       showToast("Error al limpiar sesión", "error");
     }
   };

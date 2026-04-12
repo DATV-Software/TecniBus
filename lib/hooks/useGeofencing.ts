@@ -170,9 +170,7 @@ export function useGeofencing({
         // Registrar entrada en DB solo la primera vez
         if (!yaEnZona) {
           estudianteEnZonaRef.current = idEst;
-          marcarEntradaGeocerca(idAsignacion, idEst, idChofer).catch((err) =>
-            console.warn('Error marcando entrada geocerca:', err),
-          );
+          marcarEntradaGeocerca(idAsignacion, idEst, idChofer).catch(() => {});
         }
       }
     } else {
@@ -188,22 +186,16 @@ export function useGeofencing({
         estudiantesProcesadosRef.current.add(idEst);
         setDentroDeZona(false);
         setEstudianteActual(null);
-        marcarSalidaGeocerca(idAsignacion, idEst, idChofer).catch((err) =>
-          console.warn('Error marcando salida geocerca:', err),
-        );
+        marcarSalidaGeocerca(idAsignacion, idEst, idChofer).catch(() => {});
         if (tipoRuta === 'vuelta') {
-          marcarEstudianteCompletado(idAsignacion, idEst, idChofer, 'completado').catch((err) =>
-            console.warn('Error marcando estudiante completado (vuelta):', err),
-          );
+          marcarEstudianteCompletado(idAsignacion, idEst, idChofer, 'completado').catch(() => {});
         }
       } else if (estudianteEnZonaRef.current && estudianteEnZonaRef.current !== idEst) {
         const prevId = estudianteEnZonaRef.current;
         estudianteEnZonaRef.current = null;
         setDentroDeZona(false);
         setEstudianteActual(null);
-        marcarSalidaGeocerca(idAsignacion, prevId, idChofer).catch((err) =>
-          console.warn('Error marcando salida geocerca (cambio):', err),
-        );
+        marcarSalidaGeocerca(idAsignacion, prevId, idChofer).catch(() => {});
       } else {
         setDentroDeZona(false);
         setEstudianteActual(null);

@@ -98,7 +98,6 @@ async function callGetDirections(
   }
 
   if (error || !data) {
-    console.error("Error en get-directions:", error?.message ?? "Sin respuesta");
     return null;
   }
 

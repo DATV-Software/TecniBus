@@ -41,11 +41,9 @@ export function useNotificationNavigation() {
             }
           })
           .catch((error) => {
-            console.warn('⚠️ Error obteniendo última notificación (normal en Expo Go):', error.message);
           });
       }
     } catch (error: any) {
-      console.warn('⚠️ Error configurando notificaciones (normal en Expo Go):', error.message);
     }
 
     return () => {

@@ -119,7 +119,6 @@ export function registerAllExecutors(): void {
     }
   });
 
-  console.log('[OfflineActions] All executors registered');
 }
 
 // ─── Offline-Aware Wrappers ───────────────────────────────────────────────────
@@ -323,7 +322,6 @@ async function _withOfflineFallback<T>(
       // Network / server error → queue for later
       networkDetector.reportNetworkError();
       await networkQueue.enqueue(type, payload, deduplicateKey);
-      console.log(`[OfflineActions] Queued ${type} due to ${kind} error`);
       return { success: true, queued: true };
     }
 

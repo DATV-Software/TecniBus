@@ -40,7 +40,6 @@ export async function crearUsuario(
 
     // Error de red o error crítico de la función (500)
     if (error) {
-      console.error('❌ Error de red/invocación:', error);
       return { 
         success: false, 
         error: `Error de servidor: ${error.message}` 
@@ -50,7 +49,6 @@ export async function crearUsuario(
     // Error controlado devuelto por la lógica de la función (400)
     // Ejemplo: "Email ya registrado" o "Error en tabla choferes"
     if (!data || data.success !== true) {
-      console.warn('⚠️ La función devolvió un error lógico:', data?.error);
       return {
         success: false,
         error: data?.error || 'No se pudo completar el registro en la base de datos',
@@ -58,14 +56,12 @@ export async function crearUsuario(
     }
 
     // Éxito total
-    console.log('✅ Usuario y Rol creados con éxito');
     return { 
       success: true, 
       user: data.user 
     };
 
   } catch (err) {
-    console.error('❌ Error inesperado en el servicio:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Ocurrió un error inesperado',
@@ -93,7 +89,6 @@ async function obtenerUsuariosPorRol(rol: RolUsuario): Promise<Profile[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error(`❌ Error obteniendo ${rol}s:`, error);
     throw new Error(error.message);
   }
 
@@ -132,7 +127,6 @@ export async function actualizarUsuario(
 
     return { success: true };
   } catch (err) {
-    console.error('❌ Error actualizando usuario:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Error inesperado',
@@ -155,7 +149,6 @@ export async function eliminarUsuario(userId: string): Promise<EliminarResponse>
     });
 
     if (error) {
-      console.error('❌ Error de red/invocación:', error);
       return {
         success: false,
         error: `Error de servidor: ${error.message}`,
@@ -163,18 +156,15 @@ export async function eliminarUsuario(userId: string): Promise<EliminarResponse>
     }
 
     if (!data || data.success !== true) {
-      console.warn('⚠️ La función devolvió un error:', data?.error);
       return {
         success: false,
         error: data?.error || 'No se pudo eliminar el usuario',
       };
     }
 
-    console.log('✅ Usuario eliminado con éxito');
     return { success: true };
 
   } catch (err) {
-    console.error('❌ Error inesperado eliminando usuario:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Error inesperado',

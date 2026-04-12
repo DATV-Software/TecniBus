@@ -70,9 +70,6 @@ export class NetworkQueue {
           JSON.stringify(a.payload).includes(deduplicateKey),
       );
       if (isDuplicate) {
-        console.log(
-          `[Queue] Skipping duplicate ${type} (key: ${deduplicateKey})`,
-        );
         return 'duplicate';
       }
     }
@@ -93,9 +90,6 @@ export class NetworkQueue {
     await this._persist();
     this._notify();
 
-    console.log(
-      `[Queue] Enqueued ${type} | queue length: ${this._queue.length}`,
-    );
     return action.id;
   }
 
@@ -118,7 +112,6 @@ export class NetworkQueue {
     if (toProcess.length === 0) return;
 
     this._syncing = true;
-    console.log(`[Queue] Processing ${toProcess.length} pending action(s)`);
 
     for (const action of toProcess) {
       // Re-read from queue to get latest state (may have been removed)
@@ -138,13 +131,11 @@ export class NetworkQueue {
       this._queue = this._queue.filter((a) => a.id !== action.id);
       await this._persist();
       this._notify();
-      console.warn(`[Queue] 🗑️ Dropped stale action ${action.type} (>24h old)`);
       return;
     }
 
     const executor = this._executors.get(action.type);
     if (!executor) {
-      console.warn(`[Queue] No executor for: ${action.type} — skipping`);
       return;
     }
 
@@ -157,7 +148,6 @@ export class NetworkQueue {
       this._queue = this._queue.filter((a) => a.id !== action.id);
       await this._persist();
       this._notify();
-      console.log(`[Queue] ✅ Synced ${action.type}`);
     } catch (error) {
       const kind = classifyError(error);
       const msg = error instanceof Error ? error.message : String(error);
@@ -168,14 +158,12 @@ export class NetworkQueue {
           status: 'failed',
           lastError: `[${kind}] ${msg}`,
         });
-        console.warn(`[Queue] ❌ Non-retryable ${action.type}: ${msg}`);
       } else if (action.retryCount >= action.maxRetries) {
         // Exhausted all retries
         this._updateInMemory(action.id, {
           status: 'failed',
           lastError: `Max retries (${action.maxRetries}) exceeded. ${msg}`,
         });
-        console.warn(`[Queue] ❌ Max retries exceeded for ${action.type}`);
       } else {
         // Schedule next retry with backoff
         const delay = getNextRetryDelay(action.retryCount);
@@ -185,10 +173,6 @@ export class NetworkQueue {
           nextRetryAt: Date.now() + delay,
           lastError: msg,
         });
-        console.log(
-          `[Queue] ⏳ Retry ${action.type} in ${(delay / 1000).toFixed(1)}s` +
-          ` (attempt ${action.retryCount + 1}/${action.maxRetries})`,
-        );
       }
 
       await this._persist();
@@ -217,12 +201,8 @@ export class NetworkQueue {
       this._queue = parsed.map((a) =>
         a.status === 'syncing' ? { ...a, status: 'pending' as const } : a,
       );
-      console.log(
-        `[Queue] Loaded ${this._queue.length} action(s) from storage`,
-      );
       this._notify();
     } catch (e) {
-      console.error('[Queue] Failed to load from storage:', e);
       this._queue = [];
     }
   }
@@ -234,7 +214,6 @@ export class NetworkQueue {
         JSON.stringify(this._queue),
       );
     } catch (e) {
-      console.error('[Queue] Failed to persist:', e);
     }
   }
 

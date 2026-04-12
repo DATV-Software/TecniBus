@@ -9,7 +9,6 @@ let ImagePicker: any = null;
 try {
   ImagePicker = require('react-native-image-crop-picker').default;
 } catch (e) {
-  console.warn('⚠️ react-native-image-crop-picker no disponible. Necesitas un development build para usar esta feature.');
 }
 
 /**
@@ -38,10 +37,8 @@ export async function pickImageFromGallery(): Promise<string | null> {
     return image.path;
   } catch (error: any) {
     if (error.code === 'E_PICKER_CANCELLED') {
-      console.log('🚫 Usuario canceló selección');
       return null;
     }
-    console.error('❌ Error seleccionando imagen:', error);
     return null;
   }
 }
@@ -72,10 +69,8 @@ export async function takePhotoWithCamera(): Promise<string | null> {
     return image.path;
   } catch (error: any) {
     if (error.code === 'E_PICKER_CANCELLED') {
-      console.log('🚫 Usuario canceló captura');
       return null;
     }
-    console.error('❌ Error tomando foto:', error);
     return null;
   }
 }
@@ -88,7 +83,6 @@ export async function takePhotoWithCamera(): Promise<string | null> {
  */
 export async function uploadAvatar(uri: string, userId: string): Promise<string | null> {
   try {
-    console.log('📤 Preparando subida desde:', uri);
 
     // Leer archivo como base64 (usar string literal en lugar de enum)
     const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -110,7 +104,6 @@ export async function uploadAvatar(uri: string, userId: string): Promise<string 
     // Generar nombre único del archivo
     const fileName = `${userId}-${Date.now()}.${fileExt}`;
 
-    console.log('📤 Subiendo avatar:', fileName, 'tipo:', mimeType, 'tamaño:', byteArray.length, 'bytes');
 
     // Subir a Supabase Storage
     const { data, error } = await supabase.storage
@@ -121,7 +114,6 @@ export async function uploadAvatar(uri: string, userId: string): Promise<string 
       });
 
     if (error) {
-      console.error('❌ Error subiendo avatar:', error);
       return null;
     }
 
@@ -130,10 +122,8 @@ export async function uploadAvatar(uri: string, userId: string): Promise<string 
       .from(BUCKET_NAME)
       .getPublicUrl(fileName);
 
-    console.log('✅ Avatar subido:', publicUrl);
     return publicUrl;
   } catch (error) {
-    console.error('❌ Error en uploadAvatar:', error);
     return null;
   }
 }
@@ -149,14 +139,11 @@ export async function updateProfileAvatar(userId: string, avatarUrl: string): Pr
       .eq('id', userId);
 
     if (error) {
-      console.error('❌ Error actualizando avatar en BD:', error);
       return false;
     }
 
-    console.log('✅ Avatar actualizado en BD');
     return true;
   } catch (error) {
-    console.error('❌ Error en updateProfileAvatar:', error);
     return false;
   }
 }
@@ -175,12 +162,9 @@ export async function deleteOldAvatar(avatarUrl: string): Promise<void> {
       .remove([fileName]);
 
     if (error) {
-      console.warn('⚠️ No se pudo eliminar avatar anterior:', error);
     } else {
-      console.log('🗑️ Avatar anterior eliminado');
     }
   } catch (error) {
-    console.warn('⚠️ Error eliminando avatar anterior:', error);
   }
 }
 
@@ -215,7 +199,6 @@ export async function changeAvatar(
 
     return { success: true, avatarUrl };
   } catch (error) {
-    console.error('❌ Error en changeAvatar:', error);
     return { success: false, error: 'Error inesperado' };
   }
 }

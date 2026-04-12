@@ -43,7 +43,6 @@ export async function getRecorridosHoy(idChofer: string): Promise<RecorridoChofe
     });
 
     if (error) {
-      console.error('❌ Error obteniendo recorridos del día:', error);
       throw error;
     }
 
@@ -68,7 +67,6 @@ export async function getRecorridosHoy(idChofer: string): Promise<RecorridoChofe
       estado_ruta: r.estado_ruta || 'activa',
     }));
   } catch (error) {
-    console.error('❌ Error en getRecorridosHoy:', error);
     return [];
   }
 }
@@ -85,13 +83,11 @@ export async function getAsignacionesChofer(idChofer: string): Promise<Asignacio
       .order('hora_inicio', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo asignaciones del chofer:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en getAsignacionesChofer:', error);
     return [];
   }
 }
@@ -116,14 +112,11 @@ export async function createAsignacion(dto: CreateAsignacionDto): Promise<Asigna
       .single();
 
     if (error) {
-      console.error('❌ Error creando asignación:', error);
       throw error;
     }
 
-    console.log('✅ Asignación creada:', data);
     return data as AsignacionRuta;
   } catch (error) {
-    console.error('❌ Error en createAsignacion:', error);
     return null;
   }
 }
@@ -142,14 +135,11 @@ export async function updateAsignacion(
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error actualizando asignación:', error);
       throw error;
     }
 
-    console.log('✅ Asignación actualizada:', id);
     return true;
   } catch (error) {
-    console.error('❌ Error en updateAsignacion:', error);
     return false;
   }
 }
@@ -165,14 +155,11 @@ export async function desactivarAsignacion(id: string): Promise<boolean> {
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error desactivando asignación:', error);
       throw error;
     }
 
-    console.log('✅ Asignación desactivada:', id);
     return true;
   } catch (error) {
-    console.error('❌ Error en desactivarAsignacion:', error);
     return false;
   }
 }
@@ -188,14 +175,11 @@ export async function deleteAsignacion(id: string): Promise<boolean> {
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error eliminando asignación:', error);
       throw error;
     }
 
-    console.log('✅ Asignación eliminada:', id);
     return true;
   } catch (error) {
-    console.error('❌ Error en deleteAsignacion:', error);
     return false;
   }
 }
@@ -210,13 +194,11 @@ export async function esHoraRecorrido(idAsignacion: string): Promise<boolean> {
     });
 
     if (error) {
-      console.error('❌ Error verificando hora de recorrido:', error);
       return false;
     }
 
     return data || false;
   } catch (error) {
-    console.error('❌ Error en esHoraRecorrido:', error);
     return false;
   }
 }
@@ -234,13 +216,11 @@ export async function getAsignacionesRuta(idRuta: string): Promise<AsignacionRut
       .order('hora_inicio', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo asignaciones de la ruta:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en getAsignacionesRuta:', error);
     return [];
   }
 }
@@ -292,7 +272,6 @@ export async function getChoferDeRuta(
     if (!id) return null;
     return { id, nombre: nombre || '' };
   } catch (error) {
-    console.error('❌ Error en getChoferDeRuta:', error);
     return null;
   }
 }
@@ -344,7 +323,6 @@ export async function getDatosAsignaciones(): Promise<{
 
     return { choferes, rutas: rutasResult.data || [], busetas };
   } catch (error) {
-    console.error('❌ Error en getDatosAsignaciones:', error);
     return { choferes: [], rutas: [], busetas: [] };
   }
 }

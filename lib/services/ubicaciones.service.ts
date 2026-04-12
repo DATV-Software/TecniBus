@@ -46,18 +46,11 @@ export async function guardarUbicacion(
     });
 
     if (error) {
-      console.error('❌ Error guardando ubicación:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      });
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('❌ Error en guardarUbicacion:', error);
     return false;
   }
 }
@@ -74,14 +67,12 @@ export async function getUltimaUbicacion(
     });
 
     if (error) {
-      console.error('❌ Error obteniendo última ubicación:', error);
       return null;
     }
 
     const ubicacion = Array.isArray(data) && data.length > 0 ? data[0] : null;
     return ubicacion || null;
   } catch (error) {
-    console.error('❌ Error en getUltimaUbicacion:', error);
     return null;
   }
 }

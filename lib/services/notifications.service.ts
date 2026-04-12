@@ -37,26 +37,21 @@ export async function getNotificationPermissionStatus(): Promise<'granted' | 'de
 export async function registerForPushNotifications(): Promise<string | null> {
   // Solo funciona en dispositivos físicos
   if (!Device.isDevice) {
-    console.log('📱 Push: No es dispositivo físico, saltando registro');
     return null;
   }
 
   try {
     // Verificar permisos existentes
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    console.log('📱 Push: Permisos actuales:', existingStatus);
     let finalStatus = existingStatus;
 
     // Si no hay permisos, solicitarlos
     if (existingStatus !== 'granted') {
-      console.log('📱 Push: Solicitando permisos...');
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
-      console.log('📱 Push: Resultado solicitud permisos:', status);
     }
 
     if (finalStatus !== 'granted') {
-      console.log('📱 Push: Permisos denegados, no se puede registrar');
       return null;
     }
 
@@ -65,25 +60,20 @@ export async function registerForPushNotifications(): Promise<string | null> {
       Constants.expoConfig?.extra?.eas?.projectId ||
       '4132942f-bfce-4c85-82e2-fb5127ae8fea';
 
-    console.log('📱 Push: Obteniendo token con projectId:', projectId);
 
     const tokenData = await Notifications.getExpoPushTokenAsync({
       projectId,
     });
 
     const pushToken = tokenData.data;
-    console.log('📱 Push: Token obtenido:', pushToken);
 
     // Guardar el token en Supabase
-    console.log('📱 Push: Guardando token en Supabase...');
     const { data: rpcResult, error } = await supabase.rpc('update_push_token', {
       p_push_token: pushToken,
     });
 
     if (error) {
-      console.error('📱 Push: Error guardando token en DB:', error.message, error.code);
     } else {
-      console.log('📱 Push: Token guardado en Supabase, resultado:', rpcResult);
     }
 
     // Configurar canal de notificaciones en Android
@@ -93,11 +83,8 @@ export async function registerForPushNotifications(): Promise<string | null> {
 
     return pushToken;
   } catch (error) {
-    console.error('📱 Push: ERROR en registro:', error);
     // Mostrar más detalle del error
     if (error instanceof Error) {
-      console.error('📱 Push: Mensaje:', error.message);
-      console.error('📱 Push: Stack:', error.stack);
     }
     return null;
   }
@@ -132,14 +119,11 @@ export async function clearPushToken(): Promise<boolean> {
     const { error } = await supabase.rpc('clear_push_token');
 
     if (error) {
-      console.error('Error eliminando push token:', error);
       return false;
     }
 
-    console.log('Push token eliminado');
     return true;
   } catch (error) {
-    console.error('Error en clearPushToken:', error);
     return false;
   }
 }
@@ -163,7 +147,6 @@ export async function sendPushToStudentParent(
       },
     });
   } catch (error) {
-    console.error('Error en sendPushToStudentParent:', error);
   }
 }
 
@@ -194,14 +177,11 @@ export async function sendPushToParents(
     );
 
     if (error) {
-      console.error('Error invocando Edge Function:', error);
       return { success: false, error: error.message };
     }
 
-    console.log('Notificaciones enviadas:', result);
     return { success: true, sent: result?.sent || 0 };
   } catch (error) {
-    console.error('Error en sendPushToParents:', error);
     return { success: false, error: String(error) };
   }
 }

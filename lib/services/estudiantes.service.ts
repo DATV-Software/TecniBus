@@ -98,7 +98,6 @@ export async function getEstudiantes(): Promise<Estudiante[]> {
       .order('nombre', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo estudiantes:', error);
       throw error;
     }
 
@@ -127,7 +126,6 @@ export async function getEstudiantes(): Promise<Estudiante[]> {
 
     return estudiantes;
   } catch (error) {
-    console.error('❌ Error en getEstudiantes:', error);
     return [];
   }
 }
@@ -166,7 +164,6 @@ export async function searchEstudiantes(query: string): Promise<Estudiante[]> {
       .order('apellido', { ascending: true });
 
     if (error) {
-      console.error('❌ Error buscando estudiantes:', error);
       throw error;
     }
 
@@ -192,7 +189,6 @@ export async function searchEstudiantes(query: string): Promise<Estudiante[]> {
       } : undefined,
     }));
   } catch (error) {
-    console.error('❌ Error en searchEstudiantes:', error);
     return [];
   }
 }
@@ -236,13 +232,11 @@ export async function createEstudiante(dto: CreateEstudianteDto): Promise<Estudi
       .single();
 
     if (error) {
-      console.error('❌ Error creando estudiante:', error);
       throw error;
     }
 
     return data as unknown as Estudiante;
   } catch (error) {
-    console.error('❌ Error en createEstudiante:', error);
     return null;
   }
 }
@@ -268,13 +262,11 @@ export async function updateEstudiante(
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error actualizando estudiante:', error);
       throw error;
     }
 
     return true;
   } catch (error) {
-    console.error('❌ Error en updateEstudiante:', error);
     return false;
   }
 }
@@ -290,13 +282,11 @@ export async function deleteEstudiante(id: string): Promise<boolean> {
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error eliminando estudiante:', error);
       throw error;
     }
 
     return true;
   } catch (error) {
-    console.error('❌ Error en deleteEstudiante:', error);
     return false;
   }
 }
@@ -320,7 +310,6 @@ export async function getPadresParaAsignar(): Promise<Array<{
       .order('nombre', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo padres:', error);
       throw error;
     }
 
@@ -331,7 +320,6 @@ export async function getPadresParaAsignar(): Promise<Array<{
       nombreCompleto: `${padre.nombre} ${padre.apellido}`,
     }));
   } catch (error) {
-    console.error('❌ Error en getPadresParaAsignar:', error);
     return [];
   }
 }
@@ -350,13 +338,11 @@ export async function getRutasDisponibles(): Promise<Array<{
       .order('nombre', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo rutas:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en getRutasDisponibles:', error);
     return [];
   }
 }
@@ -388,7 +374,6 @@ export async function getParadasDisponibles(): Promise<Array<{
       .order('nombre', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo paradas:', error);
       throw error;
     }
 
@@ -402,7 +387,6 @@ export async function getParadasDisponibles(): Promise<Array<{
       } : null,
     }));
   } catch (error) {
-    console.error('❌ Error en getParadasDisponibles:', error);
     return [];
   }
 }

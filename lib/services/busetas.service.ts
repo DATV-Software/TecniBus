@@ -24,13 +24,11 @@ export async function getBusetas(): Promise<Buseta[]> {
       .order('placa', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo busetas:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en getBusetas:', error);
     return [];
   }
 }
@@ -47,13 +45,11 @@ export async function searchBusetas(query: string): Promise<Buseta[]> {
       .order('placa', { ascending: true });
 
     if (error) {
-      console.error('❌ Error buscando busetas:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en searchBusetas:', error);
     return [];
   }
 }
@@ -73,13 +69,11 @@ export async function createBuseta(dto: CreateBusetaDto): Promise<Buseta | null>
       .single();
 
     if (error) {
-      console.error('❌ Error creando buseta:', error);
       throw error;
     }
 
     return data;
   } catch (error) {
-    console.error('❌ Error en createBuseta:', error);
     return null;
   }
 }
@@ -103,13 +97,11 @@ export async function updateBuseta(
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error actualizando buseta:', error);
       throw error;
     }
 
     return true;
   } catch (error) {
-    console.error('❌ Error en updateBuseta:', error);
     return false;
   }
 }
@@ -128,7 +120,6 @@ export async function deleteBuseta(id: string): Promise<{ success: boolean; erro
       .limit(1);
 
     if (choferesError) {
-      console.error('❌ Error verificando choferes:', choferesError);
       throw choferesError;
     }
 
@@ -146,13 +137,11 @@ export async function deleteBuseta(id: string): Promise<{ success: boolean; erro
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error eliminando buseta:', error);
       throw error;
     }
 
     return { success: true };
   } catch (error) {
-    console.error('❌ Error en deleteBuseta:', error);
     return { success: false, error: 'Error al eliminar la buseta' };
   }
 }

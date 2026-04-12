@@ -65,13 +65,11 @@ export async function getRutas(): Promise<Ruta[]> {
       .order('nombre', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo rutas:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en getRutas:', error);
     return [];
   }
 }
@@ -95,7 +93,6 @@ export async function getRutaById(id: string): Promise<Ruta | null> {
       .single();
 
     if (error) {
-      console.error('❌ Error obteniendo ruta:', error);
       throw error;
     }
 
@@ -107,7 +104,6 @@ export async function getRutaById(id: string): Promise<Ruta | null> {
       paradas,
     };
   } catch (error) {
-    console.error('❌ Error en getRutaById:', error);
     return null;
   }
 }
@@ -129,13 +125,11 @@ export async function createRuta(dto: CreateRutaDto): Promise<Ruta | null> {
       .single();
 
     if (error) {
-      console.error('❌ Error creando ruta:', error);
       throw error;
     }
 
     return data;
   } catch (error) {
-    console.error('❌ Error en createRuta:', error);
     return null;
   }
 }
@@ -161,13 +155,11 @@ export async function updateRuta(
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error actualizando ruta:', error);
       throw error;
     }
 
     return true;
   } catch (error) {
-    console.error('❌ Error en updateRuta:', error);
     return false;
   }
 }
@@ -185,7 +177,6 @@ export async function deleteRuta(id: string): Promise<{ success: boolean; error?
       .eq('id_ruta', id);
 
     if (paradasError) {
-      console.error('❌ Error obteniendo paradas:', paradasError);
       throw paradasError;
     }
 
@@ -199,7 +190,6 @@ export async function deleteRuta(id: string): Promise<{ success: boolean; error?
         .limit(1);
 
       if (estudiantesError) {
-        console.error('❌ Error verificando estudiantes:', estudiantesError);
         throw estudiantesError;
       }
 
@@ -218,13 +208,11 @@ export async function deleteRuta(id: string): Promise<{ success: boolean; error?
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error eliminando ruta:', error);
       throw error;
     }
 
     return { success: true };
   } catch (error) {
-    console.error('❌ Error en deleteRuta:', error);
     return { success: false, error: 'Error al eliminar la ruta' };
   }
 }
@@ -241,13 +229,11 @@ export async function getParadasByRuta(id_ruta: string): Promise<Parada[]> {
       .order('nombre', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo paradas:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en getParadasByRuta:', error);
     return [];
   }
 }
@@ -270,13 +256,11 @@ export async function createParada(dto: CreateParadaDto): Promise<Parada | null>
       .single();
 
     if (error) {
-      console.error('❌ Error creando parada:', error);
       throw error;
     }
 
     return data;
   } catch (error) {
-    console.error('❌ Error en createParada:', error);
     return null;
   }
 }
@@ -302,13 +286,11 @@ export async function updateParada(
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error actualizando parada:', error);
       throw error;
     }
 
     return true;
   } catch (error) {
-    console.error('❌ Error en updateParada:', error);
     return false;
   }
 }
@@ -324,13 +306,11 @@ export async function deleteParada(id: string): Promise<boolean> {
       .eq('id', id);
 
     if (error) {
-      console.error('❌ Error eliminando parada:', error);
       throw error;
     }
 
     return true;
   } catch (error) {
-    console.error('❌ Error en deleteParada:', error);
     return false;
   }
 }
@@ -350,13 +330,11 @@ export async function getBusetasDisponibles(): Promise<Array<{
       .order('placa', { ascending: true });
 
     if (error) {
-      console.error('❌ Error obteniendo busetas:', error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error('❌ Error en getBusetasDisponibles:', error);
     return [];
   }
 }
@@ -384,7 +362,6 @@ export async function calcularRutaOptimizada(
     const { getOptimizedRouteForDriver } = await import('./directions.service');
 
     if (paradas.length === 0) {
-      console.warn('⚠️ No hay paradas para optimizar');
       return null;
     }
 
@@ -438,7 +415,6 @@ export async function calcularRutaOptimizada(
     );
 
     if (!result) {
-      console.warn('⚠️ No se pudo calcular la ruta, usando orden original de paradas');
       return {
         paradasOptimizadas: paradas,
         distanciaTotal: 0,
@@ -472,7 +448,6 @@ export async function calcularRutaOptimizada(
       polylineCoordinates: result.decodedCoordinates,
     };
   } catch (error) {
-    console.error('❌ Error calculando ruta optimizada:', error);
     // Retornar paradas en orden original en caso de error
     return {
       paradasOptimizadas: paradas,

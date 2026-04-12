@@ -65,7 +65,6 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null, isAtte
         setEtaColegio(null);
       }
     } catch (error) {
-      console.error("Error cargando estado del recorrido:", error);
       setChoferEnCamino(false);
       setPolylineCoordinates([]);
       setUbicacionBus(null);

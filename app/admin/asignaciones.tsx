@@ -91,7 +91,6 @@ export default function AsignacionesScreen() {
       setRutas(rutas);
       setBusetas(busetas);
     } catch (error) {
-      console.error("Error cargando datos:", error);
       showAlert({ title: "Error", message: "No se pudieron cargar los datos", type: "error" });
     } finally {
       setLoading(false);
@@ -106,7 +105,6 @@ export default function AsignacionesScreen() {
       const data = await getAsignacionesChofer(idChofer);
       setAsignaciones(data);
     } catch (error) {
-      console.error("Error cargando asignaciones:", error);
     }
   };
 
@@ -150,7 +148,6 @@ export default function AsignacionesScreen() {
         showAlert({ title: "Error", message: "No se pudo crear la asignación", type: "error" });
       }
     } catch (error) {
-      console.error("Error creando asignación:", error);
       haptic.error();
       showAlert({ title: "Error", message: "Ocurrió un error al crear la asignación", type: "error" });
     }
@@ -192,7 +189,6 @@ export default function AsignacionesScreen() {
       setModalBusetaVisible(false);
       cargarDatos();
     } catch (error) {
-      console.error("Error asignando buseta:", error);
       haptic.error();
       showAlert({ title: "Error", message: "No se pudo asignar la buseta", type: "error" });
     }

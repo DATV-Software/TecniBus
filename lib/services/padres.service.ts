@@ -46,7 +46,6 @@ export async function getMyEstudiantes(): Promise<EstudianteDelPadre[]> {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      console.error('❌ No hay usuario autenticado');
       return [];
     }
 
@@ -54,7 +53,6 @@ export async function getMyEstudiantes(): Promise<EstudianteDelPadre[]> {
     const { data, error } = await supabase.rpc('get_mis_estudiantes_con_ruta');
 
     if (error) {
-      console.error('❌ Error obteniendo mis estudiantes:', error);
       return [];
     }
 
@@ -87,7 +85,6 @@ export async function getMyEstudiantes(): Promise<EstudianteDelPadre[]> {
         : undefined,
     }));
   } catch (error) {
-    console.error('❌ Error en getMyEstudiantes:', error);
     return [];
   }
 }

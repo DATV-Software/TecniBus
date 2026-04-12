@@ -24,7 +24,6 @@ export async function inicializarEstadosGeocercas(
   idChofer: string
 ): Promise<boolean> {
   try {
-    console.log('🔄 Inicializando estados de geocercas...', { idAsignacion, idChofer });
 
     const { error } = await supabase.rpc('inicializar_estados_geocercas', {
       p_id_asignacion: idAsignacion,
@@ -32,14 +31,11 @@ export async function inicializarEstadosGeocercas(
     });
 
     if (error) {
-      console.error('❌ Error inicializando estados:', error);
       return false;
     }
 
-    console.log('✅ Estados de geocercas inicializados');
     return true;
   } catch (error) {
-    console.error('❌ Error en inicializarEstadosGeocercas:', error);
     return false;
   }
 }
@@ -61,7 +57,6 @@ export async function marcarEntradaGeocerca(
   };
 }> {
   try {
-    console.log('📍 Entrada a geocerca:', { idAsignacion, idEstudiante });
 
     const { data, error } = await supabase.rpc('entrada_geocerca', {
       p_id_asignacion: idAsignacion,
@@ -70,14 +65,11 @@ export async function marcarEntradaGeocerca(
     });
 
     if (error) {
-      console.error('❌ Error en entrada_geocerca:', error);
       return { success: false };
     }
 
-    console.log('✅ Entrada registrada, notificación enviada al padre');
     return { success: true, estudiante: data };
   } catch (error) {
-    console.error('❌ Error en marcarEntradaGeocerca:', error);
     return { success: false };
   }
 }
@@ -91,7 +83,6 @@ export async function marcarSalidaGeocerca(
   idChofer: string
 ): Promise<boolean> {
   try {
-    console.log('🚶 Salida de geocerca:', { idAsignacion, idEstudiante });
 
     const { error } = await supabase.rpc('salida_geocerca', {
       p_id_asignacion: idAsignacion,
@@ -100,14 +91,11 @@ export async function marcarSalidaGeocerca(
     });
 
     if (error) {
-      console.error('❌ Error en salida_geocerca:', error);
       return false;
     }
 
-    console.log('✅ Salida registrada, asistencia marcada automáticamente como presente');
     return true;
   } catch (error) {
-    console.error('❌ Error en marcarSalidaGeocerca:', error);
     return false;
   }
 }
@@ -122,11 +110,6 @@ export async function marcarEstudianteCompletado(
   estadoAsistencia: 'presente' | 'ausente' | 'completado'
 ): Promise<boolean> {
   try {
-    console.log('✅ Marcando estudiante como completado:', {
-      idEstudiante,
-      estadoAsistencia,
-    });
-
     const { error } = await supabase.rpc('marcar_estudiante_completado', {
       p_id_asignacion: idAsignacion,
       p_id_estudiante: idEstudiante,
@@ -135,14 +118,11 @@ export async function marcarEstudianteCompletado(
     });
 
     if (error) {
-      console.error('❌ Error en marcar_estudiante_completado:', error);
       return false;
     }
 
-    console.log('✅ Estudiante marcado como completado');
     return true;
   } catch (error) {
-    console.error('❌ Error en marcarEstudianteCompletado:', error);
     return false;
   }
 }
@@ -159,12 +139,10 @@ export async function getSiguienteEstudianteGeocerca(
     });
 
     if (error) {
-      console.error('❌ Error obteniendo siguiente estudiante:', error);
       return null;
     }
 
     if (!data || data.length === 0) {
-      console.log('ℹ️ No hay más estudiantes pendientes');
       return null;
     }
 
@@ -174,7 +152,6 @@ export async function getSiguienteEstudianteGeocerca(
       nombreCompleto: `${estudiante.nombre} ${estudiante.apellido}`,
     };
   } catch (error) {
-    console.error('❌ Error en getSiguienteEstudianteGeocerca:', error);
     return null;
   }
 }
@@ -251,7 +228,6 @@ export async function calcularETAConDirecciones(
     const distDesdeCache = calcularDistancia(latBus, lonBus, cached.lat, cached.lon);
     const tiempoTranscurrido = Date.now() - cached.timestamp;
     if (distDesdeCache < CACHE_DIST_THRESHOLD_M && tiempoTranscurrido < CACHE_TTL_MS) {
-      console.log(`⚡ ETA caché [${cacheKey}]: ${cached.eta} min`);
       return cached.eta;
     }
   }
@@ -268,11 +244,9 @@ export async function calcularETAConDirecciones(
       : calcularETA(latBus, lonBus, latDestino, lonDestino);
 
     etaCache.set(cacheKey, { eta: etaMinutos, timestamp: Date.now(), lat: latBus, lon: lonBus });
-    console.log(`📍 ETA Directions [${cacheKey}]: ${etaMinutos} min`);
     return etaMinutos;
   } catch {
     const fallback = calcularETA(latBus, lonBus, latDestino, lonDestino);
-    console.warn(`⚠️ Directions falló, Haversine [${cacheKey}]: ${fallback} min`);
     return fallback;
   }
 }
@@ -343,11 +317,9 @@ export async function calcularETAsRuta(
 
       const res = { porParada, destinoFinal };
       etaRutaCache.set(cacheKey, { result: res, timestamp: Date.now(), lat: latBus, lon: lonBus });
-      console.log(`📍 ETAs ruta [${cacheKey}]:`, res);
       return res;
     }
   } catch (err) {
-    console.warn(`⚠️ calcularETAsRuta falló, usando Haversine [${cacheKey}]:`, err);
   }
 
   // Fallback: Haversine acumulativo (consistente entre sí)

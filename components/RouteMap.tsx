@@ -113,11 +113,7 @@ function RouteMapComponent({
         if (paradas.length === 0 && mapRef.current) {
           mapRef.current.animateToRegion(region, 500);
         }
-      } catch (err) {
-        console.warn(
-          "RouteMap: no se pudo obtener ubicación del dispositivo",
-          err,
-        );
+      } catch {
       }
     })();
   }, [showsUserLocation]);

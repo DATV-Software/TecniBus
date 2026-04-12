@@ -124,7 +124,6 @@ export function useGPSTracking({
     gpsBufferRef.current = [];
     void AsyncStorage.removeItem(GPS_BUFFER_STORAGE_KEY);
 
-    console.log(`[GPS] Flushing ${points.length} buffered GPS point(s)`);
 
     for (const point of points) {
       try {
@@ -145,7 +144,6 @@ export function useGPSTracking({
         const failedIdx = points.indexOf(point);
         gpsBufferRef.current = points.slice(failedIdx);
         void AsyncStorage.setItem(GPS_BUFFER_STORAGE_KEY, JSON.stringify(gpsBufferRef.current));
-        console.warn('[GPS] Flush interrupted — re-buffering remaining points');
         break;
       }
     }
@@ -184,7 +182,6 @@ export function useGPSTracking({
             const restored = JSON.parse(raw) as GpsFlushPayload['points'];
             if (restored.length > 0) {
               gpsBufferRef.current = restored;
-              console.log(`[GPS] Restored ${restored.length} buffered point(s) from storage`);
               if (networkDetector.isOnline) void flushGpsBuffer();
             }
           }

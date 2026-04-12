@@ -48,7 +48,6 @@ export function useSyncQueue(): SyncQueueState {
     // Subscribe to network state → process queue on reconnect
     const unsubNetwork = networkDetector.subscribe((isOnline) => {
       if (isOnline && networkQueue.pendingCount > 0) {
-        console.log('[useSyncQueue] Network restored — processing queue');
         scheduleProcess();
       }
     });

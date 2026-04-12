@@ -26,7 +26,7 @@ registerAllExecutors();
 Promise.all([
   networkDetector.initialize(),
   networkQueue.load(),
-]).catch((e) => console.error('[Layout] Network init error:', e));
+]).catch(() => {});
 // ─────────────────────────────────────────────────────────────────────────────
 
 const queryClient = new QueryClient({

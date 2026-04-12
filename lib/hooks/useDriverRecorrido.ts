@@ -82,7 +82,6 @@ export function useDriverRecorrido(profileId: string | undefined) {
       const data = await getParadasByRuta(recorridoActual.id_ruta);
       setParadas(data);
     } catch (error) {
-      console.error("Error cargando paradas:", error);
     }
   }, [recorridoActual]);
 
@@ -102,7 +101,6 @@ export function useDriverRecorrido(profileId: string | undefined) {
         }
       }
     } catch (error) {
-      console.error("Error cargando estado del recorrido:", error);
     }
   }, [recorridoActual]);
 
@@ -144,7 +142,7 @@ export function useDriverRecorrido(profileId: string | undefined) {
           .then((polyline) => {
             if (polyline.length > 0) setPolylineCoordinates(polyline);
           })
-          .catch(console.error);
+          .catch(() => {});
       }
     });
     return () => subscription.remove();

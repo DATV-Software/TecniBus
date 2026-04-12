@@ -262,7 +262,7 @@ export default function DriverHomeScreen() {
 
   // ── Effects ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    getUbicacionColegio().then(setUbicacionColegio).catch(console.error);
+    getUbicacionColegio().then(setUbicacionColegio).catch(() => {});
   }, []);
 
   useEffect(() => {

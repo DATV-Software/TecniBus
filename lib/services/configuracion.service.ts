@@ -18,8 +18,6 @@ export async function getUbicacionColegio(): Promise<UbicacionColegio> {
       .single();
 
     if (error || !data) {
-      console.warn('⚠️ No se encontró configuración del colegio, usando default');
-      console.warn('Error:', error);
       return {
         latitud: -2.9, // Cuenca, Ecuador
         longitud: -79.0,
@@ -27,10 +25,8 @@ export async function getUbicacionColegio(): Promise<UbicacionColegio> {
       };
     }
 
-    console.log('✅ Ubicación del colegio obtenida:', data.valor);
     return data.valor as UbicacionColegio;
   } catch (error) {
-    console.error('❌ Error obteniendo ubicación del colegio:', error);
     return {
       latitud: -2.9,
       longitud: -79.0,
@@ -59,14 +55,11 @@ export async function updateUbicacionColegio(
       });
 
     if (error) {
-      console.error('❌ Error guardando ubicación del colegio:', error);
       return false;
     }
 
-    console.log('✅ Ubicación del colegio guardada:', ubicacion);
     return true;
   } catch (error) {
-    console.error('❌ Error en updateUbicacionColegio:', error);
     return false;
   }
 }

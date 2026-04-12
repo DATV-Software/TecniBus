@@ -131,9 +131,6 @@ class NetworkDetector {
     }
 
     if (changed) {
-      console.log(
-        `[NetworkDetector] Connection ${online ? '✅ restored' : '❌ lost'}`,
-      );
       this._listeners.forEach((fn) => fn(online));
     }
   }

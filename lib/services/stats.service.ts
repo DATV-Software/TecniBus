@@ -68,10 +68,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       totalBuses: totalBusesResult.count || 0,
     };
 
-    console.log('✅ Estadísticas cargadas:', stats);
     return stats;
   } catch (error) {
-    console.error('❌ Error obteniendo estadísticas:', error);
 
     // Retornar estadísticas en 0 en caso de error
     return {
@@ -113,7 +111,6 @@ export async function getDetailedStats() {
       driversWithoutBus: driversWithoutBusCount || 0,
     };
   } catch (error) {
-    console.error('❌ Error obteniendo estadísticas detalladas:', error);
     return {
       studentsByRoute: [],
       driversWithBus: 0,

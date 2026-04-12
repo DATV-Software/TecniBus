@@ -27,7 +27,6 @@ export async function updateProfile(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('❌ Error obteniendo usuario:', authError);
       return {
         success: false,
         error: 'No hay sesión activa',
@@ -60,17 +59,14 @@ export async function updateProfile(
       .eq('id', user.id);
 
     if (updateError) {
-      console.error('❌ Error actualizando perfil:', updateError);
       return {
         success: false,
         error: updateError.message || 'Error al actualizar el perfil',
       };
     }
 
-    console.log('✅ Perfil actualizado con éxito');
     return { success: true };
   } catch (err) {
-    console.error('❌ Error inesperado:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Error inesperado',

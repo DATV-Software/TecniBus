@@ -33,7 +33,6 @@ export async function getOrCreateChat(
     p_id_chofer: idChofer,
   });
   if (error) {
-    console.error('❌ getOrCreateChat:', error.message);
     return null;
   }
   return data as string;
@@ -46,7 +45,6 @@ export async function getMensajes(idChat: string): Promise<Mensaje[]> {
     .eq('id_chat', idChat)
     .order('created_at', { ascending: true });
   if (error) {
-    console.error('❌ getMensajes:', error.message);
     return [];
   }
   return (data ?? []) as Mensaje[];
@@ -67,7 +65,6 @@ export async function enviarMensaje(
     contenido,
   });
   if (error) {
-    console.error('❌ enviarMensaje:', error.message);
     return false;
   }
   return true;
@@ -81,7 +78,6 @@ export async function marcarLeidos(idChat: string, idAutor: string): Promise<voi
     .eq('leido', false)
     .neq('id_autor', idAutor);
   if (error) {
-    console.error('❌ marcarLeidos:', error.message);
   }
 }
 
@@ -111,7 +107,6 @@ export async function getChatsPorChofer(idChofer: string): Promise<ChatResumen[]
     p_id_chofer: idChofer,
   });
   if (error) {
-    console.error('❌ getChatsPorChofer:', error.message);
     return [];
   }
   return ((data ?? []) as ChatResumen[]);
@@ -125,7 +120,6 @@ export async function isRecorridoActivo(idAsignacion: string): Promise<boolean> 
     .eq('activo', true)
     .maybeSingle();
   if (error) {
-    console.error('❌ isRecorridoActivo:', error.message);
     return false;
   }
   return data !== null;

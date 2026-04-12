@@ -30,7 +30,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Obtener sesión inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('📍 Sesión inicial:', session ? 'Existe' : 'No existe');
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -45,11 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔄 Auth state changed:', event, 'Session:', session ? 'Existe' : 'No existe');
 
       // Si es un SIGNED_OUT, limpiar todo inmediatamente
       if (event === 'SIGNED_OUT') {
-        console.log('🚪 Evento SIGNED_OUT detectado - limpiando estado');
         setSession(null);
         setUser(null);
         setProfile(null);
@@ -83,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
-      console.log('🔍 Buscando perfil para usuario:', userId);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -92,26 +88,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error('❌ Error cargando perfil:', error);
 
         if (error.code === 'PGRST116') {
-          console.log('⚠️ Perfil no existe, debería crearse automáticamente');
         }
 
         setProfile(null);
       } else {
-        console.log('✅ Perfil cargado correctamente:', data);
         setProfile(data);
 
         // Registrar push token para padres y choferes
         if (data.rol === 'padre' || data.rol === 'chofer') {
           registerForPushNotifications().catch((err) => {
-            console.warn('Error registrando push notifications:', err);
           });
         }
       }
     } catch (error) {
-      console.error('❌ Error inesperado al cargar perfil:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -150,11 +141,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      console.log('🚪 Cerrando sesión...');
 
       // Limpiar push token antes de cerrar sesión
       await clearPushToken().catch((err) => {
-        console.warn('Error limpiando push token:', err);
       });
 
       // Limpiar estado local primero
@@ -164,9 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Luego cerrar sesión en Supabase
       await supabase.auth.signOut();
-      console.log('✅ Sesión cerrada correctamente');
     } catch (error) {
-      console.error('❌ Error cerrando sesión:', error);
     }
   }, []);
 

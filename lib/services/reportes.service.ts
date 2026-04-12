@@ -39,7 +39,6 @@ export async function generarReporteAsistencia(
     );
 
     if (error) {
-      console.error('❌ Error de red/invocación:', error);
       return {
         success: false,
         error: `Error de servidor: ${error.message}`,
@@ -47,14 +46,12 @@ export async function generarReporteAsistencia(
     }
 
     if (!data || data.success !== true) {
-      console.warn('⚠️ La función devolvió un error:', data?.error);
       return {
         success: false,
         error: data?.error || 'No se pudo generar el reporte',
       };
     }
 
-    console.log('✅ Reporte generado con éxito');
     return {
       success: true,
       url: data.url,
@@ -62,7 +59,6 @@ export async function generarReporteAsistencia(
     };
 
   } catch (err) {
-    console.error('❌ Error inesperado generando reporte:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Error inesperado',

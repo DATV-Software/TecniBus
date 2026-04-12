@@ -14,7 +14,6 @@ export const haptic = {
     try {
       await Haptics.selectionAsync();
     } catch (error) {
-      console.warn('[Haptics] Selection failed:', error);
     }
   }
 };
@@ -54,6 +53,5 @@ async function triggerHaptic(type: HapticFeedback) {
     }
   } catch (error) {
     // Silencioso: no bloquear UX si falla haptic
-    console.warn(`[Haptics] Failed to trigger ${type}:`, error);
   }
 }
