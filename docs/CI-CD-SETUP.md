@@ -16,39 +16,61 @@ TecniBus now has automated quality gates:
 # 1. Make changes
 git add .
 
-# 2. Commit (pre-commit hook validates ESLint + TypeScript)
-#    - ESLint: non-blocking warnings allowed, errors halt commit
-#    - TypeScript: blocking errors halt commit
+# 2. Commit (pre-commit hook validates CODE CHANGES)
+#    - ESLint: non-blocking, reports but allows warnings
+#    - TypeScript: BLOCKING, errors halt commit
+#    → Prevents committing code with type errors
 git commit -m "feat: description"
 
-# 3. Use /commit skill (validates & updates memory if needed)
+# 3. Use /commit skill (validates & updates MEMORY if needed)
 /commit
 # → Claude analyzes code changes
-# → Proposes memory updates
+# → Proposes memory updates if relevant
 # → You confirm Y/n
 # → Auto-updates memory files if yes
 # → Final semantic commits created
 
-# 4. Push to develop (pre-push hook validates memory structure)
+# 4. Push to develop (pre-push hook validates MEMORY STRUCTURE)
+#    - Checks: frontmatter, YAML syntax, timestamps, dead links
+#    - Scope: ONLY memory files (local ~/.claude/...)
+#    → Prevents pushing if memory files are malformed
 git push origin develop
 
 # 5. GitHub Actions CI runs automatically (all branches)
-# → ESLint (non-blocking, warnings reported)
-# → TypeScript (blocker, breaks build if errors)
-# → Memory validation (non-blocking, local-only)
-# → Build artifact upload
-# → Results visible on GitHub PR
+#    - ESLint validation (non-blocking, warnings allowed)
+#    - TypeScript validation (BLOCKING, errors fail build)
+#    - Build artifact upload
+#    → Results visible on GitHub PR
+#
+# NOTE: Memory validation is LOCAL-ONLY (pre-push hook)
+#       Memory files don't exist in GitHub Actions
 
 # 6. When ready to release, create PR develop → main
-# → You review code
+# → Review code and memory updates
 # → You merge
 
-# 7. Merge triggers GitHub Actions CI on main
+# 7. Merge to main triggers GitHub Actions CI
 # → CI passes → Deploy workflow triggers automatically
 # → eas update runs automatically
 # → Production updated instantly
 # → Zero manual deployment steps
 ```
+
+## Architecture: Two-Layer Local Validation
+
+### Layer 1: Pre-Commit Hook (CODE VALIDATION)
+- Validates: staged code files only
+- Tools: ESLint (non-blocking), TypeScript (blocking)
+- Purpose: catch type errors before committing
+- Scope: only your new/modified code
+
+### Layer 2: Pre-Push Hook (MEMORY VALIDATION)
+- Validates: memory file structure only
+- Tools: YAML parser, frontmatter checker, timestamp validator
+- Purpose: ensure memory files are well-formed before syncing
+- Scope: only `~/.claude/projects/.../memory/` directory
+
+Both hooks are **LOCAL-ONLY** and cannot interfere with each other because they validate different artifact types.
 
 ## Commands
 
