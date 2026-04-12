@@ -12,7 +12,7 @@ import { useToast } from "@/lib/hooks/useToast";
 import { QUERY_KEYS } from "@/lib/constants/queryKeys";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Bus, Plus, Upload, Users } from "lucide-react-native";
+import { Bus, Upload, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,

@@ -327,7 +327,7 @@ export default function ParentProfileScreen() {
         {isEditing && (
           <View className="bg-yellow-100 rounded-xl p-4 mb-6 border-2 border-yellow-200">
             <Text className="text-yellow-800 text-sm text-center font-semibold">
-              Presiona "Guardar" para aplicar los cambios
+              Presiona &quot;Guardar&quot; para aplicar los cambios
             </Text>
           </View>
         )}

@@ -16,7 +16,7 @@ type Props = {
 
 export function AlertBox({ visible, options, onDismiss }: Props) {
   const { title, message, type = "info", buttons } = options;
-  const { accent, bg } = TYPE_COLORS[type];
+  const { accent } = TYPE_COLORS[type];
 
   const resolvedButtons =
     buttons && buttons.length > 0

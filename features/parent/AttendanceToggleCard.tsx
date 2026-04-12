@@ -1,7 +1,6 @@
 import StatusBadge from "@/components/StatusBadge";
 import { CheckCircle2, XCircle } from "lucide-react-native";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import { Colors } from "@/lib/constants/colors";
 
 interface AttendanceToggleCardProps {
   isAttending: boolean;

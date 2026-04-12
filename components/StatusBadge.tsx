@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { CheckCircle2, XCircle, LucideIcon } from 'lucide-react-native';
+import { CheckCircle2, XCircle } from 'lucide-react-native';
 
 type StatusBadgeProps = {
   status: 'attending' | 'absent' | 'active' | 'inactive' | 'success' | 'warning' | 'pending';
