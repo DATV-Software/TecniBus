@@ -6,6 +6,6 @@ try {
   console.log('Checking TypeScript types...');
   execSync('npx tsc --noEmit', { stdio: 'inherit' });
   process.exit(0);
-} catch (error) {
+} catch (_error) {
   process.exit(1);
 }

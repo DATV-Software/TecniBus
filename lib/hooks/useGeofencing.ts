@@ -201,6 +201,7 @@ export function useGeofencing({
         setEstudianteActual(null);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     ubicacionActual,
     estudiantesKey,

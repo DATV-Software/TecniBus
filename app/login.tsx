@@ -1,5 +1,4 @@
 import * as LocalAuthentication from "expo-local-authentication";
-import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { Fingerprint, Lock, Mail } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
@@ -29,7 +28,6 @@ import { Toast } from "../components";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginScreen() {
-  const router = useRouter();
   const { showAlert } = useAlert();
   const { signIn, signOut, user, profile, loading: authLoading } = useAuth();
   const shadow = useShadow("lg");
@@ -102,6 +100,7 @@ export default function LoginScreen() {
       showSub.remove();
       hideSub.remove();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* =====================
@@ -116,7 +115,7 @@ export default function LoginScreen() {
       // Verificar si hay credenciales guardadas
       const savedEmail = await SecureStore.getItemAsync("userEmail");
       setHasSavedCredentials(!!savedEmail);
-    } catch (error) {
+    } catch (_error) {
       setIsBiometricSupported(false);
     }
   };
@@ -158,7 +157,7 @@ export default function LoginScreen() {
       } else {
         haptic.warning();
       }
-    } catch (error) {
+    } catch (_error) {
       showToast("Error en autenticación biométrica", "error");
       haptic.error();
     }
@@ -286,11 +285,11 @@ export default function LoginScreen() {
             );
             await SecureStore.setItemAsync("userPassword", password);
             setHasSavedCredentials(true);
-          } catch (error) {
+          } catch (_error) {
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       setIsLoading(false);
       showToast("Error inesperado. Intenta nuevamente", "error");
       haptic.error();
@@ -310,7 +309,7 @@ export default function LoginScreen() {
       setPassword("");
       showToast("Sesión limpiada completamente", "success");
       haptic.success();
-    } catch (error) {
+    } catch (_error) {
       showToast("Error al limpiar sesión", "error");
     }
   };

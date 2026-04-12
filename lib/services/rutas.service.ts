@@ -69,7 +69,7 @@ export async function getRutas(): Promise<Ruta[]> {
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -103,7 +103,7 @@ export async function getRutaById(id: string): Promise<Ruta | null> {
       ...data,
       paradas,
     };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -129,7 +129,7 @@ export async function createRuta(dto: CreateRutaDto): Promise<Ruta | null> {
     }
 
     return data;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -159,7 +159,7 @@ export async function updateRuta(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -212,7 +212,7 @@ export async function deleteRuta(id: string): Promise<{ success: boolean; error?
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Error al eliminar la ruta' };
   }
 }
@@ -233,7 +233,7 @@ export async function getParadasByRuta(id_ruta: string): Promise<Parada[]> {
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -260,7 +260,7 @@ export async function createParada(dto: CreateParadaDto): Promise<Parada | null>
     }
 
     return data;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -290,7 +290,7 @@ export async function updateParada(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -310,7 +310,7 @@ export async function deleteParada(id: string): Promise<boolean> {
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -318,11 +318,11 @@ export async function deleteParada(id: string): Promise<boolean> {
 /**
  * Obtiene busetas disponibles para asignación
  */
-export async function getBusetasDisponibles(): Promise<Array<{
+export async function getBusetasDisponibles(): Promise<{
   id: string;
   placa: string;
   capacidad: number;
-}>> {
+}[]> {
   try {
     const { data, error } = await supabase
       .from('busetas')
@@ -334,7 +334,7 @@ export async function getBusetasDisponibles(): Promise<Array<{
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -447,7 +447,7 @@ export async function calcularRutaOptimizada(
       duracionTotal: result.duration,
       polylineCoordinates: result.decodedCoordinates,
     };
-  } catch (error) {
+  } catch (_error) {
     // Retornar paradas en orden original en caso de error
     return {
       paradasOptimizadas: paradas,

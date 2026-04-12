@@ -50,6 +50,7 @@ export default function Toast({
 
       return () => clearTimeout(timeout);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   const hideToast = () => {

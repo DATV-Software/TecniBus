@@ -68,7 +68,7 @@ export interface AsistenciaVueltaPayload {
   idChofer: string;
   ausentesIds: string[];
   /** Serializable subset of EstudianteConAsistencia */
-  todosLosEstudiantes: Array<{
+  todosLosEstudiantes: {
     id: string;
     nombre: string;
     apellido: string;
@@ -76,7 +76,7 @@ export interface AsistenciaVueltaPayload {
     parada: { id: string; nombre: string | null } | null;
     estado: string;
     notas?: string | null;
-  }>;
+  }[];
 }
 
 export interface RecorridoIniciarPayload {
@@ -88,7 +88,7 @@ export interface RecorridoFinalizarPayload {
 }
 
 export interface GpsFlushPayload {
-  points: Array<{
+  points: {
     idAsignacion: string;
     idChofer: string;
     latitud: number;
@@ -97,7 +97,7 @@ export interface GpsFlushPayload {
     precisionGps?: number;
     heading?: number;
     capturedAt: number; // Unix ms
-  }>;
+  }[];
 }
 
 // ─── Error Classification ─────────────────────────────────────────────────────

@@ -117,6 +117,7 @@ function RouteMapComponent({
       } catch {
       }
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showsUserLocation]);
 
   // Calcular region basada en paradas
@@ -187,6 +188,7 @@ function RouteMapComponent({
       },
       { duration: 1500 },
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ubicacionChofer?.latitude, ubicacionChofer?.longitude, ubicacionChofer?.bearing, mostrarUbicacionChofer, recorridoActivo]);
 
   // Resetear pitch y zoom al finalizar recorrido
@@ -195,6 +197,7 @@ function RouteMapComponent({
       lastAnimatedPositionRef.current = null;
       mapRef.current.animateCamera({ pitch: 0, zoom: 15 }, { duration: 800 });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recorridoActivo]);
 
   // Auto-centrar en el bus cuando se mueve (vista padre)

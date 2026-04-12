@@ -22,6 +22,6 @@ export async function notificarPadre(
         nombre_estudiante: nombreEstudiante,
       },
     });
-  } catch (error) {
+  } catch (_error) {
   }
 }

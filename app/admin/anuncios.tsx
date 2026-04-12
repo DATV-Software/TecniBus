@@ -129,7 +129,7 @@ export default function AnunciosScreen() {
       });
 
       haptic.success();
-    } catch (error) {
+    } catch (_error) {
       showAlert({
         title: "Error",
         message: "Ocurrió un error inesperado. Intenta nuevamente.",

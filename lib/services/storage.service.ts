@@ -7,8 +7,9 @@ const BUCKET_NAME = 'avatares';
 // Importación condicional para evitar error en dev mode sin EAS build
 let ImagePicker: any = null;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   ImagePicker = require('react-native-image-crop-picker').default;
-} catch (e) {
+} catch (_e) {
 }
 
 /**
@@ -106,7 +107,7 @@ export async function uploadAvatar(uri: string, userId: string): Promise<string 
 
 
     // Subir a Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(fileName, byteArray, {
         contentType: mimeType,
@@ -123,7 +124,7 @@ export async function uploadAvatar(uri: string, userId: string): Promise<string 
       .getPublicUrl(fileName);
 
     return publicUrl;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -143,7 +144,7 @@ export async function updateProfileAvatar(userId: string, avatarUrl: string): Pr
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -164,7 +165,7 @@ export async function deleteOldAvatar(avatarUrl: string): Promise<void> {
     if (error) {
     } else {
     }
-  } catch (error) {
+  } catch (_error) {
   }
 }
 
@@ -198,7 +199,7 @@ export async function changeAvatar(
     }
 
     return { success: true, avatarUrl };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Error inesperado' };
   }
 }

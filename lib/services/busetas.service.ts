@@ -28,7 +28,7 @@ export async function getBusetas(): Promise<Buseta[]> {
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -49,7 +49,7 @@ export async function searchBusetas(query: string): Promise<Buseta[]> {
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -73,7 +73,7 @@ export async function createBuseta(dto: CreateBusetaDto): Promise<Buseta | null>
     }
 
     return data;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -101,7 +101,7 @@ export async function updateBuseta(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -141,7 +141,7 @@ export async function deleteBuseta(id: string): Promise<{ success: boolean; erro
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Error al eliminar la buseta' };
   }
 }

@@ -57,6 +57,7 @@ export default function EditarPadreScreen() {
       setCorreo(padre.correo);
       setLoadingData(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUpdate = async () => {

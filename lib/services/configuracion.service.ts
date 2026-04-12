@@ -26,7 +26,7 @@ export async function getUbicacionColegio(): Promise<UbicacionColegio> {
     }
 
     return data.valor as UbicacionColegio;
-  } catch (error) {
+  } catch (_error) {
     return {
       latitud: -2.9,
       longitud: -79.0,
@@ -59,7 +59,7 @@ export async function updateUbicacionColegio(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }

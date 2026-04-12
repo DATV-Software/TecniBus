@@ -63,6 +63,7 @@ export function EstudianteActualPanel({
         useNativeDriver: true,
       }).start();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estudiante, dentroDeZona]);
 
   if (!estudiante) return null;

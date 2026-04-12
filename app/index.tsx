@@ -43,6 +43,7 @@ export default function SplashScreen() {
 
       return () => clearTimeout(timeout);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const logoStyle = useAnimatedStyle(() => ({

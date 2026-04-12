@@ -90,6 +90,7 @@ export function useParentDerivedState({
       latitude: ubicacionBus.latitud,
       longitude: ubicacionBus.longitud,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [polylineCoordinates, ubicacionBus?.latitud, ubicacionBus?.longitud]);
 
   // ── Timeline events ─────────────────────────────────────────────────────────

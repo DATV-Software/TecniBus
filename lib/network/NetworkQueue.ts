@@ -202,7 +202,7 @@ export class NetworkQueue {
         a.status === 'syncing' ? { ...a, status: 'pending' as const } : a,
       );
       this._notify();
-    } catch (e) {
+    } catch (_e) {
       this._queue = [];
     }
   }
@@ -213,7 +213,7 @@ export class NetworkQueue {
         QUEUE_STORAGE_KEY,
         JSON.stringify(this._queue),
       );
-    } catch (e) {
+    } catch (_e) {
     }
   }
 

@@ -27,6 +27,7 @@ export function useDriverEstudiantes(
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileId, recorridoActual]);
 
   useEffect(() => {

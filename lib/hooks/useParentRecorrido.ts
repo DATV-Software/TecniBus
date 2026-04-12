@@ -13,9 +13,6 @@ import {
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { useCallback, useEffect, useState } from "react";
 
-type BroadcastMsg<T> = { payload: T };
-type RecorridoPayload = { id_asignacion: string };
-
 export function useParentRecorrido(estudiante: EstudianteDelPadre | null, isAttending = true) {
   const [choferEnCamino, setChoferEnCamino] = useState(false);
   const [idAsignacion, setIdAsignacion] = useState<string | null>(null);
@@ -64,7 +61,7 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null, isAtte
         setEstimatedMinutes(null);
         setEtaColegio(null);
       }
-    } catch (error) {
+    } catch (_error) {
       setChoferEnCamino(false);
       setPolylineCoordinates([]);
       setUbicacionBus(null);
@@ -89,6 +86,7 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null, isAtte
     setHoraLlegadaColegio(null);
 
     if (idRuta) cargarEstadoRecorrido();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estudiante?.id]);
 
   // Sincronizar tipoRuta desde el estudiante (disponible inmediatamente, sin query extra)

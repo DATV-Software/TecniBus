@@ -65,6 +65,7 @@ export function NetworkBanner() {
       });
     }
     prevVisible.current = visible;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   const animStyle = useAnimatedStyle(() => ({

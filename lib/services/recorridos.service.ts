@@ -29,7 +29,7 @@ export async function guardarPolylineRuta(
 
     if (error) throw error;
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -76,7 +76,7 @@ export async function iniciarRecorrido(idAsignacion: string): Promise<boolean> {
     ).catch(() => {});
 
     return data || true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -92,7 +92,7 @@ export async function finalizarRecorrido(idAsignacion: string): Promise<boolean>
     await sendBroadcast('recorrido_finalizado', { id_asignacion: idAsignacion, activo: false });
 
     return data || true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -112,7 +112,7 @@ export async function getEstadoRecorrido(
     return estado
       ? { activo: estado.activo || false, hora_inicio: estado.hora_inicio, hora_fin: estado.hora_fin }
       : { activo: false, hora_inicio: null, hora_fin: null };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -138,7 +138,7 @@ export async function getEstadoRecorridoPorRuta(
           eta_paradas: estado.eta_paradas ?? null,
         }
       : { activo: false, hora_inicio: null, hora_fin: null, id_asignacion: null, eta_paradas: null };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

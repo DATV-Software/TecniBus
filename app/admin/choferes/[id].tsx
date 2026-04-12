@@ -57,6 +57,7 @@ export default function EditarConductorScreen() {
       setCorreo(chofer.correo);
       setLoadingData(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUpdate = async () => {

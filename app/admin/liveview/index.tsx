@@ -15,7 +15,7 @@ import {
   Radio,
   User,
 } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,

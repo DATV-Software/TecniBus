@@ -102,11 +102,11 @@ export async function toggleAsistencia(
           destinatario: 'chofer',
         },
       });
-    } catch (error) {
+    } catch (_error) {
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -140,7 +140,7 @@ export async function marcarAusente(
     await notificarPadre(idEstudiante, 'ausente');
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -182,7 +182,7 @@ export async function marcarSubida(
     await notificarPadre(idEstudiante, 'subio', nombreEstudiante);
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -222,7 +222,7 @@ export async function marcarBajada(
     await notificarPadre(idEstudiante, 'bajo', nombreEstudiante);
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -245,14 +245,14 @@ export async function confirmarAsistenciaVuelta(
 
     const existentesMap = await loadAsistenciasDeHoyMap(estudiantesIds);
 
-    const toUpdate: Array<{
+    const toUpdate: {
       id: string;
       estado: EstadoAsistencia;
       notas: string | null;
       modificado_por: string;
-    }> = [];
+    }[] = [];
 
-    const toInsert: Array<{
+    const toInsert: {
       id_estudiante: string;
       id_chofer: string;
       id_ruta: string;
@@ -260,7 +260,7 @@ export async function confirmarAsistenciaVuelta(
       fecha: string;
       modificado_por: string;
       notas: string | null;
-    }> = [];
+    }[] = [];
 
     for (const est of todosLosEstudiantes) {
       const isAusente = ausentesSet.has(est.id);
@@ -286,7 +286,7 @@ export async function confirmarAsistenciaVuelta(
     // Ejecutar insert y updates en paralelo.
     // throwOnError() devuelve un PromiseLike (thenable de PostgREST), no un Promise
     // completo. Usamos PromiseLike<unknown> para el array y Promise.all lo maneja.
-    const ops: Array<PromiseLike<unknown>> = [];
+    const ops: PromiseLike<unknown>[] = [];
 
     if (toInsert.length > 0) {
       ops.push(
@@ -323,7 +323,7 @@ export async function confirmarAsistenciaVuelta(
     await Promise.all(notifOps);
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }

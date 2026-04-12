@@ -14,11 +14,12 @@ try {
     process.exit(0);
   }
 
-  // Run ESLint on staged files (non-blocking to allow pre-existing warnings)
+  // Run ESLint on staged files (blocking — 0 warnings policy)
   try {
-    execSync(`npx eslint ${stagedFiles.join(' ')}`, { stdio: 'inherit' });
+    execSync(`npx eslint ${stagedFiles.join(' ')} --max-warnings 0`, { stdio: 'inherit' });
   } catch (_) {
-    console.log('\n⚠️ ESLint found issues (non-blocking for pre-existing warnings)');
+    console.log('\n❌ ESLint failed. Fix all errors/warnings before committing.');
+    process.exit(1);
   }
 
   process.exit(0);

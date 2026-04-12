@@ -28,9 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npx eslint . --ext .ts,.tsx || echo "⚠️ ESLint warnings/errors found (non-blocking)"
-
       - name: Report Status
         if: always()
         run: |

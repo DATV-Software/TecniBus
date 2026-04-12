@@ -35,7 +35,7 @@ export async function inicializarEstadosGeocercas(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -69,7 +69,7 @@ export async function marcarEntradaGeocerca(
     }
 
     return { success: true, estudiante: data };
-  } catch (error) {
+  } catch (_error) {
     return { success: false };
   }
 }
@@ -95,7 +95,7 @@ export async function marcarSalidaGeocerca(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -122,7 +122,7 @@ export async function marcarEstudianteCompletado(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -151,7 +151,7 @@ export async function getSiguienteEstudianteGeocerca(
       ...estudiante,
       nombreCompleto: `${estudiante.nombre} ${estudiante.apellido}`,
     };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -269,7 +269,7 @@ const etaRutaCache = new Map<string, ETARutaCacheEntry>();
 export async function calcularETAsRuta(
   latBus: number,
   lonBus: number,
-  paradas: Array<{ id: string; latitud: number | string; longitud: number | string }>,
+  paradas: { id: string; latitud: number | string; longitud: number | string }[],
   destino: { latitud: number; longitud: number } | null,
   cacheKey: string,
 ): Promise<{ porParada: Record<string, number>; destinoFinal: number | null }> {
@@ -319,7 +319,7 @@ export async function calcularETAsRuta(
       etaRutaCache.set(cacheKey, { result: res, timestamp: Date.now(), lat: latBus, lon: lonBus });
       return res;
     }
-  } catch (err) {
+  } catch (_err) {
   }
 
   // Fallback: Haversine acumulativo (consistente entre sí)

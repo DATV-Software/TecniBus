@@ -68,7 +68,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
     const pushToken = tokenData.data;
 
     // Guardar el token en Supabase
-    const { data: rpcResult, error } = await supabase.rpc('update_push_token', {
+    const { error } = await supabase.rpc('update_push_token', {
       p_push_token: pushToken,
     });
 
@@ -123,7 +123,7 @@ export async function clearPushToken(): Promise<boolean> {
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -146,7 +146,7 @@ export async function sendPushToStudentParent(
         mensaje_custom: mensaje,
       },
     });
-  } catch (error) {
+  } catch (_error) {
   }
 }
 

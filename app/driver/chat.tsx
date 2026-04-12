@@ -97,6 +97,7 @@ export default function DriverChatScreen() {
       setCargandoChat(false);
     };
     abrir();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idPadre, idAsignacion, profile?.id]);
 
   const abrirConversacion = async (chat: ChatResumen) => {

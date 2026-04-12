@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Re-registrar push token cuando la app vuelve a primer plano
@@ -98,16 +99,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Registrar push token para padres y choferes
         if (data.rol === 'padre' || data.rol === 'chofer') {
-          registerForPushNotifications().catch((err) => {
+          registerForPushNotifications().catch((_err) => {
           });
         }
       }
-    } catch (error) {
+    } catch (_error) {
       setProfile(null);
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   const refreshProfile = useCallback(async () => {
     if (user) {
@@ -143,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
 
       // Limpiar push token antes de cerrar sesión
-      await clearPushToken().catch((err) => {
+      await clearPushToken().catch((_err) => {
       });
 
       // Limpiar estado local primero
@@ -153,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Luego cerrar sesión en Supabase
       await supabase.auth.signOut();
-    } catch (error) {
+    } catch (_error) {
     }
   }, []);
 

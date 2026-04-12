@@ -19,7 +19,7 @@ export function useParentEstudiantes() {
 
   useEffect(() => {
     void loadEstudiantes();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   return {
     estudiantes,

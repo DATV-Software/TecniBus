@@ -44,6 +44,7 @@ export function useGeofencePushNotifications(
       titulo,
       cuerpo,
     ).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id, tipoRuta]);
 
   // Salida: notificar que el estudiante fue recogido/entregado (solo si no fue marcado ausente)
@@ -69,5 +70,6 @@ export function useGeofencePushNotifications(
     }
     prevDentroDeZonaRef.current = dentroDeZona;
     prevEstudianteRef.current = estudianteGeocerca;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dentroDeZona, estudianteGeocerca?.id_estudiante, recorridoActual?.id, tipoRuta]);
 }

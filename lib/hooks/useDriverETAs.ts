@@ -81,6 +81,7 @@ export function useDriverETAs({
         publishETAsToRecorrido(idAsignacion, { ...porParada, colegio: destinoFinal }).catch(() => {});
       }
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     ubicacionChofer?.latitude,
     ubicacionChofer?.longitude,

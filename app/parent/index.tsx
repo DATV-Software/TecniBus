@@ -39,7 +39,6 @@ export default function ParentHomeScreen() {
     estudianteSeleccionado,
     setEstudianteSeleccionado,
     loading,
-    loadEstudiantes,
   } = useParentEstudiantes();
 
   const {
@@ -65,7 +64,7 @@ export default function ParentHomeScreen() {
   } = useParentRecorrido(estudianteSeleccionado, isAttending);
 
   // ── Local state ────────────────────────────────────────────────────────────
-  const [processingAttendance, setProcessingAttendance] = useState(false);
+  const [, setProcessingAttendance] = useState(false);
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [showStudentSelector, setShowStudentSelector] = useState(false);
 

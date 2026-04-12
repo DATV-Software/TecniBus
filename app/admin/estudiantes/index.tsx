@@ -32,7 +32,6 @@ import {
 } from "react-native";
 import Toast from "@/components/Toast";
 import {
-  Estudiante,
   getEstudiantes,
 } from "@/lib/services/estudiantes.service";
 

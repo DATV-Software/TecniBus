@@ -11,7 +11,6 @@ import { haptic } from "@/lib/utils/haptics";
 import { Edit3, MapPin, Plus, Trash2, X } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   Text,
   TouchableOpacity,
@@ -28,7 +27,6 @@ interface RouteMapEditorProps {
   onParadaDeleted: () => void;
 }
 
-const { width } = Dimensions.get("window");
 const MAP_HEIGHT = 320;
 
 // Default to Cuenca, Ecuador

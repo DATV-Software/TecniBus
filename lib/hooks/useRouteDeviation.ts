@@ -65,11 +65,12 @@ export function useRouteDeviation({
         ).catch(() => {});
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     ubicacionActual?.latitude,
     ubicacionActual?.longitude,
     routeActive,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     polylineCoordinates.length,
     idAsignacion,
     umbralMetros,

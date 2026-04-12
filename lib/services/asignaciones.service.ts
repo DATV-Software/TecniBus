@@ -66,7 +66,7 @@ export async function getRecorridosHoy(idChofer: string): Promise<RecorridoChofe
       descripcion: r.descripcion || '',
       estado_ruta: r.estado_ruta || 'activa',
     }));
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -87,7 +87,7 @@ export async function getAsignacionesChofer(idChofer: string): Promise<Asignacio
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -116,7 +116,7 @@ export async function createAsignacion(dto: CreateAsignacionDto): Promise<Asigna
     }
 
     return data as AsignacionRuta;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -139,7 +139,7 @@ export async function updateAsignacion(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -159,7 +159,7 @@ export async function desactivarAsignacion(id: string): Promise<boolean> {
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -179,7 +179,7 @@ export async function deleteAsignacion(id: string): Promise<boolean> {
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -198,7 +198,7 @@ export async function esHoraRecorrido(idAsignacion: string): Promise<boolean> {
     }
 
     return data || false;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -220,7 +220,7 @@ export async function getAsignacionesRuta(idRuta: string): Promise<AsignacionRut
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -271,7 +271,7 @@ export async function getChoferDeRuta(
     ]);
     if (!id) return null;
     return { id, nombre: nombre || '' };
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -322,7 +322,7 @@ export async function getDatosAsignaciones(): Promise<{
     });
 
     return { choferes, rutas: rutasResult.data || [], busetas };
-  } catch (error) {
+  } catch (_error) {
     return { choferes: [], rutas: [], busetas: [] };
   }
 }

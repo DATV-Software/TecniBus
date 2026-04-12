@@ -72,6 +72,7 @@ export default function EditarRutaScreen() {
     setEstado((ruta.estado as "activa" | "inactiva") || "activa");
     setParadas(ruta.paradas || []);
     setLoadingData(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {

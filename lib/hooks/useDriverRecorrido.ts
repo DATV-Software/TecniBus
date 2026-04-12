@@ -74,6 +74,7 @@ export function useDriverRecorrido(profileId: string | undefined) {
     } finally {
       setLoadingRecorridos(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileId]);
 
   const cargarParadas = useCallback(async () => {
@@ -81,7 +82,7 @@ export function useDriverRecorrido(profileId: string | undefined) {
     try {
       const data = await getParadasByRuta(recorridoActual.id_ruta);
       setParadas(data);
-    } catch (error) {
+    } catch (_error) {
     }
   }, [recorridoActual]);
 
@@ -100,7 +101,7 @@ export function useDriverRecorrido(profileId: string | undefined) {
           setPolylineCoordinates(polyline);
         }
       }
-    } catch (error) {
+    } catch (_error) {
     }
   }, [recorridoActual]);
 

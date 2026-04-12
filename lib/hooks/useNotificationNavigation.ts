@@ -40,21 +40,22 @@ export function useNotificationNavigation() {
               }, 100);
             }
           })
-          .catch((error) => {
+          .catch((_error) => {
           });
       }
-    } catch (error: any) {
+    } catch (_error: any) {
     }
 
     return () => {
       if (responseListener) {
         try {
           responseListener.remove();
-        } catch (e) {
+        } catch (_e) {
           // Ignorar errores al limpiar en Expo Go
         }
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile, loading]);
 
   const handleNotificationNavigation = (data: any) => {

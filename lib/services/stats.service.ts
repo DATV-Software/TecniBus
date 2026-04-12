@@ -69,7 +69,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     };
 
     return stats;
-  } catch (error) {
+  } catch (_error) {
 
     // Retornar estadísticas en 0 en caso de error
     return {
@@ -95,12 +95,12 @@ export async function getDetailedStats() {
       .not('id_ruta', 'is', null);
 
     // Choferes con buseta asignada vs sin asignar
-    const { data: driversWithBus, count: driversWithBusCount } = await supabase
+    const { count: driversWithBusCount } = await supabase
       .from('choferes')
       .select('id', { count: 'exact' })
       .not('id_buseta', 'is', null);
 
-    const { data: driversWithoutBus, count: driversWithoutBusCount } = await supabase
+    const { count: driversWithoutBusCount } = await supabase
       .from('choferes')
       .select('id', { count: 'exact' })
       .is('id_buseta', null);
@@ -110,7 +110,7 @@ export async function getDetailedStats() {
       driversWithBus: driversWithBusCount || 0,
       driversWithoutBus: driversWithoutBusCount || 0,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       studentsByRoute: [],
       driversWithBus: 0,

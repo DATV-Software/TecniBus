@@ -29,6 +29,7 @@ export function useProfile() {
       setProfile(null);
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchProfile = async () => {
@@ -50,7 +51,7 @@ export function useProfile() {
       } else {
         setProfile(data);
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Error inesperado al cargar perfil');
       setProfile(null);
     } finally {

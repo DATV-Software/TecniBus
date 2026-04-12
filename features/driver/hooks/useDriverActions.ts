@@ -211,7 +211,7 @@ export function useDriverActions({
             setPolylineCoordinates(resultado.polylineCoordinates);
             await guardarPolylineRuta(recorridoActual.id, resultado.polylineCoordinates);
           }
-        } catch (error) {
+        } catch (_error) {
         } finally {
           setOptimizandoRuta(false);
         }

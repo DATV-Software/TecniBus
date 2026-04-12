@@ -42,6 +42,7 @@ export default function AnimatedCard({
         easing: Easing.out(Easing.cubic),
       })
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({

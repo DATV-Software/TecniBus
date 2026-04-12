@@ -35,7 +35,7 @@ export async function guardarUbicacion(
 ): Promise<boolean> {
   try {
     // Usar RPC con SECURITY DEFINER para bypassear RLS
-    const { data, error } = await supabase.rpc('guardar_ubicacion_chofer', {
+    const { error } = await supabase.rpc('guardar_ubicacion_chofer', {
       p_id_asignacion: idAsignacion,
       p_id_chofer: idChofer,
       p_latitud: latitud,
@@ -50,7 +50,7 @@ export async function guardarUbicacion(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -72,7 +72,7 @@ export async function getUltimaUbicacion(
 
     const ubicacion = Array.isArray(data) && data.length > 0 ? data[0] : null;
     return ubicacion || null;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

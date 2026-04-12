@@ -139,7 +139,7 @@ export function useGPSTracking({
         // Update "last saved" reference to the most recently flushed point
         ultimaGuardadaRef.current = { lat: point.latitud, lng: point.longitud };
         await sleep(150); // avoid flooding
-      } catch (err) {
+      } catch (_err) {
         // Put remaining points back in the buffer if we lose connection again
         const failedIdx = points.indexOf(point);
         gpsBufferRef.current = points.slice(failedIdx);
@@ -161,7 +161,7 @@ export function useGPSTracking({
     });
     return unsub;
     // flushGpsBuffer uses only refs so it's stable
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   // ── GPS Permission ────────────────────────────────────────────────────────
 
@@ -204,7 +204,7 @@ export function useGPSTracking({
         setError('Error al solicitar permisos de ubicación');
       }
     })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   // ── Watch Position ────────────────────────────────────────────────────────
 

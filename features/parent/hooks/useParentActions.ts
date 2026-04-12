@@ -103,7 +103,7 @@ export function useParentActions({
           type: 'error',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       haptic.error();
       showAlert({
         title: 'Error',

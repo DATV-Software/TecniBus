@@ -84,7 +84,7 @@ export async function getMyEstudiantes(): Promise<EstudianteDelPadre[]> {
           }
         : undefined,
     }));
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }

@@ -145,7 +145,6 @@ export default function DriverHomeScreen() {
     stats,
     paradasVisibles,
     nextStudent,
-    todosAtendidos,
     enCaminoAlColegio,
     todosEntregadosVuelta,
     paradaMasCercana,
@@ -186,6 +185,7 @@ export default function DriverHomeScreen() {
   const polylineRestante = useMemo(() => {
     if (!polylineCoordinates.length || !ubicacionChofer) return polylineCoordinates;
     return calcularPolylineRestante(polylineCoordinates, ubicacionChofer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     polylineCoordinates,
     ubicacionChofer?.latitude,
@@ -194,11 +194,7 @@ export default function DriverHomeScreen() {
 
   // ── Actions ──────────────────────────────────────────────────────────────────
   const {
-    abrirSelectorSiHayPendientes,
-    handleMarcarAusente,
     handleMarcarAusenteGeocerca,
-    handleNavigate,
-    doIniciarRecorrido,
     handleIniciarRecorrido,
     handleConfirmarVuelta,
     handleFinalizarRecorrido,
@@ -282,6 +278,7 @@ export default function DriverHomeScreen() {
     if (distancia > 50) return;
     colegioGeofenceActivadoRef.current = true;
     void handleAutoFinalizarEnColegio();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     enCaminoAlColegio,
     ubicacionChofer?.latitude,

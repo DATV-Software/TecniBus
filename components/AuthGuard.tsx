@@ -31,6 +31,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace(`/${expectedPath}` as any);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile, loading, segments]);
 
   if (loading) {

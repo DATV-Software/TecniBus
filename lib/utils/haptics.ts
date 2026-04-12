@@ -13,7 +13,7 @@ export const haptic = {
   selection: async () => {
     try {
       await Haptics.selectionAsync();
-    } catch (error) {
+    } catch (_error) {
     }
   }
 };
@@ -51,7 +51,7 @@ async function triggerHaptic(type: HapticFeedback) {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         break;
     }
-  } catch (error) {
+  } catch (_error) {
     // Silencioso: no bloquear UX si falla haptic
   }
 }

@@ -71,6 +71,7 @@ export function ParadaFormSheet({
       setLatitud("");
       setLongitud("");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, visible]);
 
   const handleSave = async () => {

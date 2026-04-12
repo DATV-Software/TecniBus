@@ -125,7 +125,7 @@ export async function getEstudiantes(): Promise<Estudiante[]> {
     }));
 
     return estudiantes;
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -188,7 +188,7 @@ export async function searchEstudiantes(query: string): Promise<Estudiante[]> {
         } : undefined,
       } : undefined,
     }));
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -236,7 +236,7 @@ export async function createEstudiante(dto: CreateEstudianteDto): Promise<Estudi
     }
 
     return data as unknown as Estudiante;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -266,7 +266,7 @@ export async function updateEstudiante(
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -286,7 +286,7 @@ export async function deleteEstudiante(id: string): Promise<boolean> {
     }
 
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -295,12 +295,12 @@ export async function deleteEstudiante(id: string): Promise<boolean> {
  * Obtiene la lista de padres para el autocomplete
  * Retorna solo padres activos con nombre y apellido
  */
-export async function getPadresParaAsignar(): Promise<Array<{
+export async function getPadresParaAsignar(): Promise<{
   id: string;
   nombre: string;
   apellido: string;
   nombreCompleto: string;
-}>> {
+}[]> {
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -319,7 +319,7 @@ export async function getPadresParaAsignar(): Promise<Array<{
       apellido: padre.apellido,
       nombreCompleto: `${padre.nombre} ${padre.apellido}`,
     }));
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -327,10 +327,10 @@ export async function getPadresParaAsignar(): Promise<Array<{
 /**
  * Obtiene la lista de rutas disponibles
  */
-export async function getRutasDisponibles(): Promise<Array<{
+export async function getRutasDisponibles(): Promise<{
   id: string;
   nombre: string;
-}>> {
+}[]> {
   try {
     const { data, error } = await supabase
       .from('rutas')
@@ -342,7 +342,7 @@ export async function getRutasDisponibles(): Promise<Array<{
     }
 
     return data || [];
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -350,7 +350,7 @@ export async function getRutasDisponibles(): Promise<Array<{
 /**
  * Obtiene la lista de paradas disponibles con información de su ruta
  */
-export async function getParadasDisponibles(): Promise<Array<{
+export async function getParadasDisponibles(): Promise<{
   id: string;
   nombre: string | null;
   direccion: string | null;
@@ -358,7 +358,7 @@ export async function getParadasDisponibles(): Promise<Array<{
     id: string;
     nombre: string;
   } | null;
-}>> {
+}[]> {
   try {
     const { data, error } = await supabase
       .from('paradas')
@@ -386,7 +386,7 @@ export async function getParadasDisponibles(): Promise<Array<{
         nombre: parada.rutas.nombre,
       } : null,
     }));
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }

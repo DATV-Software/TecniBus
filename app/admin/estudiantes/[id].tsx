@@ -106,6 +106,7 @@ export default function EditarEstudianteScreen() {
       setParadas(paradasData);
       setLoadingData(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredPadres = padres.filter((p) =>

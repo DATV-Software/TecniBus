@@ -18,6 +18,7 @@ const getStorage = () => {
     return mockStorage;//
   }
   // Para móvil, importamos AsyncStorage dinámicamente o lo requerimos
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require('@react-native-async-storage/async-storage').default;
 };
 // Validar que las variables de entorno estén configuradas

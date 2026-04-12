@@ -112,7 +112,7 @@ export async function getEstudiantesConAsistencia(
         notas: asistencia?.notas ?? null,
       };
     });
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }

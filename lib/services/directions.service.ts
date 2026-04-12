@@ -6,7 +6,7 @@ export interface DirectionsResult {
   duration: number;
   decodedCoordinates: { latitude: number; longitude: number }[];
   waypointOrder?: number[];
-  legs?: Array<{ distance: number; duration: number }>;
+  legs?: { distance: number; duration: number }[];
 }
 
 type Coord = { lat: number; lng: number };
@@ -15,7 +15,7 @@ interface EdgeFunctionResponse {
   polyline: string;
   duration: number;
   distance: number;
-  legs: Array<{ distance: number; duration: number }>;
+  legs: { distance: number; duration: number }[];
   waypointOrder?: number[];
 }
 

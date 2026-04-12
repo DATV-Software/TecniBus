@@ -81,6 +81,7 @@ export default function AsignacionesScreen() {
 
   useEffect(() => {
     cargarDatos();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cargarDatos = async () => {
@@ -90,7 +91,7 @@ export default function AsignacionesScreen() {
       setChoferes(choferes);
       setRutas(rutas);
       setBusetas(busetas);
-    } catch (error) {
+    } catch (_error) {
       showAlert({ title: "Error", message: "No se pudieron cargar los datos", type: "error" });
     } finally {
       setLoading(false);
@@ -104,7 +105,7 @@ export default function AsignacionesScreen() {
     try {
       const data = await getAsignacionesChofer(idChofer);
       setAsignaciones(data);
-    } catch (error) {
+    } catch (_error) {
     }
   };
 
@@ -147,7 +148,7 @@ export default function AsignacionesScreen() {
         haptic.error();
         showAlert({ title: "Error", message: "No se pudo crear la asignación", type: "error" });
       }
-    } catch (error) {
+    } catch (_error) {
       haptic.error();
       showAlert({ title: "Error", message: "Ocurrió un error al crear la asignación", type: "error" });
     }
@@ -188,7 +189,7 @@ export default function AsignacionesScreen() {
       showAlert({ title: "Éxito", message: "Buseta asignada correctamente", type: "success" });
       setModalBusetaVisible(false);
       cargarDatos();
-    } catch (error) {
+    } catch (_error) {
       haptic.error();
       showAlert({ title: "Error", message: "No se pudo asignar la buseta", type: "error" });
     }

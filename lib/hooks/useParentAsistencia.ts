@@ -37,6 +37,7 @@ export function useParentAsistencia(estudianteId: string | undefined) {
     setMarcadoPorChofer(false);
     setHoraRecogida(null);
     if (estudianteId) cargarEstadoAsistencia();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estudianteId]);
 
   // Realtime: padre o chofer marca asistencia
