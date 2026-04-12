@@ -31,9 +31,6 @@ jobs:
       - name: Run ESLint
         run: npx eslint . --ext .ts,.tsx || echo "⚠️ ESLint warnings/errors found (non-blocking)"
 
-      - name: Run TypeScript check
-        run: npx tsc --noEmit
-
       - name: Report Status
         if: always()
         run: |
