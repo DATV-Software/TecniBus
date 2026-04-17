@@ -21,7 +21,7 @@ import { useGPSTracking } from "@/lib/hooks/useGPSTracking";
 import { useRouteDeviation } from "@/lib/hooks/useRouteDeviation";
 import { getUbicacionColegio } from "@/lib/services/configuracion.service";
 import { getNotificationPermissionStatus } from "@/lib/services/notifications.service";
-import { calcularDistancia } from "@/lib/services/geocercas.service";
+import { calcularDistancia } from "@/lib/utils/distance";
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { haptic } from "@/lib/utils/haptics";
 import { calcularPolylineRestante } from "@/lib/utils/polyline";

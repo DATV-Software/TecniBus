@@ -1,5 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
-import { calcularDistancia } from "@/lib/services/geocercas.service";
+import { calcularDistancia } from "@/lib/utils/distance";
 import type { Parada } from "@/lib/services/rutas.service";
 import type { UbicacionActual } from "@/lib/services/ubicaciones.service";
 import * as Location from "expo-location";

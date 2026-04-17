@@ -1,5 +1,3 @@
-import * as LocalAuthentication from "expo-local-authentication";
-import * as SecureStore from "expo-secure-store";
 import { Fingerprint, Lock, Mail } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
@@ -22,15 +20,58 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { useBiometricAuth } from "@/lib/hooks/useBiometricAuth";
 import { haptic } from "@/lib/utils/haptics";
 import { useShadow } from "@/lib/utils/shadows";
 import { Toast } from "../components";
 import { useAuth } from "../contexts/AuthContext";
 
+/* =====================
+   AUTH ERROR MAPPING
+====================== */
+const AUTH_ERROR_MAP: {
+  test: (msg: string) => boolean;
+  text: string;
+}[] = [
+  {
+    test: (msg) => msg.includes("invalid login credentials"),
+    text: "Correo o contraseña incorrectos",
+  },
+  {
+    test: (msg) => msg.includes("invalid email"),
+    text: "El correo no tiene un formato válido",
+  },
+  {
+    test: (msg) => msg.includes("email not confirmed"),
+    text: "Debes confirmar tu correo electrónico",
+  },
+  {
+    test: (msg) => msg.includes("too many requests"),
+    text: "Demasiados intentos. Intenta más tarde",
+  },
+  {
+    test: (msg) => msg.includes("network"),
+    text: "Error de conexión. Revisa tu internet",
+  },
+];
+
+function getAuthErrorMessage(error: Error): string {
+  const message = error.message.toLowerCase();
+
+  for (const rule of AUTH_ERROR_MAP) {
+    if (rule.test(message)) {
+      return rule.text;
+    }
+  }
+
+  return "No se pudo iniciar sesión. Intenta nuevamente";
+}
+
 export default function LoginScreen() {
   const { showAlert } = useAlert();
-  const { signIn, signOut, user, profile, loading: authLoading } = useAuth();
+  const { signIn, user, profile, loading: authLoading } = useAuth();
   const shadow = useShadow("lg");
+  const { isBiometricSupported, hasSavedCredentials, handleBiometricAuth, saveCredentials } = useBiometricAuth();
 
   const scrollRef = useRef<ScrollView>(null);
 
@@ -44,13 +85,6 @@ export default function LoginScreen() {
   const [toastType, setToastType] = useState<"success" | "error" | "warning">(
     "warning",
   );
-
-  // Estados para autenticación biométrica
-  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
-  const [hasSavedCredentials, setHasSavedCredentials] = useState(false);
-
-  // Para limpiar sesión (desarrollo)
-  const [tapCount, setTapCount] = useState(0);
 
   /* =====================
      ANIMACIONES
@@ -81,10 +115,7 @@ export default function LoginScreen() {
       });
     }, 200);
 
-    // Verificar soporte biométrico y credenciales guardadas
-    checkBiometricSupport();
-
-    // Scroll unificado al abrir teclado — un solo punto fijo para mostrar ambos inputs
+    // Scroll unificado al abrir teclado
     const showEvent =
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
     const hideEvent =
@@ -104,73 +135,10 @@ export default function LoginScreen() {
   }, []);
 
   /* =====================
-     AUTENTICACIÓN BIOMÉTRICA
-  ====================== */
-  const checkBiometricSupport = async () => {
-    try {
-      const compatible = await LocalAuthentication.hasHardwareAsync();
-      const enrolled = await LocalAuthentication.isEnrolledAsync();
-      setIsBiometricSupported(compatible && enrolled);
-
-      // Verificar si hay credenciales guardadas
-      const savedEmail = await SecureStore.getItemAsync("userEmail");
-      setHasSavedCredentials(!!savedEmail);
-    } catch (_error) {
-      setIsBiometricSupported(false);
-    }
-  };
-
-  const handleBiometricAuth = async () => {
-    try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Autentícate para iniciar sesión",
-        fallbackLabel: "Usar contraseña",
-        cancelLabel: "Cancelar",
-      });
-
-      if (result.success) {
-        haptic.success();
-
-        // Recuperar credenciales guardadas
-        const savedEmail = await SecureStore.getItemAsync("userEmail");
-        const savedPassword = await SecureStore.getItemAsync("userPassword");
-
-        if (savedEmail && savedPassword) {
-          setEmail(savedEmail);
-          setPassword(savedPassword);
-
-          // Iniciar sesión automáticamente
-          setIsLoading(true);
-          const { error } = await signIn(savedEmail, savedPassword);
-
-          if (error) {
-            setIsLoading(false);
-            showToast(getAuthErrorMessage(error), "error");
-            haptic.error();
-          } else {
-            showToast("Inicio de sesión exitoso", "success");
-            haptic.success();
-          }
-        } else {
-          showToast("No hay credenciales guardadas", "warning");
-        }
-      } else {
-        haptic.warning();
-      }
-    } catch (_error) {
-      showToast("Error en autenticación biométrica", "error");
-      haptic.error();
-    }
-  };
-
-  /* =====================
    REDIRECCIÓN AUTOMÁTICA
-====================== */
-  // AuthGuard se encarga del redirect automáticamente
-  // Solo mostramos feedback visual aquí
+  ====================== */
   useEffect(() => {
     if (user && profile && !authLoading) {
-      // AuthGuard manejará el redirect, nosotros solo mostramos el estado
       setShowRedirecting(true);
     }
   }, [user, profile, authLoading]);
@@ -198,51 +166,27 @@ export default function LoginScreen() {
   };
 
   /* =====================
-     ERRORES PERSONALIZADOS
+     BIOMETRIC AUTH
   ====================== */
-  const AUTH_ERROR_MAP: {
-    test: (msg: string) => boolean;
-    text: string;
-  }[] = [
-    {
-      test: (msg) => msg.includes("invalid login credentials"),
-      text: "Correo o contraseña incorrectos",
-    },
-    {
-      test: (msg) => msg.includes("invalid email"),
-      text: "El correo no tiene un formato válido",
-    },
-    {
-      test: (msg) => msg.includes("email not confirmed"),
-      text: "Debes confirmar tu correo electrónico",
-    },
-    {
-      test: (msg) => msg.includes("too many requests"),
-      text: "Demasiados intentos. Intenta más tarde",
-    },
-    {
-      test: (msg) => msg.includes("network"),
-      text: "Error de conexión. Revisa tu internet",
-    },
-  ];
-
-  const getAuthErrorMessage = (error: Error): string => {
-    const message = error.message.toLowerCase();
-
-    for (const rule of AUTH_ERROR_MAP) {
-      if (rule.test(message)) {
-        return rule.text;
-      }
-    }
-
-    return "No se pudo iniciar sesión. Intenta nuevamente";
+  const onBiometricAuth = () => {
+    handleBiometricAuth(
+      signIn,
+      (savedEmail, savedPassword) => {
+        setEmail(savedEmail);
+        setPassword(savedPassword);
+        showToast("Inicio de sesión exitoso", "success");
+      },
+      (errorMessage) => {
+        setIsLoading(false);
+        showToast(errorMessage, "error");
+      },
+    );
   };
 
   /* =====================
      LOGIN
   ====================== */
   const handleLogin = async () => {
-    // Validaciones básicas
     if (!email.trim()) {
       showToast("Ingresa tu correo electrónico", "warning");
       haptic.warning();
@@ -255,7 +199,6 @@ export default function LoginScreen() {
       return;
     }
 
-    // Validación de formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
       showToast("Formato de correo inválido", "warning");
@@ -275,19 +218,7 @@ export default function LoginScreen() {
       } else {
         showToast("Inicio de sesión exitoso", "success");
         haptic.success();
-
-        // Guardar credenciales para autenticación biométrica
-        if (isBiometricSupported) {
-          try {
-            await SecureStore.setItemAsync(
-              "userEmail",
-              email.trim().toLowerCase(),
-            );
-            await SecureStore.setItemAsync("userPassword", password);
-            setHasSavedCredentials(true);
-          } catch (_error) {
-          }
-        }
+        await saveCredentials(email, password);
       }
     } catch (_error) {
       setIsLoading(false);
@@ -297,41 +228,9 @@ export default function LoginScreen() {
   };
 
   /* =====================
-     LIMPIAR SESIÓN (DESARROLLO)
-  ====================== */
-  const handleClearSession = async () => {
-    try {
-      await signOut();
-      await SecureStore.deleteItemAsync("userEmail");
-      await SecureStore.deleteItemAsync("userPassword");
-      setHasSavedCredentials(false);
-      setEmail("");
-      setPassword("");
-      showToast("Sesión limpiada completamente", "success");
-      haptic.success();
-    } catch (_error) {
-      showToast("Error al limpiar sesión", "error");
-    }
-  };
-
-  const handleLogoPress = () => {
-    const newCount = tapCount + 1;
-    setTapCount(newCount);
-
-    if (newCount === 3) {
-      handleClearSession();
-      setTapCount(0);
-    }
-
-    // Reset counter después de 2 segundos
-    setTimeout(() => setTapCount(0), 2000);
-  };
-
-  /* =====================
    LOADING SCREEN
-====================== */
+  ====================== */
   if (showRedirecting) {
-    // ← CAMBIO AQUÍ
     return (
       <View className="flex-1 bg-tecnibus-600 items-center justify-center">
         <ActivityIndicator size="large" color="#ffffff" />
@@ -365,11 +264,7 @@ export default function LoginScreen() {
         <View className="flex-1 px-6 pt-40 pb-8">
           {/* Header */}
           <Animated.View style={logoStyle} className="items-center mb-8">
-            <TouchableOpacity
-              onPress={handleLogoPress}
-              activeOpacity={0.8}
-              className="items-center w-full"
-            >
+            <View className="items-center w-full">
               <View className="bg-white-500">
                 <Image
                   source={require("../assets/images/adaptive-icon.png")}
@@ -383,7 +278,7 @@ export default function LoginScreen() {
               <Text className="font-calsans text-gray-600 mt-5 text-center">
                 Sistema de Gestión de Transporte Escolar
               </Text>
-            </TouchableOpacity>
+            </View>
           </Animated.View>
 
           {/* Form */}
@@ -429,7 +324,7 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              {/* Reset password — URL se agregará cuando la página esté lista */}
+              {/* Reset password */}
               <TouchableOpacity
                 onPress={() => showAlert({ title: 'Recuperar contraseña', message: 'Contacta al administrador de tu institución para restablecer tu contraseña.', type: 'info' })}
                 activeOpacity={0.7}
@@ -468,7 +363,7 @@ export default function LoginScreen() {
             {isBiometricSupported && hasSavedCredentials && !isLoading && (
               <TouchableOpacity
                 className="py-4 rounded-xl bg-gray-100 border-2 border-tecnibus-200 mt-3 flex-row items-center justify-center"
-                onPress={handleBiometricAuth}
+                onPress={onBiometricAuth}
                 activeOpacity={0.8}
               >
                 <Fingerprint size={24} color="#3DA7D7" strokeWidth={2.5} />
