@@ -1,4 +1,4 @@
-import { calcularETAsRuta } from "@/lib/services/geocercas.service";
+import { calcularETAsRuta } from "@/lib/utils/distance";
 import { publishETAsToRecorrido } from "@/lib/services/recorridos.service";
 import type { Parada } from "@/lib/services/rutas.service";
 import type { EstudianteConAsistencia } from "@/lib/services/asistencias.service";
