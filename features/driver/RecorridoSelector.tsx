@@ -1,5 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
-import type { RecorridoChofer } from "@/lib/services/asignaciones.service";
+import type { RecorridoChofer } from "@/lib/services/fleet/asignaciones.service";
 import type { EstadoRecorridoRun } from "@/lib/hooks/useDriverRecorrido";
 import { CheckCircle2, Clock, X } from "lucide-react-native";
 import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";

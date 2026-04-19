@@ -3,7 +3,7 @@ import {
   PlaceSuggestion,
   getPlaceDetails,
   searchPlaceSuggestions,
-} from "@/lib/services/places.service";
+} from "@/lib/services/routing/places.service";
 import { MapPin, Search, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {

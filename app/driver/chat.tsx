@@ -13,7 +13,7 @@ import {
   marcarLeidos,
   Mensaje,
   suscribirseAMensajes,
-} from "@/lib/services/chat.service";
+} from "@/lib/services/chat/chat.service";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MessageCircle, Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";

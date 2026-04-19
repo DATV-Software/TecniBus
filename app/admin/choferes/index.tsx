@@ -29,7 +29,7 @@ import {
   eliminarUsuario,
   obtenerChoferes,
   type Profile,
-} from "@/lib/services/admin.service";
+} from "@/lib/services/admin/admin.service";
 
 export default function ListaChoferesScreen() {
   const { showAlert } = useAlert();

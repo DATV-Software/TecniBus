@@ -2,13 +2,13 @@ import { useAlert } from "@/components/ui/AlertBox/useAlert";
 import {
   getRecorridosHoy,
   type RecorridoChofer,
-} from "@/lib/services/asignaciones.service";
+} from "@/lib/services/fleet/asignaciones.service";
 import {
   getEstadoRecorrido,
   getPolylineAsignacion,
-} from "@/lib/services/recorridos.service";
-import { getParadasByRuta, type Parada } from "@/lib/services/rutas.service";
-import { supabase } from "@/lib/services/supabase";
+} from "@/lib/services/routing/recorridos.service";
+import { getParadasByRuta, type Parada } from "@/lib/services/routing/rutas.service";
+import { supabase } from "@/lib/services/core/supabase";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 

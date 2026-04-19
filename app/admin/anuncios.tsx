@@ -6,7 +6,7 @@ import {
   TemplateAnuncio,
 } from "@/lib/constants/anuncios-templates";
 import { Colors } from "@/lib/constants/colors";
-import { supabase } from "@/lib/services/supabase";
+import { supabase } from "@/lib/services/core/supabase";
 import { haptic } from "@/lib/utils/haptics";
 import { router } from "expo-router";
 import { ArrowLeft, FileText, Megaphone, Send, X } from "lucide-react-native";

@@ -18,7 +18,7 @@ import {
   actualizarUsuario,
   eliminarUsuario,
   obtenerChoferes,
-} from "@/lib/services/admin.service";
+} from "@/lib/services/admin/admin.service";
 
 export default function EditarConductorScreen() {
   const { showAlert } = useAlert();

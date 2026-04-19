@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '../core/supabase';
 
 export type RutaActiva = {
   id_asignacion: string;

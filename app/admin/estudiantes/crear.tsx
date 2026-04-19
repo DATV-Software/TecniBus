@@ -28,7 +28,7 @@ import {
   createEstudiante,
   getPadresParaAsignar,
   getParadasDisponibles,
-} from "@/lib/services/estudiantes.service";
+} from "@/lib/services/students/estudiantes.service";
 
 type Padre = {
   id: string;

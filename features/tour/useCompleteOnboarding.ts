@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/services/supabase';
+import { supabase } from '@/lib/services/core/supabase';
 
 export function useCompleteOnboarding() {
   const { user, patchProfile } = useAuth();

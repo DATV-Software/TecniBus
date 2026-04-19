@@ -13,7 +13,7 @@ import { CheckCircle2, ChevronDown, GraduationCap, UserX } from 'lucide-react-na
 import { memo, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { haptic } from '@/lib/utils/haptics';
-import type { EstudianteDelPadre } from '@/lib/services/padres.service';
+import type { EstudianteDelPadre } from '@/lib/services/students/padres.service';
 
 type Props = {
   tipoRuta: 'ida' | 'vuelta';

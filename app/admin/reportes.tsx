@@ -5,8 +5,8 @@ import { useRefresh } from "@/lib/hooks/useRefresh";
 import {
   EstadisticasReporte,
   generarReporteAsistencia,
-} from "@/lib/services/reportes.service";
-import { getRutas, Ruta } from "@/lib/services/rutas.service";
+} from "@/lib/services/admin/reportes.service";
+import { getRutas, Ruta } from "@/lib/services/routing/rutas.service";
 import { haptic } from "@/lib/utils/haptics";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";

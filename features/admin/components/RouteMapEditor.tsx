@@ -6,7 +6,7 @@ import {
   createParada,
   deleteParada,
   updateParada,
-} from "@/lib/services/rutas.service";
+} from "@/lib/services/routing/rutas.service";
 import { haptic } from "@/lib/utils/haptics";
 import { Edit3, MapPin, Plus, Trash2, X } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";

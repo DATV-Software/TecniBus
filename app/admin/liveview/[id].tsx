@@ -1,13 +1,13 @@
 import RouteMap from "@/components/RouteMap";
 import { Colors } from "@/lib/constants/colors";
-import { getRutaActivaDetalle } from "@/lib/services/liveview.service";
-import { getParadasByRuta, type Parada } from "@/lib/services/rutas.service";
+import { getRutaActivaDetalle } from "@/lib/services/admin/liveview.service";
+import { getParadasByRuta, type Parada } from "@/lib/services/routing/rutas.service";
 import {
   getUltimaUbicacion,
   suscribirseAUbicaciones,
   type UbicacionActual,
-} from "@/lib/services/ubicaciones.service";
-import { getUbicacionColegio } from "@/lib/services/configuracion.service";
+} from "@/lib/services/fleet/ubicaciones.service";
+import { getUbicacionColegio } from "@/lib/services/admin/configuracion.service";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Bus,

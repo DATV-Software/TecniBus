@@ -1,5 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
-import type { EstudianteConAsistencia } from "@/lib/services/asistencias.service";
+import type { EstudianteConAsistencia } from "@/lib/services/students/asistencias.service";
 import { MapPin, Play, UserX, X } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {

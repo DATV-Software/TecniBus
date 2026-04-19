@@ -9,8 +9,8 @@ import {
   marcarLeidos,
   Mensaje,
   suscribirseAMensajes,
-} from "@/lib/services/chat.service";
-import { supabase } from "@/lib/services/supabase";
+} from "@/lib/services/chat/chat.service";
+import { supabase } from "@/lib/services/core/supabase";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Send } from "lucide-react-native";

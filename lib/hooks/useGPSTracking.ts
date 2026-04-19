@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { guardarUbicacion } from '@/lib/services/ubicaciones.service';
+import { guardarUbicacion } from '@/lib/services/fleet/ubicaciones.service';
 import { networkDetector } from '@/lib/network/networkDetector';
 import { classifyError, isRetryable } from '@/lib/network/errorClassifier';
 import type { GpsFlushPayload } from '@/lib/network/types';

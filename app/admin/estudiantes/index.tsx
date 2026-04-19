@@ -33,7 +33,7 @@ import {
 import Toast from "@/components/Toast";
 import {
   getEstudiantes,
-} from "@/lib/services/estudiantes.service";
+} from "@/lib/services/students/estudiantes.service";
 
 export default function EstudiantesListScreen() {
   const router = useRouter();

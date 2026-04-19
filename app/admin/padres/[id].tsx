@@ -18,7 +18,7 @@ import {
   actualizarUsuario,
   eliminarUsuario,
   obtenerPadres,
-} from "@/lib/services/admin.service";
+} from "@/lib/services/admin/admin.service";
 
 export default function EditarPadreScreen() {
   const { showAlert } = useAlert();

@@ -20,7 +20,7 @@ import {
   View,
 } from "react-native";
 import Toast from "@/components/Toast";
-import { createRuta } from "@/lib/services/rutas.service";
+import { createRuta } from "@/lib/services/routing/rutas.service";
 
 export default function CrearRutaScreen() {
   const router = useRouter();

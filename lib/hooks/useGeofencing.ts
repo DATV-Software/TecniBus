@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  calcularDistancia,
   marcarEntradaGeocerca,
   marcarEstudianteCompletado,
   marcarSalidaGeocerca,
   type EstudianteGeocerca,
-} from '@/lib/services/geocercas.service';
-import type { EstudianteConAsistencia } from '@/lib/services/asistencias.service';
-import type { Parada } from '@/lib/services/rutas.service';
+} from '@/lib/services/routing/geocercas.service';
+import { calcularDistancia } from '@/lib/utils/distance';
+import type { EstudianteConAsistencia } from '@/lib/services/students/asistencias.service';
+import type { Parada } from '@/lib/services/routing/rutas.service';
 
 type GeofencingOptions = {
   idAsignacion: string | null;

@@ -1,5 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
-import { EntityType, ImportResumen, importarTextoCSV } from "@/lib/services/import.service";
+import { EntityType, ImportResumen, importarTextoCSV } from "@/lib/services/admin/import.service";
 import { parseCSV, validarFilaEntidad } from "@/lib/utils/csvParser";
 import { haptic } from "@/lib/utils/haptics";
 import { useRouter } from "expo-router";

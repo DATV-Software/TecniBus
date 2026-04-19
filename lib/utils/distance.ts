@@ -1,4 +1,4 @@
-import { getDirections, getRouteForWaypoints } from '@/lib/services/directions.service';
+import { getDirections, getRouteForWaypoints } from '@/lib/services/routing/directions.service';
 
 // ── Constants ───────────────────────────────────────────────────────────────
 

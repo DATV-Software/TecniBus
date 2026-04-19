@@ -1,10 +1,10 @@
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
-import type { RecorridoChofer } from "@/lib/services/asignaciones.service";
+import type { RecorridoChofer } from "@/lib/services/fleet/asignaciones.service";
 import {
   getEstudiantesConAsistencia,
   type EstudianteConAsistencia,
-} from "@/lib/services/asistencias.service";
-import { supabase } from "@/lib/services/supabase";
+} from "@/lib/services/students/asistencias.service";
+import { supabase } from "@/lib/services/core/supabase";
 import { useCallback, useEffect, useState } from "react";
 
 export function useDriverEstudiantes(

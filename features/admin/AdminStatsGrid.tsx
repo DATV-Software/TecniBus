@@ -1,6 +1,6 @@
 import { Colors } from "@/lib/constants/colors";
 import { StatCard } from "@/components/ui/StatCard";
-import { DashboardStats } from "@/lib/services/stats.service";
+import { DashboardStats } from "@/lib/services/admin/stats.service";
 import { Bus, GraduationCap, User, Users } from "lucide-react-native";
 import { View } from "react-native";
 

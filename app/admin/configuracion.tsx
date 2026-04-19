@@ -4,7 +4,7 @@ import {
   getUbicacionColegio,
   updateUbicacionColegio,
   type UbicacionColegio,
-} from "@/lib/services/configuracion.service";
+} from "@/lib/services/admin/configuracion.service";
 import { haptic } from "@/lib/utils/haptics";
 import { useRouter } from "expo-router";
 import { MapPin, Save } from "lucide-react-native";

@@ -4,7 +4,7 @@ import { QUERY_KEYS } from "@/lib/constants/queryKeys";
 import {
   DashboardStats,
   getDashboardStats,
-} from "@/lib/services/stats.service";
+} from "@/lib/services/admin/stats.service";
 import { haptic } from "@/lib/utils/haptics";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";

@@ -1,15 +1,15 @@
-import { getChoferDeRuta } from "@/lib/services/asignaciones.service";
+import { getChoferDeRuta } from "@/lib/services/fleet/asignaciones.service";
 import {
   getEstadoRecorridoPorRuta,
   getPolylineAsignacion,
-} from "@/lib/services/recorridos.service";
-import type { EstudianteDelPadre } from "@/lib/services/padres.service";
-import { supabase } from "@/lib/services/supabase";
+} from "@/lib/services/routing/recorridos.service";
+import type { EstudianteDelPadre } from "@/lib/services/students/padres.service";
+import { supabase } from "@/lib/services/core/supabase";
 import {
   getUltimaUbicacion,
   suscribirseAUbicaciones,
   type UbicacionActual,
-} from "@/lib/services/ubicaciones.service";
+} from "@/lib/services/fleet/ubicaciones.service";
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { useCallback, useEffect, useState } from "react";
 

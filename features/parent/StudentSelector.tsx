@@ -1,5 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
-import { EstudianteDelPadre } from "@/lib/services/padres.service";
+import { EstudianteDelPadre } from "@/lib/services/students/padres.service";
 import { CheckCircle2, GraduationCap, X } from "lucide-react-native";
 import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
 

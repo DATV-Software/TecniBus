@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '../core/supabase';
 
 // Re-export distance/ETA utils for backward compatibility
 export {
@@ -7,7 +7,7 @@ export {
   calcularETAConDirecciones,
   calcularETAsRuta,
   estaDentroDeGeocerca,
-} from '../utils/distance';
+} from '../../utils/distance';
 
 export type EstadoGeocerca = 'pendiente' | 'en_zona' | 'completado' | 'omitido';
 

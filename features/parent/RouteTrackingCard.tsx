@@ -1,7 +1,7 @@
 import RouteMap from "@/components/RouteMap";
 import { Colors } from "@/lib/constants/colors";
-import { Parada } from "@/lib/services/rutas.service";
-import { UbicacionActual } from "@/lib/services/ubicaciones.service";
+import { Parada } from "@/lib/services/routing/rutas.service";
+import { UbicacionActual } from "@/lib/services/fleet/ubicaciones.service";
 import { Bus, Info } from "lucide-react-native";
 import { Text, View } from "react-native";
 

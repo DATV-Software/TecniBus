@@ -1,5 +1,5 @@
-import { getEstadoAsistenciaDelDia, type EstadoAsistencia } from "@/lib/services/asistencias.service";
-import { supabase } from "@/lib/services/supabase";
+import { getEstadoAsistenciaDelDia, type EstadoAsistencia } from "@/lib/services/students/asistencias.service";
+import { supabase } from "@/lib/services/core/supabase";
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { useCallback, useEffect, useState } from "react";
 

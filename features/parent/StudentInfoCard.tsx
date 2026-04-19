@@ -1,5 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
-import { EstudianteDelPadre } from "@/lib/services/padres.service";
+import { EstudianteDelPadre } from "@/lib/services/students/padres.service";
 import {
   ChevronDown,
   ChevronRight,

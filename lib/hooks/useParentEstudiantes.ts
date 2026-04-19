@@ -1,7 +1,7 @@
 import {
   getMyEstudiantes,
   type EstudianteDelPadre,
-} from "@/lib/services/padres.service";
+} from "@/lib/services/students/padres.service";
 import { useEffect, useState } from "react";
 
 export function useParentEstudiantes() {

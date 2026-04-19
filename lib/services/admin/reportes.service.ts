@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/services/supabase';
+import { supabase } from '../core/supabase';
 
 // Tipos
 export type ReporteAsistenciaParams = {

@@ -4,12 +4,12 @@
  */
 import { useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { calcularDistancia } from '@/lib/services/geocercas.service';
+import { calcularDistancia } from '@/lib/utils/distance';
 import { indicePuntoEnPolyline } from '@/lib/utils/routeDeviation';
 import type { UbicacionLocal } from '@/lib/hooks/useGPSTracking';
-import type { EstudianteConAsistencia } from '@/lib/services/asistencias.service';
-import type { EstudianteGeocerca } from '@/lib/services/geocercas.service';
-import type { Parada } from '@/lib/services/rutas.service';
+import type { EstudianteConAsistencia } from '@/lib/services/students/asistencias.service';
+import type { EstudianteGeocerca } from '@/lib/services/routing/geocercas.service';
+import type { Parada } from '@/lib/services/routing/rutas.service';
 
 type Options = {
   estudiantes: EstudianteConAsistencia[];

@@ -3,7 +3,7 @@ import {
   getRutasActivas,
   suscribirseARutasActivas,
   type RutaActiva,
-} from "@/lib/services/liveview.service";
+} from "@/lib/services/admin/liveview.service";
 import { haptic } from "@/lib/utils/haptics";
 import { useFocusEffect, useRouter } from "expo-router";
 import {

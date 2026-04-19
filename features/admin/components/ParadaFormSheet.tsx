@@ -1,7 +1,7 @@
 import { Colors } from "@/lib/constants/colors";
 import { haptic } from "@/lib/utils/haptics";
 import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
-import { reverseGeocode } from "@/lib/services/places.service";
+import { reverseGeocode } from "@/lib/services/routing/places.service";
 import { MapPin, Save, Trash2, Type, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Parada } from "@/lib/services/rutas.service";
+import { Parada } from "@/lib/services/routing/rutas.service";
 import { FormField } from "./FormField";
 
 interface ParadaFormSheetProps {

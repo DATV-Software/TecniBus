@@ -22,7 +22,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { crearUsuario } from "@/lib/services/admin.service";
+import { crearUsuario } from "@/lib/services/admin/admin.service";
 import { FormField } from "./FormField";
 
 interface CreateUserModalProps {

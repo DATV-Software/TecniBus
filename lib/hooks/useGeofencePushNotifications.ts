@@ -1,4 +1,4 @@
-import { sendPushToStudentParent } from "@/lib/services/notifications.service";
+import { sendPushToStudentParent } from "@/lib/services/core/notifications.service";
 import { useEffect, useRef } from "react";
 
 type EstudianteGeocerca = {

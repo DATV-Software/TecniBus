@@ -29,7 +29,7 @@ import {
   Buseta,
   deleteBuseta,
   getBusetas,
-} from "@/lib/services/busetas.service";
+} from "@/lib/services/fleet/busetas.service";
 
 export default function BusetasListScreen() {
   const { showAlert } = useAlert();

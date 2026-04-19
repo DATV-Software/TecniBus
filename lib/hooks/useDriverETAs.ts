@@ -1,7 +1,7 @@
 import { calcularETAsRuta } from "@/lib/utils/distance";
-import { publishETAsToRecorrido } from "@/lib/services/recorridos.service";
-import type { Parada } from "@/lib/services/rutas.service";
-import type { EstudianteConAsistencia } from "@/lib/services/asistencias.service";
+import { publishETAsToRecorrido } from "@/lib/services/routing/recorridos.service";
+import type { Parada } from "@/lib/services/routing/rutas.service";
+import type { EstudianteConAsistencia } from "@/lib/services/students/asistencias.service";
 import type { UbicacionLocal } from "@/lib/hooks/useGPSTracking";
 import { useEffect, useMemo, useState } from "react";
 

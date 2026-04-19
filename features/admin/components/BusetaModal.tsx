@@ -16,7 +16,7 @@ import {
   Buseta,
   createBuseta,
   updateBuseta,
-} from "@/lib/services/busetas.service";
+} from "@/lib/services/fleet/busetas.service";
 import { FormField } from "./FormField";
 
 interface BusetaModalProps {

@@ -21,12 +21,12 @@ import {
   toggleAsistencia,
   confirmarAsistenciaVuelta,
   type EstudianteConAsistencia,
-} from '@/lib/services/asistencias.service';
+} from '@/lib/services/students/asistencias.service';
 import {
   iniciarRecorrido as _iniciarRecorrido,
   finalizarRecorrido as _finalizarRecorrido,
-} from '@/lib/services/recorridos.service';
-import { guardarUbicacion } from '@/lib/services/ubicaciones.service';
+} from '@/lib/services/routing/recorridos.service';
+import { guardarUbicacion } from '@/lib/services/fleet/ubicaciones.service';
 import { classifyError, isRetryable } from './errorClassifier';
 import { networkDetector } from './networkDetector';
 import { networkQueue } from './NetworkQueue';

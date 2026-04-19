@@ -1,6 +1,6 @@
 import RouteMap from "@/components/RouteMap";
-import type { Parada } from "@/lib/services/rutas.service";
-import type { UbicacionActual } from "@/lib/services/ubicaciones.service";
+import type { Parada } from "@/lib/services/routing/rutas.service";
+import type { UbicacionActual } from "@/lib/services/fleet/ubicaciones.service";
 import { View } from "react-native";
 
 interface MapCardProps {

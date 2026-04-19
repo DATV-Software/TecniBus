@@ -28,7 +28,7 @@ import {
   deleteRuta,
   getRutaById,
   updateRuta,
-} from "@/lib/services/rutas.service";
+} from "@/lib/services/routing/rutas.service";
 
 type Tab = "info" | "mapa";
 

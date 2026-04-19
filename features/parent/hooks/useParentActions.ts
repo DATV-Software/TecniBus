@@ -4,9 +4,9 @@
 import { useCallback, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useAlert } from '@/components/ui/AlertBox/useAlert';
-import { toggleAsistencia } from '@/lib/services/asistencias.service';
+import { toggleAsistencia } from '@/lib/services/students/asistencias.service';
 import { haptic } from '@/lib/utils/haptics';
-import type { EstudianteDelPadre } from '@/lib/services/padres.service';
+import type { EstudianteDelPadre } from '@/lib/services/students/padres.service';
 
 type Options = {
   estudianteSeleccionado: EstudianteDelPadre | null;

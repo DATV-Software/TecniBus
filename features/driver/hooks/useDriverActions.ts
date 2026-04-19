@@ -9,24 +9,24 @@ import { useAlert } from '@/components/ui/AlertBox/useAlert';
 import {
   confirmarAsistenciaVuelta,
   marcarAusente,
-} from '@/lib/services/asistencias.service';
-import { getUbicacionColegio } from '@/lib/services/configuracion.service';
+} from '@/lib/services/students/asistencias.service';
+import { getUbicacionColegio } from '@/lib/services/admin/configuracion.service';
 import {
-  calcularDistancia,
   inicializarEstadosGeocercas,
   marcarEstudianteCompletado,
-} from '@/lib/services/geocercas.service';
+} from '@/lib/services/routing/geocercas.service';
+import { calcularDistancia } from '@/lib/utils/distance';
 import {
   finalizarRecorrido,
   guardarPolylineRuta,
   iniciarRecorrido,
-} from '@/lib/services/recorridos.service';
-import { calcularRutaOptimizada, type Parada } from '@/lib/services/rutas.service';
+} from '@/lib/services/routing/recorridos.service';
+import { calcularRutaOptimizada, type Parada } from '@/lib/services/routing/rutas.service';
 import { haptic } from '@/lib/utils/haptics';
-import type { RecorridoChofer } from '@/lib/services/asignaciones.service';
+import type { RecorridoChofer } from '@/lib/services/fleet/asignaciones.service';
 import type { EstadoRecorridoRun } from '@/lib/hooks/useDriverRecorrido';
-import type { EstudianteConAsistencia } from '@/lib/services/asistencias.service';
-import type { EstudianteGeocerca } from '@/lib/services/geocercas.service';
+import type { EstudianteConAsistencia } from '@/lib/services/students/asistencias.service';
+import type { EstudianteGeocerca } from '@/lib/services/routing/geocercas.service';
 import type { UbicacionLocal } from '@/lib/hooks/useGPSTracking';
 
 type Options = {
@@ -347,7 +347,7 @@ export function useDriverActions({
       hour12: true,
       timeZone: 'America/Guayaquil',
     });
-    const { sendPushToParents } = await import('@/lib/services/notifications.service');
+    const { sendPushToParents } = await import('@/lib/services/core/notifications.service');
     sendPushToParents(
       recorridoActual.id,
       '🏫 Llegaron al colegio',

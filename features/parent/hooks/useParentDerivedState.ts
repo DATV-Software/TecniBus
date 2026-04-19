@@ -6,12 +6,12 @@
  * - timelineEvents: ordered route events with live statuses
  */
 import { useEffect, useMemo, useState } from 'react';
-import { getUbicacionColegio } from '@/lib/services/configuracion.service';
+import { getUbicacionColegio } from '@/lib/services/admin/configuracion.service';
 import { calcularPolylineRestante } from '@/lib/utils/polyline';
 import { formatHoraEC } from '@/lib/utils/datetime';
-import type { EstudianteDelPadre } from '@/lib/services/padres.service';
-import type { Parada } from '@/lib/services/rutas.service';
-import type { UbicacionActual } from '@/lib/services/ubicaciones.service';
+import type { EstudianteDelPadre } from '@/lib/services/students/padres.service';
+import type { Parada } from '@/lib/services/routing/rutas.service';
+import type { UbicacionActual } from '@/lib/services/fleet/ubicaciones.service';
 
 export type TimelineEvent = {
   id: string;

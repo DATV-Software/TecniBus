@@ -1,5 +1,5 @@
-import { supabase } from './supabase';
-import { sendPushToParents } from './notifications.service';
+import { supabase } from '../core/supabase';
+import { sendPushToParents } from '../core/notifications.service';
 
 export type EstadoRecorrido = {
   activo: boolean;

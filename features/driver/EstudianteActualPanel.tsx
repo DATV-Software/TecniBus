@@ -1,5 +1,5 @@
 import { Colors } from '@/lib/constants/colors';
-import type { EstudianteGeocerca } from '@/lib/services/geocercas.service';
+import type { EstudianteGeocerca } from '@/lib/services/routing/geocercas.service';
 import { MapPin, MessageCircle, UserX, Clock } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {

@@ -21,7 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { getRutas } from "@/lib/services/rutas.service";
+import { getRutas } from "@/lib/services/routing/rutas.service";
 
 export default function RutasListScreen() {
   const router = useRouter();

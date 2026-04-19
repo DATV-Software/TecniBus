@@ -32,7 +32,7 @@ import {
   getPadresParaAsignar,
   getParadasDisponibles,
   updateEstudiante,
-} from "@/lib/services/estudiantes.service";
+} from "@/lib/services/students/estudiantes.service";
 
 type Padre = {
   id: string;

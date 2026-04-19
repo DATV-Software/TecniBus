@@ -1,4 +1,4 @@
-import { sendPushToParents } from "@/lib/services/notifications.service";
+import { sendPushToParents } from "@/lib/services/core/notifications.service";
 import { distanciaAPolyline } from "@/lib/utils/routeDeviation";
 import { useEffect, useRef, useState } from "react";
 

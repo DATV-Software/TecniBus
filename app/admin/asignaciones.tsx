@@ -11,8 +11,8 @@ import {
   type BusetaAsignacion,
   type RutaAsignacion,
   type CreateAsignacionDto,
-} from "@/lib/services/asignaciones.service";
-import { supabase } from "@/lib/services/supabase";
+} from "@/lib/services/fleet/asignaciones.service";
+import { supabase } from "@/lib/services/core/supabase";
 import { haptic } from "@/lib/utils/haptics";
 import { useRouter } from "expo-router";
 import {

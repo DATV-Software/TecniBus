@@ -19,8 +19,8 @@ import { useGeofencing } from "@/lib/hooks/useGeofencing";
 import type { UbicacionLocal } from "@/lib/hooks/useGPSTracking";
 import { useGPSTracking } from "@/lib/hooks/useGPSTracking";
 import { useRouteDeviation } from "@/lib/hooks/useRouteDeviation";
-import { getUbicacionColegio } from "@/lib/services/configuracion.service";
-import { getNotificationPermissionStatus } from "@/lib/services/notifications.service";
+import { getUbicacionColegio } from "@/lib/services/admin/configuracion.service";
+import { getNotificationPermissionStatus } from "@/lib/services/core/notifications.service";
 import { calcularDistancia } from "@/lib/utils/distance";
 import { formatHoraEC } from "@/lib/utils/datetime";
 import { haptic } from "@/lib/utils/haptics";
@@ -238,7 +238,7 @@ export default function DriverHomeScreen() {
   const handleCambiarRecorrido = useCallback(() => setShowRecorridoSelector(true), []);
 
   const handleRecorridoSelect = useCallback(
-    (rec: import("@/lib/services/asignaciones.service").RecorridoChofer) => {
+    (rec: import("@/lib/services/fleet/asignaciones.service").RecorridoChofer) => {
       haptic.light();
       setRecorridoActual(rec);
       setRutaCompletada(false);

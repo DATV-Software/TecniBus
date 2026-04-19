@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/services/supabase';
+import { supabase } from '@/lib/services/core/supabase';
 import type { TipoNotificacionPadre } from './types';
 
 /**

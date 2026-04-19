@@ -21,10 +21,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import type { RecorridoChofer } from '@/lib/services/asignaciones.service';
-import type { EstudianteConAsistencia } from '@/lib/services/asistencias.service';
-import type { EstudianteGeocerca } from '@/lib/services/geocercas.service';
-import type { Parada } from '@/lib/services/rutas.service';
+import type { RecorridoChofer } from '@/lib/services/fleet/asignaciones.service';
+import type { EstudianteConAsistencia } from '@/lib/services/students/asistencias.service';
+import type { EstudianteGeocerca } from '@/lib/services/routing/geocercas.service';
+import type { Parada } from '@/lib/services/routing/rutas.service';
 import type { EstadoRecorridoRun } from '@/lib/hooks/useDriverRecorrido';
 import { TourStep } from '@/features/tour';
 

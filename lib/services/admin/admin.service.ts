@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/services/supabase';
+import { supabase } from '../core/supabase';
 
 // 1. Tipos estrictos para evitar errores de envío
 export type RolUsuario = 'chofer' | 'padre';
