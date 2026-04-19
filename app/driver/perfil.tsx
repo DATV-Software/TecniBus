@@ -1,5 +1,5 @@
 import { Colors } from "@/lib/constants/colors";
-import { changeAvatar } from "@/lib/services/storage.service";
+import { changeAvatar } from "@/lib/services/core/storage.service";
 import { haptic } from "@/lib/utils/haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -25,7 +25,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatedCard, Avatar, Toast } from "../../components";
 import { useAuth } from "../../contexts/AuthContext";
-import { updateProfile } from "../../lib/services/profile.service";
+import { updateProfile } from "../../lib/services/auth/profile.service";
 import { useAlert } from "@/components/ui/AlertBox/useAlert";
 
 export default function DriverProfileScreen() {

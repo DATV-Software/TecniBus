@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from './supabase';
+import { supabase } from '../services/core/supabase';
 
 export type UserRole = 'admin' | 'padre' | 'chofer';
 

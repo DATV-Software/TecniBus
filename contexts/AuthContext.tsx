@@ -1,12 +1,12 @@
 import { Session, User } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
-import { supabase } from '../lib/services/supabase';
-import { Profile } from '../lib/services/useProfile';
+import { supabase } from '../lib/services/core/supabase';
+import { Profile } from '../lib/hooks/useProfile';
 import {
   registerForPushNotifications,
   clearPushToken,
-} from '../lib/services/notifications.service';
+} from '../lib/services/core/notifications.service';
 
 type AuthContextType = {
   session: Session | null;
