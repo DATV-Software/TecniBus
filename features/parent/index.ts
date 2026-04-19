@@ -10,3 +10,7 @@ export { ParentAbsenceCard } from "./components/ParentAbsenceCard";
 export { ParentLoadingState, ParentEmptyState } from "./components/ParentScreenStates";
 export { useParentDerivedState } from "./hooks/useParentDerivedState";
 export { useParentActions } from "./hooks/useParentActions";
+export { useParentRecorrido } from "./hooks/useParentRecorrido";
+export { useParentEstudiantes } from "./hooks/useParentEstudiantes";
+export { useParentAsistencia } from "./hooks/useParentAsistencia";
+export type { AsistenciaEstudiante } from "./hooks/useParentAsistencia";

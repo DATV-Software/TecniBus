@@ -25,7 +25,7 @@ import type { RecorridoChofer } from '@/lib/services/fleet/asignaciones.service'
 import type { EstudianteConAsistencia } from '@/lib/services/students/asistencias.service';
 import type { EstudianteGeocerca } from '@/lib/services/routing/geocercas.service';
 import type { Parada } from '@/lib/services/routing/rutas.service';
-import type { EstadoRecorridoRun } from '@/lib/hooks/useDriverRecorrido';
+import type { EstadoRecorridoRun } from '@/features/driver/hooks/useDriverRecorrido';
 import { TourStep } from '@/features/tour';
 
 type Props = {

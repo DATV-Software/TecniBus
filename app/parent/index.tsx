@@ -2,9 +2,9 @@ import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import RouteMap from "@/components/RouteMap";
 import { useAuth } from "@/contexts/AuthContext";
-import { useParentAsistencia } from "@/lib/hooks/useParentAsistencia";
-import { useParentEstudiantes } from "@/lib/hooks/useParentEstudiantes";
-import { useParentRecorrido } from "@/lib/hooks/useParentRecorrido";
+import { useParentAsistencia } from "@/features/parent/hooks/useParentAsistencia";
+import { useParentEstudiantes } from "@/features/parent/hooks/useParentEstudiantes";
+import { useParentRecorrido } from "@/features/parent/hooks/useParentRecorrido";
 import {
   DraggableBottomSheet,
   ParentAbsenceCard,

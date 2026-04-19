@@ -24,10 +24,10 @@ import {
 import { calcularRutaOptimizada, type Parada } from '@/lib/services/routing/rutas.service';
 import { haptic } from '@/lib/utils/haptics';
 import type { RecorridoChofer } from '@/lib/services/fleet/asignaciones.service';
-import type { EstadoRecorridoRun } from '@/lib/hooks/useDriverRecorrido';
+import type { EstadoRecorridoRun } from '@/features/driver/hooks/useDriverRecorrido';
 import type { EstudianteConAsistencia } from '@/lib/services/students/asistencias.service';
 import type { EstudianteGeocerca } from '@/lib/services/routing/geocercas.service';
-import type { UbicacionLocal } from '@/lib/hooks/useGPSTracking';
+import type { UbicacionLocal } from '@/features/driver/hooks/useGPSTracking';
 
 type Options = {
   profileId: string | undefined;

@@ -11,14 +11,14 @@ import {
   useDriverActions,
   useDriverDerivedState,
 } from "@/features/driver";
-import { useDriverEstudiantes } from "@/lib/hooks/useDriverEstudiantes";
-import { useDriverETAs } from "@/lib/hooks/useDriverETAs";
-import { useDriverRecorrido } from "@/lib/hooks/useDriverRecorrido";
-import { useGeofencePushNotifications } from "@/lib/hooks/useGeofencePushNotifications";
-import { useGeofencing } from "@/lib/hooks/useGeofencing";
-import type { UbicacionLocal } from "@/lib/hooks/useGPSTracking";
-import { useGPSTracking } from "@/lib/hooks/useGPSTracking";
-import { useRouteDeviation } from "@/lib/hooks/useRouteDeviation";
+import { useDriverEstudiantes } from "@/features/driver/hooks/useDriverEstudiantes";
+import { useDriverETAs } from "@/features/driver/hooks/useDriverETAs";
+import { useDriverRecorrido } from "@/features/driver/hooks/useDriverRecorrido";
+import { useGeofencePushNotifications } from "@/features/driver/hooks/useGeofencePushNotifications";
+import { useGeofencing } from "@/features/driver/hooks/useGeofencing";
+import type { UbicacionLocal } from "@/features/driver/hooks/useGPSTracking";
+import { useGPSTracking } from "@/features/driver/hooks/useGPSTracking";
+import { useRouteDeviation } from "@/features/driver/hooks/useRouteDeviation";
 import { getUbicacionColegio } from "@/lib/services/admin/configuracion.service";
 import { getNotificationPermissionStatus } from "@/lib/services/core/notifications.service";
 import { calcularDistancia } from "@/lib/utils/distance";
