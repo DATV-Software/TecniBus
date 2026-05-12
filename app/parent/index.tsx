@@ -65,7 +65,6 @@ export default function ParentHomeScreen() {
 
   // ── Local state ────────────────────────────────────────────────────────────
   const [, setProcessingAttendance] = useState(false);
-  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [showStudentSelector, setShowStudentSelector] = useState(false);
 
   // ── Derived state ──────────────────────────────────────────────────────────
@@ -103,7 +102,6 @@ export default function ParentHomeScreen() {
     setIsAttending,
     setEstudianteSeleccionado,
     setShowStudentSelector,
-    setIsSheetExpanded,
     setProcessingAttendance,
   });
 
@@ -170,20 +168,19 @@ export default function ParentHomeScreen() {
       {/* ── LAYER 2: Draggable bottom sheet ── */}
       <DraggableBottomSheet
         ref={sheetRef}
-        initialSnapPoint={0.15}
-        minSnapPoint={0.15}
-        maxSnapPoint={0.52}
+        initialSnapPoint={0.12}
+        minSnapPoint={0.12}
+        maxSnapPoint={0.6}
         onSnapPointChange={handleSheetSnapChange}
       >
         <ScrollView
           ref={sheetScrollRef}
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
-          scrollEnabled={isSheetExpanded}
           nestedScrollEnabled={true}
-          bounces={isSheetExpanded}
+          bounces={true}
           scrollEventThrottle={16}
-          contentContainerStyle={{ paddingBottom: 430 }}
+          contentContainerStyle={{ paddingBottom: 7 + 44 + Math.max(insets.bottom, 8) + 16 }}
         >
           {/* Hero card — TourStep 2 */}
           <TourStep

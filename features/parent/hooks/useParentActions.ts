@@ -21,7 +21,6 @@ type Options = {
   setIsAttending: (v: boolean) => void;
   setEstudianteSeleccionado: (e: EstudianteDelPadre) => void;
   setShowStudentSelector: (v: boolean) => void;
-  setIsSheetExpanded: (v: boolean) => void;
   setProcessingAttendance: (v: boolean) => void;
 };
 
@@ -37,7 +36,6 @@ export function useParentActions({
   setIsAttending,
   setEstudianteSeleccionado,
   setShowStudentSelector,
-  setIsSheetExpanded,
   setProcessingAttendance,
 }: Options) {
   const router = useRouter();
@@ -124,12 +122,7 @@ export function useParentActions({
   ]);
 
   // ── Sheet snap-point change listener ──────────────────────────────────────
-  const handleSheetSnapChange = useCallback(
-    (snapPoint: number) => {
-      setIsSheetExpanded(snapPoint >= 0.45);
-    },
-    [setIsSheetExpanded],
-  );
+  const handleSheetSnapChange = useCallback((_snapPoint: number) => {}, []);
 
   // ── Navigate to settings ──────────────────────────────────────────────────
   const handleSettings = useCallback(() => {
