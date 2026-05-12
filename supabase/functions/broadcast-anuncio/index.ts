@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { makeCorsHeaders } from "../_shared/cors.ts";
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
@@ -27,27 +27,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Crear cliente Supabase con service role
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-    // Verificar autenticación y rol de admin
+    // Cliente con service role para queries sin RLS
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
+    // Verificar autenticación del usuario que hace el request
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('No autorizado');
     }
 
-    // Extraer el token del header
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    // Crear cliente autenticado como el usuario para obtener su identidad
+    const supabaseUser = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
+    const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
 
     if (authError || !user) {
       throw new Error('No autenticado');
     }
 
-    // Verificar que sea admin
+    // Verificar que sea admin (usando service role para bypasear RLS)
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('rol')

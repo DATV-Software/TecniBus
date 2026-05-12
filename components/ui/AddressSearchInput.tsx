@@ -97,17 +97,17 @@ export function AddressSearchInput({
           flexDirection: "row",
           alignItems: "center",
           backgroundColor: Colors.tecnibus[50],
-          borderRadius: 12,
-          borderWidth: 1.5,
-          borderColor: Colors.tecnibus[300],
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          gap: 8,
+          borderRadius: 10,
+          borderWidth: 1,
+          borderColor: Colors.tecnibus[200],
+          paddingHorizontal: 10,
+          paddingVertical: 5,
+          gap: 6,
         }}
       >
-        <Search size={16} color={Colors.tecnibus[500]} strokeWidth={2} />
+        <Search size={14} color={Colors.tecnibus[400]} strokeWidth={2} />
         <TextInput
-          style={{ flex: 1, fontSize: 14, color: "#1F2937" }}
+          style={{ flex: 1, fontSize: 13, color: "#1F2937" }}
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
           value={query}
@@ -124,7 +124,7 @@ export function AddressSearchInput({
             onPress={handleClear}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <X size={16} color="#9CA3AF" strokeWidth={2} />
+            <X size={15} color="#9CA3AF" strokeWidth={2} />
           </TouchableOpacity>
         )}
       </View>
@@ -158,8 +158,8 @@ export function AddressSearchInput({
                 style={{
                   flexDirection: "row",
                   alignItems: "flex-start",
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
+                  paddingHorizontal: 10,
+                  paddingVertical: 7,
                   borderBottomWidth: index < suggestions.length - 1 ? 1 : 0,
                   borderBottomColor: "#F3F4F6",
                   gap: 10,

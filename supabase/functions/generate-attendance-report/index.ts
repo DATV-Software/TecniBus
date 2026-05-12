@@ -108,12 +108,11 @@ Deno.serve(async (req) => {
 
     // Calcular estadísticas
     const total = rows.length;
-    const presentes = rows.filter(r => r.estado === 'abordo' || r.estado === 'dejado' || r.estado === 'recogiendo' || r.estado === 'dejando').length;
+    const presentes = rows.filter(r => r.estado === 'presente' || r.estado === 'completado').length;
     const ausentes = rows.filter(r => r.estado === 'ausente').length;
-    const pendientes = rows.filter(r => r.estado === 'pendiente').length;
     const porcentaje = total > 0 ? Math.round((presentes / total) * 1000) / 10 : 0;
 
-    const estadisticas = { total, presentes, ausentes, pendientes, porcentaje };
+    const estadisticas = { total, presentes, ausentes, porcentaje };
 
     // Generar PDF con pdf-lib
     const pdfDoc = await PDFDocument.create();
@@ -224,7 +223,7 @@ Deno.serve(async (req) => {
       // Color según estado
       const estadoColor = row.estado === 'ausente'
         ? rgb(0.8, 0.1, 0.1)
-        : row.estado === 'abordo' || row.estado === 'dejado'
+        : row.estado === 'presente' || row.estado === 'completado'
           ? rgb(0.1, 0.6, 0.1)
           : rgb(0.4, 0.4, 0.4);
       drawText(row.estado, xPos, y, { size: 9, color: estadoColor });
@@ -254,8 +253,6 @@ Deno.serve(async (req) => {
     drawText(`Presentes: ${estadisticas.presentes}`, margin, y, { size: 10, color: rgb(0.1, 0.6, 0.1) });
     y -= 16;
     drawText(`Ausentes: ${estadisticas.ausentes}`, margin, y, { size: 10, color: rgb(0.8, 0.1, 0.1) });
-    y -= 16;
-    drawText(`Pendientes: ${estadisticas.pendientes}`, margin, y, { size: 10, color: rgb(0.4, 0.4, 0.4) });
     y -= 16;
     drawText(`Porcentaje asistencia: ${estadisticas.porcentaje}%`, margin, y, { font: fontBold, size: 10 });
 

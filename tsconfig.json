@@ -17,6 +17,7 @@
   ],
   "exclude": [
     "supabase/functions/**",
+    "figma/**",
     "node_modules",
     ".expo",
     ".claude"

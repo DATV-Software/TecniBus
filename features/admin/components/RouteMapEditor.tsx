@@ -265,50 +265,25 @@ export function RouteMapEditor({
           <View
             style={{
               position: "absolute",
-              top: 10,
-              left: 10,
-              right: 10,
+              top: 8,
+              left: 8,
+              right: 8,
               zIndex: 100,
               backgroundColor: "#ffffff",
-              borderRadius: 14,
-              padding: 12,
+              borderRadius: 12,
+              paddingHorizontal: 8,
+              paddingTop: 6,
+              paddingBottom: 6,
               shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.15,
-              shadowRadius: 10,
-              elevation: 10,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.12,
+              shadowRadius: 8,
+              elevation: 8,
             }}
           >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
-              <Text
-                style={{
-                  flex: 1,
-                  fontSize: 13,
-                  fontWeight: "700",
-                  color: "#1F2937",
-                }}
-              >
-                Buscar ubicación de la parada
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowAddressSearch(false);
-                  setAddMode(false);
-                }}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <X size={18} color="#6B7280" strokeWidth={2} />
-              </TouchableOpacity>
-            </View>
             <AddressSearchInput
               placeholder="Ej: Av. Américas, frente al parque..."
-              onSelect={(_address, lat, lng) => {
+onSelect={(_address, lat, lng) => {
                 setShowAddressSearch(false);
                 setEditingParada(null);
                 setPendingCoords({ latitude: lat, longitude: lng });

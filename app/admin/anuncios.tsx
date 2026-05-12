@@ -101,9 +101,16 @@ export default function AnunciosScreen() {
       );
 
       if (error) {
+        let debugMsg = error.message || 'Error desconocido';
+        try {
+          if ('context' in error && error.context instanceof Response) {
+            const errBody = await error.context.json();
+            debugMsg = JSON.stringify(errBody, null, 2);
+          }
+        } catch (_) { /* ignore parse error */ }
         showAlert({
-          title: "Error",
-          message: "No se pudo enviar el anuncio. Intenta nuevamente.",
+          title: "Error Debug",
+          message: debugMsg,
           type: "error",
         });
         return;
