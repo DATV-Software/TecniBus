@@ -108,11 +108,12 @@ Deno.serve(async (req) => {
 
     // Calcular estadísticas
     const total = rows.length;
-    const presentes = rows.filter(r => r.estado === 'presente' || r.estado === 'completado').length;
+    const presentes = rows.filter(r => r.estado === 'completado').length;
     const ausentes = rows.filter(r => r.estado === 'ausente').length;
+    const pendientes = rows.filter(r => r.estado === 'presente').length;
     const porcentaje = total > 0 ? Math.round((presentes / total) * 1000) / 10 : 0;
 
-    const estadisticas = { total, presentes, ausentes, porcentaje };
+    const estadisticas = { total, presentes, ausentes, pendientes, porcentaje };
 
     // Generar PDF con pdf-lib
     const pdfDoc = await PDFDocument.create();
@@ -223,10 +224,13 @@ Deno.serve(async (req) => {
       // Color según estado
       const estadoColor = row.estado === 'ausente'
         ? rgb(0.8, 0.1, 0.1)
-        : row.estado === 'presente' || row.estado === 'completado'
+        : row.estado === 'completado'
           ? rgb(0.1, 0.6, 0.1)
-          : rgb(0.4, 0.4, 0.4);
-      drawText(row.estado, xPos, y, { size: 9, color: estadoColor });
+          : row.estado === 'presente'
+            ? rgb(0.96, 0.62, 0.04) // naranja = pendiente
+            : rgb(0.4, 0.4, 0.4);
+      const estadoLabel = row.estado === 'presente' ? 'pendiente' : row.estado;
+      drawText(estadoLabel, xPos, y, { size: 9, color: estadoColor });
       xPos += colWidths[2];
 
       drawText(truncate(row.ruta_nombre, 28), xPos, y, { size: 9 });
@@ -250,9 +254,11 @@ Deno.serve(async (req) => {
     y -= 20;
     drawText(`Total registros: ${estadisticas.total}`, margin, y, { size: 10 });
     y -= 16;
-    drawText(`Presentes: ${estadisticas.presentes}`, margin, y, { size: 10, color: rgb(0.1, 0.6, 0.1) });
+    drawText(`Completados: ${estadisticas.presentes}`, margin, y, { size: 10, color: rgb(0.1, 0.6, 0.1) });
     y -= 16;
     drawText(`Ausentes: ${estadisticas.ausentes}`, margin, y, { size: 10, color: rgb(0.8, 0.1, 0.1) });
+    y -= 16;
+    drawText(`Pendientes: ${estadisticas.pendientes}`, margin, y, { size: 10, color: rgb(0.96, 0.62, 0.04) });
     y -= 16;
     drawText(`Porcentaje asistencia: ${estadisticas.porcentaje}%`, margin, y, { font: fontBold, size: 10 });
 
