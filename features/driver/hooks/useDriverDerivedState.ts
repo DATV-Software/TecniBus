@@ -163,8 +163,8 @@ export function useDriverDerivedState({
     ? (estudiantes.find((e) => e.id === estudianteActivoId)?.id_padre ?? null)
     : null;
 
-  // Nav bar ≈ 87px, leave gap
-  const BOTTOM_CARD_BOTTOM = Math.max(insets.bottom + 88, 98);
+  // BottomNav exact height: bottom:7 + height:44 + safe area + breathing room
+  const BOTTOM_CARD_BOTTOM = 7 + 44 + Math.max(insets.bottom, 8) + 38;
 
   return {
     stats,
