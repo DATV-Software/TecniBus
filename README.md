@@ -1,10 +1,6 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&amp;size=45&amp;pause=5000&amp;color=F70A8D&amp;center=true&amp;vCenter=true&amp;width=500&amp;height=60&amp;lines=TECNIBUS">
-
-<br>
-
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&amp;size=25&amp;pause=5000&amp;color=FFFFFF&amp;center=true&amp;vCenter=true&amp;width=500&amp;height=40&amp;lines=Proyecto+Integrador+UETS">
+<img src="assets/images/Logo-Texto.png" width="400">
 
 <br><br>
 
@@ -13,7 +9,7 @@
 <img src="https://img.shields.io/badge/TypeScript-Strict-3178c6?style=flat-square&logo=typescript&logoColor=white" />
 <img src="https://img.shields.io/badge/Google%20Maps-Integrated-4285F4?style=flat-square&logo=googlemaps&logoColor=white" />
 <img src="https://img.shields.io/badge/Firebase-FCM-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
-<img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
+<img src="https://img.shields.io/badge/License-Propierty-green?style=flat-square" />
 
 </div>
 
