@@ -1,13 +1,15 @@
+import { BottomNavigation } from "@/components/layout/BottomNavigation";
 import RouteMap from "@/components/RouteMap";
+import { SubScreenHeader } from "@/features/admin";
 import { Colors } from "@/lib/constants/colors";
+import { getUbicacionColegio } from "@/lib/services/admin/configuracion.service";
 import { getRutaActivaDetalle } from "@/lib/services/admin/liveview.service";
-import { getParadasByRuta, type Parada } from "@/lib/services/routing/rutas.service";
 import {
   getUltimaUbicacion,
   suscribirseAUbicaciones,
   type UbicacionActual,
 } from "@/lib/services/fleet/ubicaciones.service";
-import { getUbicacionColegio } from "@/lib/services/admin/configuracion.service";
+import { getParadasByRuta, type Parada } from "@/lib/services/routing/rutas.service";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Bus,
@@ -24,8 +26,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { SubScreenHeader } from "@/features/admin";
-import { BottomNavigation } from "@/components/layout/BottomNavigation";
 
 function formatHora(hora: string | null): string {
   if (!hora) return "—";
@@ -125,7 +125,7 @@ export default function LiveViewDetailScreen() {
           backgroundColor={Colors.tecnibus[600]}
         />
         <SubScreenHeader
-          title="LIVE VIEW"
+          title="Tracking"
           subtitle="Cargando ruta..."
           icon={Radio}
           onBack={() => router.back()}
@@ -161,7 +161,7 @@ export default function LiveViewDetailScreen() {
 
       {/* Header sobre el mapa */}
       <SubScreenHeader
-        title="LIVE VIEW"
+        title="Tracking"
         subtitle={rutaNombre}
         icon={Radio}
         onBack={() => router.back()}

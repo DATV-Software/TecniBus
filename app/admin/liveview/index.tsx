@@ -1,3 +1,5 @@
+import { BottomNavigation } from "@/components/layout/BottomNavigation";
+import { SubScreenHeader } from "@/features/admin";
 import { Colors } from "@/lib/constants/colors";
 import {
   getRutasActivas,
@@ -25,8 +27,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SubScreenHeader } from "@/features/admin";
-import { BottomNavigation } from "@/components/layout/BottomNavigation";
 
 function formatHora(hora: string | null): string {
   if (!hora) return "—";
@@ -233,7 +233,7 @@ export default function LiveViewListScreen() {
       />
 
       <SubScreenHeader
-        title="LIVE VIEW"
+        title="Tracking"
         subtitle="Rutas en tiempo real"
         icon={Radio}
         onBack={() => router.back()}

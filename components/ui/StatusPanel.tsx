@@ -1,5 +1,5 @@
-import { Text, TouchableOpacity, View } from "react-native";
 import { Colors } from "@/lib/constants/colors";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface StatusPanelProps {
   activeCount: number;
@@ -80,7 +80,7 @@ export function StatusPanel({
           <Text style={{ fontSize: 12, color: "#9CA3AF", marginTop: 6 }}>{label}</Text>
         </View>
 
-        {/* Live View button */}
+        {/* tracking button */}
         {onLiveViewPress && (
           <TouchableOpacity
             onPress={onLiveViewPress}
@@ -102,7 +102,7 @@ export function StatusPanel({
               }}
             />
             <Text className="text-white font-bold font-calsans" style={{ fontSize: 13, marginLeft: 8 }}>
-              Live View
+              Tracking
             </Text>
           </TouchableOpacity>
         )}

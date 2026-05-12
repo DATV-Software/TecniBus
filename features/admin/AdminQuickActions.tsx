@@ -1,7 +1,7 @@
-import { View } from "react-native";
 import { ActionCard } from "@/components/ui/ActionCard";
-import { BarChart2, MapPin, Megaphone, Navigation } from "lucide-react-native";
 import { Colors } from "@/lib/constants/colors";
+import { BarChart2, MapPin, Megaphone, Navigation } from "lucide-react-native";
+import { View } from "react-native";
 
 interface AdminQuickActionsProps {
   onRoutesPress: () => void;
@@ -49,7 +49,6 @@ export function AdminQuickActions({
             title="Anuncios"
             description="Enviar notificaciones a padres."
             onPress={onAnnouncementsPress}
-            badge="NEW"
             variant="filled"
             filledBgColor={Colors.tecnibus[500]}
           />
@@ -57,11 +56,13 @@ export function AdminQuickActions({
         <View className="flex-1">
           <ActionCard
             icon={BarChart2}
-            iconColor={Colors.tecnibus[700]}
-            iconBgColor={Colors.tecnibus[100]}
+            iconColor="#ffffff"
+             iconBgColor="rgba(255,255,255,0.2)"
             title="Reportes"
             description="Estadísticas y análisis."
             onPress={onReportesPress}
+            variant="filled"
+            filledBgColor={Colors.tecnibus[500]}
           />
         </View>
       </View>
