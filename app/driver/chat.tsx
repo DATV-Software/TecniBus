@@ -14,6 +14,7 @@ import {
   Mensaje,
   suscribirseAMensajes,
 } from "@/lib/services/chat/chat.service";
+import { useKeyboardOffset } from "@/lib/hooks/useKeyboardOffset";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MessageCircle, Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
@@ -42,6 +43,8 @@ export default function DriverChatScreen() {
     idAsignacion?: string;
     nombreEstudiante?: string;
   }>();
+
+  const keyboardOffset = useKeyboardOffset(true);
 
   const [vista, setVista] = useState<Vista>("lista");
   const [chats, setChats] = useState<ChatResumen[]>([]);
@@ -346,6 +349,7 @@ export default function DriverChatScreen() {
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: "#F9FAFB" }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={keyboardOffset}
       >
         <StatusBar
           backgroundColor={Colors.tecnibus[700]}

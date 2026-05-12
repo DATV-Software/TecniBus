@@ -12,6 +12,7 @@ import {
 } from "@/lib/services/chat/chat.service";
 import { supabase } from "@/lib/services/core/supabase";
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
+import { useKeyboardOffset } from "@/lib/hooks/useKeyboardOffset";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
@@ -42,6 +43,7 @@ export default function ParentChatScreen() {
   }>();
 
   const { idAsignacion, idChofer, nombreChofer } = params;
+  const keyboardOffset = useKeyboardOffset(true);
 
   // Estado inicial viene del dashboard padre (que ya verificó con RPC)
   const [recorridoActivo, setRecorridoActivo] = useState(
@@ -170,6 +172,7 @@ export default function ParentChatScreen() {
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: "#F9FAFB" }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={keyboardOffset}
       >
         <StatusBar backgroundColor={Colors.tecnibus[700]} barStyle="light-content" translucent={false} />
 
