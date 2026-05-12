@@ -130,18 +130,13 @@ export function useParentRecorrido(estudiante: EstudianteDelPadre | null, isAtte
     return () => { supabase.removeChannel(channel); };
   }, [idRuta, cargarEstadoRecorrido]);
 
-  // Realtime: cambios en estados_recorrido
+  // Polling estado del recorrido cada 15s como fuente de verdad.
+  // postgres_changes no funciona para padres porque la RLS usa JOINs/subqueries
+  // y Supabase Realtime solo evalúa políticas con columnas directas.
   useEffect(() => {
     if (!idRuta) return;
-    const channel = supabase
-      .channel("estados-recorrido-padre")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "estados_recorrido", filter: `id_ruta=eq.${idRuta}` },
-        () => cargarEstadoRecorrido(),
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const interval = setInterval(cargarEstadoRecorrido, 15000);
+    return () => clearInterval(interval);
   }, [idRuta, cargarEstadoRecorrido]);
 
   // Polling ETAs cada 10s cuando está en camino (solo si asiste)

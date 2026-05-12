@@ -14,10 +14,17 @@
     },
     "preview": {
       "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "TU_SUPABASE_URL",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "TU_ANON_KEY"
+      }
     },
     "production": {
       "ios": {

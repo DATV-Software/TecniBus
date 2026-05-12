@@ -147,7 +147,7 @@ export default function DriverHomeScreen() {
     nextStudent,
     enCaminoAlColegio,
     todosEntregadosVuelta,
-    paradaMasCercana,
+
     estaEnGeocerca,
     hayEstudianteActivo,
     hayCaminoASiguiente,
@@ -177,8 +177,8 @@ export default function DriverHomeScreen() {
     idAsignacion: recorridoActual?.id,
   });
 
-  const etaProximaParada = paradaMasCercana
-    ? (etasPorParada[paradaMasCercana.parada.id] ?? null)
+  const etaProximaParada = nextStudent?.parada?.id
+    ? (etasPorParada[nextStudent.parada.id] ?? null)
     : null;
 
   // ── Polyline (remaining) ─────────────────────────────────────────────────────
