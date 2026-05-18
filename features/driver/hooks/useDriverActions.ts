@@ -196,26 +196,34 @@ export function useDriverActions({
       const ubicacionColegioLocal = await getUbicacionColegio();
       const paradasParaRuta = paradasOverride ?? paradasVisibles;
       if (paradasParaRuta.length > 0) {
-        try {
-          const resultado = await calcularRutaOptimizada(
-            ubicacionChoferLocal,
-            paradasParaRuta,
-            recorridoActual.tipo_ruta,
-            {
-              lat: ubicacionColegioLocal.latitud,
-              lng: ubicacionColegioLocal.longitud,
-            },
-          );
-          if (resultado) {
-            setParadas(resultado.paradasOptimizadas);
-            setPolylineCoordinates(resultado.polylineCoordinates);
-            await guardarPolylineRuta(recorridoActual.id, resultado.polylineCoordinates);
-          }
-        } catch (_error) {
-        } finally {
+        // Espera indefinidamente hasta que el polyline cargue — no hay timeout
+        const resultado = await calcularRutaOptimizada(
+          ubicacionChoferLocal,
+          paradasParaRuta,
+          recorridoActual.tipo_ruta,
+          {
+            lat: ubicacionColegioLocal.latitud,
+            lng: ubicacionColegioLocal.longitud,
+          },
+        );
+
+        if (!resultado) {
+          haptic.error();
+          showAlert({
+            title: 'Error de ruta',
+            message: 'No se pudo calcular el recorrido. Intenta nuevamente.',
+            type: 'error',
+          });
           setOptimizandoRuta(false);
+          return;
         }
+
+        setParadas(resultado.paradasOptimizadas);
+        setPolylineCoordinates(resultado.polylineCoordinates);
+        await guardarPolylineRuta(recorridoActual.id, resultado.polylineCoordinates);
+        setOptimizandoRuta(false);
       }
+
       const success = await iniciarRecorrido(recorridoActual.id);
       if (success) {
         setRouteActive(true);

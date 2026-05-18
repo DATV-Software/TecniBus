@@ -415,12 +415,7 @@ export async function calcularRutaOptimizada(
     );
 
     if (!result) {
-      return {
-        paradasOptimizadas: paradas,
-        distanciaTotal: 0,
-        duracionTotal: 0,
-        polylineCoordinates: [],
-      };
+      return null;
     }
 
     // Reordenar paradas según waypoint_order de Google.
@@ -441,6 +436,10 @@ export async function calcularRutaOptimizada(
       }
     }
 
+    if (!result.decodedCoordinates || result.decodedCoordinates.length === 0) {
+      return null;
+    }
+
     return {
       paradasOptimizadas,
       distanciaTotal: result.distance,
@@ -448,12 +447,6 @@ export async function calcularRutaOptimizada(
       polylineCoordinates: result.decodedCoordinates,
     };
   } catch (_error) {
-    // Retornar paradas en orden original en caso de error
-    return {
-      paradasOptimizadas: paradas,
-      distanciaTotal: 0,
-      duracionTotal: 0,
-      polylineCoordinates: [],
-    };
+    return null;
   }
 }
